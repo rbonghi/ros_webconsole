@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<script type="text/javascript" src="js/ros/eventemitter2.js"></script>
+<script type="text/javascript" src="js/ros/mjpegcanvas.js"></script>
+
+<script type="text/javascript">
+  /**
+   * Setup all visualization elements when the page is loaded. 
+   */
+  function init() {
+    // Create the main viewer.
+    var viewer = new MJPEGCANVAS.Viewer({
+      divID : 'mjpeg',
+      host : 'arvi.local',
+      width : 320,
+      height : 240,
+      topic : '/usb_cam/image_raw',
+      interval : 500
+    });
+  }
+</script>
+</head>
+
+<body onload="init()">
+  <h1>Simple MJPEG Canvas Example</h1>
+  <p>
+    Run the following commands in the terminal then refresh this page. 
+  </p>
+  <ol>
+    <li><tt>roscore</tt></li>
+    <li><tt>roslaunch pr2_gazebo pr2_empty_world.launch</tt></li>
+    <li><tt>rosrun mjpeg_server mjpeg_server</tt></li>
+  </ol>
+  <div id="mjpeg"></div>
+</body>
+</html>

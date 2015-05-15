@@ -27,7 +27,7 @@ function OpenRos() {
         $.mobile.loading("hide");
     });
     // Connects to rosbridge.
-    ros.connect('ws://explorer.local:9090');
+    ros.connect('ws://Labsis4-linux.local:9090');
 
     return ros;
 }
@@ -58,7 +58,7 @@ function Open3DMap(ros, width, height) {
         transThres: 0.01,
         rate: 20.0,
         //fixedFrame: '/base_link'
-        fixedFrame: '/odometry'
+        fixedFrame: '/odom'
     });
 
     // Add the URDF model of the robot.

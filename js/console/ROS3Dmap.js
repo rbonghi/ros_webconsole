@@ -36,13 +36,15 @@ function ROS3Dmap(ros, options) {
         transThres: 0.01,
         rate: 20.0,
         //fixedFrame: '/base_link'
-        fixedFrame: '/odometry'
+        fixedFrame: '/odom'
     });
 
     // Add the URDF model of the robot.
     var urdfClient = new ROS3D.UrdfClient({
         ros: ros,
         tfClient: tfClient,
-        rootObject: viewer3D.scene
+        path: 'http://ubuntu.local/',
+        rootObject: viewer3D.scene,
+        loader: ROS3D.COLLADA_LOADER
     });
 }

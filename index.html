@@ -34,6 +34,8 @@ and open the template in the editor.
         <script src="js/ros/three.js"></script>
         <!-- ColladaLoader2 loads collada models of the robot -->
         <script src="js/ros/ColladaLoader2.js"></script>
+        <script src="http://cdn.robotwebtools.org/threejs/current/ColladaLoader.min.js"></script>
+        <script src="http://cdn.robotwebtools.org/threejs/current/STLLoader.min.js"></script>
         <!-- Ros3djs provides 3D scene support, including mapping and more -->
         <script src="js/ros/ros3d.js"></script>
 
@@ -57,7 +59,7 @@ and open the template in the editor.
 
                 var isiPad = navigator.userAgent.match(/iPad/i) !== null;
                 var name_page = "Explorer Web console";
-                var name_robot = "explorer.local";
+                var name_robot = "Labsis4-linux.local";
 
                 //find pages
                 var find_pages = $("div:jqmData(role='page')");
@@ -83,12 +85,12 @@ and open the template in the editor.
 
                 var poseTopic = new ROSLIB.Topic({
                     ros: ros,
-                    name: '/robot/odometry',
+                    name: '/odom',
                     messageType: 'nav_msgs/Odometry'
                 });
                 var velocityTopic = new ROSLIB.Topic({
                     ros: ros,
-                    name: '/robot/velocity',
+                    name: '/joy_vel',
                     messageType: 'geometry_msgs/Twist'
                 });
 
@@ -159,7 +161,7 @@ and open the template in the editor.
                 //+++++++++++++++++++++++
                 var cmdVel = new ROSLIB.Topic({
                     ros: ros,
-                    name: '/robot/command/velocity',
+                    name: '/key_vel',
                     messageType: 'geometry_msgs/Twist'
                 });
                 var cmdPos = new ROSLIB.Topic({

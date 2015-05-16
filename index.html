@@ -58,8 +58,8 @@ and open the template in the editor.
             $(document).ready(function() {
 
                 var isiPad = navigator.userAgent.match(/iPad/i) !== null;
-                var name_page = "Explorer Web console";
-                var name_robot = "Labsis4-linux.local";
+                var name_page = "4UDE Web console";
+                var name_robot = "localhost";
 
                 //find pages
                 var find_pages = $("div:jqmData(role='page')");
@@ -85,7 +85,7 @@ and open the template in the editor.
 
                 var poseTopic = new ROSLIB.Topic({
                     ros: ros,
-                    name: '/odom',
+                    name: '/odometry/filtered',
                     messageType: 'nav_msgs/Odometry'
                 });
                 var velocityTopic = new ROSLIB.Topic({

@@ -10,6 +10,8 @@ function ROS3Dmap(ros, options) {
     var divName = options.divID || 'threed-map';
     var width = options.width || 200;
     var height = options.height || 200;
+    var path = options.path || 'localhost';
+    var fixed_frame = options.fixed_frame || '/odom';
 
     // ----------------------------------------------------------------------
     // Rendering the robot in 3D
@@ -36,14 +38,14 @@ function ROS3Dmap(ros, options) {
         transThres: 0.01,
         rate: 20.0,
         //fixedFrame: '/base_link'
-        fixedFrame: '/odom'
+        fixedFrame: fixed_frame
     });
 
     // Add the URDF model of the robot.
     var urdfClient = new ROS3D.UrdfClient({
         ros: ros,
         tfClient: tfClient,
-        path: 'http://ubuntu.local/',
+        path: 'http://' + path + '/',
         rootObject: viewer3D.scene,
         loader: ROS3D.COLLADA_LOADER
     });

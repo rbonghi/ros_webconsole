@@ -59,7 +59,7 @@ and open the template in the editor.
 
                 var isiPad = navigator.userAgent.match(/iPad/i) !== null;
                 var name_page = "4UDE Web console";
-                var name_robot = "localhost";
+                var name_robot = "dude.local";
 
                 //find pages
                 var find_pages = $("div:jqmData(role='page')");
@@ -137,7 +137,7 @@ and open the template in the editor.
                 if (!isiPad) {
                     $("#footer_page").text("PC system");
                     // 3D MAP
-                    ROS3Dmap(ros, {width: widthPage, height: heightPage});
+                    ROS3Dmap(ros, {width: widthPage, height: heightPage, path: name_robot});
                     // 2D MAP
                     map2Dhome = new ROS2Dmap(ros, {width: widthBox, height: widthBox});
                     $('#twod-map').css({position: 'absolute', top: heightHeader + heightPage + 18 - widthBox, left: 16});

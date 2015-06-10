@@ -28,6 +28,19 @@ function TouchDrive(panel, topic, options) {
             limit_linear = $("#limit-controller .slider-max-velocity").val(),
             limit_angular = $("#limit-controller .slider-max-angular").val();
 
+    var twist = new ROSLIB.Message({
+        linear: {
+            x: linear,
+            y: 0,
+            z: 0
+        },
+        angular: {
+            x: 0,
+            y: 0,
+            z: angular
+        }
+    });
+
     var html_activate = "<form>" +
             "<label for='touch-activate'>Flip toggle switch:</label>" +
             "<select id='touch-activate' name='activate' data-role='slider'>" +
@@ -100,6 +113,12 @@ function TouchDrive(panel, topic, options) {
     }
 
     setInterval(draw, 1000 / 35);
+    /**
+     * Repeat twist value after 200ms
+     */
+    setInterval(function(){
+        	topic.publish(twist);
+        }, 200);
 
     $("#limit-controller .slider-max-velocity").on("slidestop", function(event, ui) {
         var value = event.target.value;
@@ -152,7 +171,7 @@ function TouchDrive(panel, topic, options) {
                 $("#" + panel + " .angular").text(angular);
 
                 if ((linear !== old_linear) || (angular !== old_angular)) {
-                    var twist = new ROSLIB.Message({
+                    twist = new ROSLIB.Message({
                         linear: {
                             x: limit_linear * linear,
                             y: 0,
@@ -164,7 +183,7 @@ function TouchDrive(panel, topic, options) {
                             z: limit_angular * angular
                         }
                     });
-                    topic.publish(twist);
+                    //topic.publish(twist);
                     old_linear = linear;
                     old_angular = angular;
                 }
@@ -187,7 +206,7 @@ function TouchDrive(panel, topic, options) {
                 angular = 0;
                 $("#" + panel + " .velocity").text(linear);
                 $("#" + panel + " .angular").text(angular);
-                var twist = new ROSLIB.Message({
+                twist = new ROSLIB.Message({
                     linear: {
                         x: linear,
                         y: 0,
@@ -199,7 +218,7 @@ function TouchDrive(panel, topic, options) {
                         z: angular
                     }
                 });
-                topic.publish(twist);
+                //topic.publish(twist);
             }
         }
     }

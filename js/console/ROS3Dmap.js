@@ -38,7 +38,8 @@ function ROS3Dmap(ros, options) {
         transThres: 0.01,
         rate: 20.0,
         //fixedFrame: '/base_link'
-        fixedFrame: fixed_frame
+        //fixedFrame: fixed_frame
+        fixedFrame: '/map'
     });
 
     // Add the URDF model of the robot.
@@ -47,6 +48,22 @@ function ROS3Dmap(ros, options) {
         tfClient: tfClient,
         path: 'http://' + path + '/',
         rootObject: viewer3D.scene,
-        loader: ROS3D.COLLADA_LOADER
+        loader: ROS3D.STL_LOADER
+    });
+    
+    // Setup the marker client.
+    var grid3Client = new ROS3D.OccupancyGridClient({
+      ros : ros,
+      rootObject : viewer3D.scene,
+      continuous: true
+    });
+    
+        // Setup the marker client.
+    var imClient = new ROS3D.InteractiveMarkerClient({
+      ros : ros,
+      tfClient : tfClient,
+      topic : '/twist_marker_server',
+      camera : viewer3D.camera,
+      rootObject : viewer3D.selectableObjects
     });
 }

@@ -1649,8 +1649,10 @@ ROS3D.OccupancyGrid = function(options) {
   // create the mesh
   THREE.Mesh.call(this, geom, material);
   // move the map so the corner is at 0, 0
-  this.position.x = (width * message.info.resolution) / 2;
-  this.position.y = (height * message.info.resolution) / 2;
+  //this.position.x = (width * message.info.resolution) / 2;
+  //this.position.y = (height * message.info.resolution) / 2;
+  this.position.x = -0.1 * message.info.resolution;
+  this.position.y = -0.1 * message.info.resolution;
   this.scale.x = message.info.resolution;
   this.scale.y = message.info.resolution;
 };

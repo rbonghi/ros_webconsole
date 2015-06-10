@@ -8,6 +8,18 @@ function KeyDrive(panel, topic, options) {
 
     var linear = 0;
     var angular = 0;
+    var twist = new ROSLIB.Message({
+        linear: {
+            x: linear,
+            y: 0,
+            z: 0
+        },
+        angular: {
+            x: 0,
+            y: 0,
+            z: angular
+        }
+    });
     var step = {lin: 0.1, ang: 0.1};
 
     var slider = "<div id='sliders'>" +
@@ -73,27 +85,36 @@ function KeyDrive(panel, topic, options) {
 
         $("#" + panel + " .velocity").text(linear);
         $("#" + panel + " .angular").text(angular);
-
-        var twist = new ROSLIB.Message({
-            linear: {
-                x: linear,
-                y: 0,
-                z: 0
-            },
-            angular: {
-                x: 0,
-                y: 0,
-                z: angular
-            }
-        });
+        
+	    twist = new ROSLIB.Message({
+	        linear: {
+	            x: linear,
+	            y: 0,
+	            z: 0
+	        },
+	        angular: {
+	            x: 0,
+	            y: 0,
+	            z: angular
+	        }
+	    });
+    
         if (action !== "quit") {
             topic.publish(twist);
         } else {
             topic.unsubscribe();
             topic.unadvertise();
         }
+        
 
     }
+    
+    /**
+     * Repeat twist value after 200ms
+     */
+    setInterval(function(){
+        	topic.publish(twist);
+        }, 200);
 
     $("#sliders .slider-velocity").on("slidestop", function(event, ui) {
         var value = event.target.value;

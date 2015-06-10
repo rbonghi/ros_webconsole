@@ -11,7 +11,7 @@ function DriveController(namepanel, topics, options) {
     var topic_pose = topics.position;
     var panel = $("#" + namepanel);
     var name_controller = "";
-    var isiPad = navigator.userAgent.match(/iPad/i) !== null;
+    var hasTouch = 'ontouchstart' in window;
 
     $("#" + namepanel + " #reset").on('click', function() {
         var pose = new ROSLIB.Message({
@@ -23,7 +23,7 @@ function DriveController(namepanel, topics, options) {
         topic_pose.publish(pose);
     });
 
-    if (isiPad) {
+    if (hasTouch) {
         name_controller = "Touch";
         $("#" + namepanel + " #visualcontroller h3")
                 .html("<h3 align='center'>" + name_controller + " Controller</h3>")

@@ -1649,10 +1649,11 @@ ROS3D.OccupancyGrid = function(options) {
   // create the mesh
   THREE.Mesh.call(this, geom, material);
   // move the map so the corner is at 0, 0
-  //this.position.x = (width * message.info.resolution) / 2;
-  //this.position.y = (height * message.info.resolution) / 2;
-  this.position.x = -0.1 * message.info.resolution;
-  this.position.y = -0.1 * message.info.resolution;
+  this.position.x = (width * message.info.resolution) / 2;
+  this.position.y = (height * message.info.resolution) / 2;
+  //window.alert(message.info.resolution);
+  this.position.x = -10 * message.info.resolution;
+  this.position.y = -1.0 * message.info.resolution;
   this.scale.x = message.info.resolution;
   this.scale.y = message.info.resolution;
 };
@@ -2516,8 +2517,10 @@ ROS3D.Grid = function(options) {
     linewidth: lineWidth
   });
 
-  for (var i = 0; i <= size; ++i) {
-    var edge = cellSize * size / 2;
+  var len = size/cellSize;
+  for (var i = 0; i <= len; ++i) {
+    //var edge = cellSize * size / 2;
+    var edge = size / 2;
     var position = edge - (i * cellSize);
     var geometryH = new THREE.Geometry();
     geometryH.vertices.push(

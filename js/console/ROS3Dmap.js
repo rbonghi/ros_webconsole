@@ -28,7 +28,8 @@ function ROS3Dmap(ros, options) {
 
     // Add a grid.
     viewer3D.addObject(new ROS3D.Grid({
-        cellSize: 0.5
+    	size: 20,
+        cellSize: 1.0
     }));
 
     // Create a TF client that subscribes to the fixed frame.

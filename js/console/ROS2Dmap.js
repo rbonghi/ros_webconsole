@@ -48,10 +48,12 @@ function ROS2Dmap(ros, options) {
     });
 
     // Scale the canvas to fit to the map
+    /*
     this.gridClient.on('change', function() {
-      viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
-      viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y);
+      viewer2D.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
+      viewer2D.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y);
     });
+    */
 
     this.gridClient.rootObject.addChild(robotMarker);
     viewer2D.scaleToDimensions(1, 1);

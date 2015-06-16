@@ -1,5 +1,5 @@
-#ROS web console
-
+ROS web console [![Build Status](https://travis-ci.org/rbonghi/roswebconsole.svg)](https://travis-ci.org/rbonghi/roswebconsole)
+=======
 System interface to control a robot under ROS with web page.
 
 [![Video](https://i.ytimg.com/vi/fhCHS7ibFrw/mqdefault.jpg)](https://www.youtube.com/watch?v=fhCHS7ibFrw)

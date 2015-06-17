@@ -1648,12 +1648,12 @@ ROS3D.OccupancyGrid = function(options) {
 
   // create the mesh
   THREE.Mesh.call(this, geom, material);
-  // move the map so the corner is at 0, 0
-  this.position.x = (width * message.info.resolution) / 2;
-  this.position.y = (height * message.info.resolution) / 2;
-  //window.alert(message.info.resolution);
-  this.position.x = -10 * message.info.resolution;
-  this.position.y = -1.0 * message.info.resolution;
+  // move the map so the corner is at X, Y and correct orientation (informations from message.info)
+  this.useQuaternion = true;
+  this.quaternion = message.info.origin.orientation;
+  this.position.x = (width * message.info.resolution) / 2 + message.info.origin.position.x;
+  this.position.y = (height * message.info.resolution) / 2 + message.info.origin.position.y;
+  this.position.z = message.info.origin.position.z;
   this.scale.x = message.info.resolution;
   this.scale.y = message.info.resolution;
 };
@@ -2997,6 +2997,7 @@ ROS3D.Viewer = function(options) {
 
   // create the global camera
   this.camera = new THREE.PerspectiveCamera(40, width / height, near, far);
+  
   this.camera.position.x = cameraPosition.x;
   this.camera.position.y = cameraPosition.y;
   this.camera.position.z = cameraPosition.z;
@@ -3054,6 +3055,18 @@ ROS3D.Viewer = function(options) {
 
   // begin the animation
   draw();
+};
+
+/**
+ * Resize 3D viewer
+ *
+ * @param width - new width value
+ * @param height - new height value
+ */
+ROS3D.Viewer.prototype.resize = function(width, height) {
+  	this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+  	this.renderer.setSize(width, height);
 };
 
 /**

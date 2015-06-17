@@ -25,6 +25,15 @@ function ROS3Dmap(ros, options) {
         antialias: true
                 //background: '#EEEEEE'
     });
+    
+    window.onresize = function(event) {
+    	var widthPage = $(window).width();
+    	var heightPage = $(window).height() - $("#threed-map").position().top - 10;
+    	console.log("width: " + widthPage + " - height: " + heightPage);
+    //   console.log("resize");
+       viewer3D.resize(widthPage, heightPage);
+	};
+		
 
     // Add a grid.
     viewer3D.addObject(new ROS3D.Grid({

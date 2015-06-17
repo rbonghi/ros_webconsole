@@ -22,11 +22,26 @@ This web console depends on:
 ```
 $ sudo apt-get install
 ```
-#Install
-```
-Follow the guide on http//raffaello.officinerobotiche.it/
 
-$ cd /var/www/
-$ git clone https://github.com/rbonghi/roswebconsole.git/
+#Installation
+1. Follow the guide on [Install lighttpd and Codiad](http://raffaello.officinerobotiche.it/4ude/how-to-install-lighttpd-and-codiad/)
+2. Clone this project and change owner:
 ```
-
+cd /var/www/
+git clone https://github.com/rbonghi/roswebconsole.git/
+sudo chown -R www-data:www-data roswebconsole/ 
+```
+3. Now you can update your lighttpd server configuration in `/etc/lighttpd/lighttpd.conf` with this commands:
+	1. Change root:
+	```
+	server.document-root        = "/var/www/roswebconsole"
+	```
+	2. Add alias
+	```
+	alias.url = ( "/Codiad" => "/var/www/Codiad" )
+	alias.url += ( "/ROBOT_description" => "/home/USER/catkin_ws/src/ROBOT_description" )
+	```
+	An example for my robot [4UDE](http://raffaello.officinerobotiche.it/4ude/):
+	```
+	alias.url += ( "/dude_description" => "/home/USER/catkin_ws/src/ros_dude/dude_description" )
+	```

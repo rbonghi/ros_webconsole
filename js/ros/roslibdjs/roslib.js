@@ -37,7 +37,7 @@ exports.implementation = document.implementation;
  */
 
 var ROSLIB = this.ROSLIB || {
-  REVISION : '0.13.0-SNAPSHOT'
+  REVISION : '0.15.0'
 };
 
 var assign = require('object-assign');
@@ -182,7 +182,7 @@ ActionClient.prototype.cancel = function() {
 };
 
 module.exports = ActionClient;
-},{"../core/Message":9,"../core/Topic":16,"./../util/shim/EventEmitter2.js":39}],6:[function(require,module,exports){
+},{"../core/Message":9,"../core/Topic":16,"./../util/shim/EventEmitter2.js":38}],6:[function(require,module,exports){
 /**
  * @author Russell Toris - rctoris@wpi.edu
  */
@@ -271,7 +271,7 @@ Goal.prototype.cancel = function() {
 };
 
 module.exports = Goal;
-},{"../core/Message":9,"./../util/shim/EventEmitter2.js":39}],7:[function(require,module,exports){
+},{"../core/Message":9,"./../util/shim/EventEmitter2.js":38}],7:[function(require,module,exports){
 /**
  * @author Laura Lindzey - lindzey@gmail.com
  */
@@ -479,7 +479,7 @@ SimpleActionServer.prototype.setPreempted = function() {
 };
 
 module.exports = SimpleActionServer;
-},{"../core/Message":9,"../core/Topic":16,"./../util/shim/EventEmitter2.js":39}],8:[function(require,module,exports){
+},{"../core/Message":9,"../core/Topic":16,"./../util/shim/EventEmitter2.js":38}],8:[function(require,module,exports){
 var Ros = require('../core/Ros');
 var mixin = require('../mixin');
 
@@ -624,6 +624,13 @@ function Ros(options) {
   this.socket = null;
   this.idCounter = 0;
   this.isConnected = false;
+
+  if (typeof options.groovyCompatibility === 'undefined') {
+    this.groovyCompatibility = true;
+  }
+  else {
+    this.groovyCompatibility = options.groovyCompatibility;
+  }
 
   // Sets unlimited event listeners.
   this.setMaxListeners(0);
@@ -919,7 +926,7 @@ Ros.prototype.decodeTypeDefs = function(defs) {
 
 module.exports = Ros;
 
-},{"./../util/shim/EventEmitter2.js":39,"./../util/shim/WebSocket.js":40,"./Service":12,"./ServiceRequest":13,"./SocketAdapter.js":15,"object-assign":1}],12:[function(require,module,exports){
+},{"./../util/shim/EventEmitter2.js":38,"./../util/shim/WebSocket.js":39,"./Service":12,"./ServiceRequest":13,"./SocketAdapter.js":15,"object-assign":1}],12:[function(require,module,exports){
 /**
  * @author Brandon Alexander - baalexander@gmail.com
  */
@@ -1049,6 +1056,11 @@ function decompressPng(data, callback) {
     canvas.width = image.width;
     canvas.height = image.height;
 
+    // Prevents anti-aliasing and loosing data
+    context.imageSmoothingEnabled = false;
+    context.webkitImageSmoothingEnabled = false;
+    context.mozImageSmoothingEnabled = false;
+
     // Puts the data into the image.
     context.drawImage(image, 0, 0);
     // Grabs the raw, uncompressed data.
@@ -1128,8 +1140,9 @@ function SocketAdapter(client) {
 }
 
 module.exports = SocketAdapter;
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./../util/shim/WebSocket.js":40,"./../util/shim/canvas.js":41}],16:[function(require,module,exports){
+},{"./../util/shim/WebSocket.js":39,"./../util/shim/canvas.js":40}],16:[function(require,module,exports){
 /**
  * @author Brandon Alexander - baalexander@gmail.com
  */
@@ -1150,7 +1163,10 @@ var Message = require('./Message');
  *   * name - the topic name, like /cmd_vel
  *   * messageType - the message type, like 'std_msgs/String'
  *   * compression - the type of compression to use, like 'png'
- *   * throttle_rate - the rate at which to throttle the topics
+ *   * throttle_rate - the rate (in ms in between messages) at which to throttle the topics
+ *   * queue_size - the queue created at bridge side for re-publishing webtopics (defaults to 100)
+ *   * latch - latch the topic when publishing
+ *   * queue_length - the queue length at bridge side used when subscribing (defaults to 0, no queueing).
  */
 function Topic(options) {
   options = options || {};
@@ -1162,6 +1178,7 @@ function Topic(options) {
   this.throttle_rate = options.throttle_rate || 0;
   this.latch = options.latch || false;
   this.queue_size = options.queue_size || 100;
+  this.queue_length = options.queue_length || 0;
 
   // Check for valid compression types
   if (this.compression && this.compression !== 'png' &&
@@ -1205,13 +1222,14 @@ Topic.prototype.subscribe = function(callback) {
     topic: this.name,
     compression: this.compression,
     throttle_rate: this.throttle_rate,
-    queue_length: this.queue_size
+    queue_length: this.queue_length
   });
 };
 
 /**
- * Unregisters as a subscriber for the topic. Unsubscribing will remove
- * all subscribe callbacks.
+ * Unregisters as a subscriber for the topic. Unsubscribing stop remove
+ * all subscribe callbacks. To remove a call back, you must explicitly
+ * pass the callback function in.
  *
  * @param callback - the optional callback to unregister, if
  *     * provided and other listeners are registered the topic won't
@@ -1293,7 +1311,7 @@ Topic.prototype.publish = function(message) {
 
 module.exports = Topic;
 
-},{"./../util/shim/EventEmitter2.js":39,"./Message":9}],17:[function(require,module,exports){
+},{"./../util/shim/EventEmitter2.js":38,"./Message":9}],17:[function(require,module,exports){
 var mixin = require('../mixin');
 
 var core = module.exports = {
@@ -1387,6 +1405,13 @@ Quaternion.prototype.conjugate = function() {
 };
 
 /**
+ * Return the norm of this quaternion.
+ */
+Quaternion.prototype.norm = function() {
+  return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+};
+
+/**
  * Perform a normalization on this quaternion.
  */
 Quaternion.prototype.normalize = function() {
@@ -1439,6 +1464,7 @@ Quaternion.prototype.clone = function() {
 };
 
 module.exports = Quaternion;
+
 },{}],20:[function(require,module,exports){
 /**
  * @author David Gossow - dgossow@willowgarage.com
@@ -1574,6 +1600,10 @@ module.exports = function(Ros, classes, features) {
 
 var ActionClient = require('../actionlib/ActionClient');
 var Goal = require('../actionlib/Goal');
+
+var Service = require('../core/Service.js');
+var ServiceRequest = require('../core/ServiceRequest.js');
+
 var Transform = require('../math/Transform');
 
 /**
@@ -1586,7 +1616,9 @@ var Transform = require('../math/Transform');
  *   * angularThres - the angular threshold for the TF republisher
  *   * transThres - the translation threshold for the TF republisher
  *   * rate - the rate for the TF republisher
- *   * goalUpdateDelay - the goal update delay for the TF republisher
+ *   * updateDelay - the time (in ms) to wait after a new subscription
+ *                   to update the TF republisher's list of TFs
+ *   * topicTimeout - the timeout parameter for the TF republisher
  */
 function TFClient(options) {
   options = options || {};
@@ -1595,17 +1627,30 @@ function TFClient(options) {
   this.angularThres = options.angularThres || 2.0;
   this.transThres = options.transThres || 0.01;
   this.rate = options.rate || 10.0;
-  this.goalUpdateDelay = options.goalUpdateDelay || 50;
+  this.updateDelay = options.updateDelay || 50;
+  var seconds = options.topicTimeout || 2.0;
+  var secs = Math.floor(seconds);
+  var nsecs = Math.floor((seconds - secs) * 1000000000);
+  this.topicTimeout = {
+    secs: secs,
+    nsecs: nsecs
+  };
 
   this.currentGoal = false;
+  this.currentTopic = false;
   this.frameInfos = {};
-  this.goalUpdateRequested = false;
+  this.republisherUpdateRequested = false;
 
-  // Create an ActionClient
-  this.actionClient = new ActionClient({
-    ros : this.ros,
+  // Create an Action client
+  this.actionClient = this.ros.ActionClient({
     serverName : '/tf2_web_republisher',
     actionName : 'tf2_web_republisher/TFSubscriptionAction'
+  });
+
+  // Create a Service client
+  this.serviceClient = this.ros.Service({
+    name: '/republish_tfs',
+    serviceType: 'tf2_web_republisher/RepublishTFs'
   });
 }
 
@@ -1615,15 +1660,16 @@ function TFClient(options) {
  *
  * @param tf - the TF message from the server
  */
-TFClient.prototype.processFeedback = function(tf) {
+TFClient.prototype.processTFArray = function(tf) {
   var that = this;
   tf.transforms.forEach(function(transform) {
     var frameID = transform.child_frame_id;
-    if (frameID[0] === '/') {
+    if (frameID[0] === '/')
+    {
       frameID = frameID.substring(1);
     }
-    var info = that.frameInfos[frameID];
-    if (info !== undefined) {
+    var info = this.frameInfos[frameID];
+    if (info) {
       info.transform = new Transform({
         translation : transform.transform.translation,
         rotation : transform.transform.rotation
@@ -1632,38 +1678,67 @@ TFClient.prototype.processFeedback = function(tf) {
         cb(info.transform);
       });
     }
-  });
+  }, this);
 };
 
 /**
- * Create and send a new goal to the tf2_web_republisher based on the current
- * list of TFs.
+ * Create and send a new goal (or service request) to the tf2_web_republisher
+ * based on the current list of TFs.
  */
 TFClient.prototype.updateGoal = function() {
-  // Anytime the list of frames changes, we will need to send a new goal.
-  if (this.currentGoal) {
-    this.currentGoal.cancel();
-  }
-
   var goalMessage = {
-    source_frames : [],
+    source_frames : Object.keys(this.frameInfos),
     target_frame : this.fixedFrame,
     angular_thres : this.angularThres,
     trans_thres : this.transThres,
     rate : this.rate
   };
 
-  for (var frame in this.frameInfos) {
-    goalMessage.source_frames.push(frame);
+  // if we're running in groovy compatibility mode (the default)
+  // then use the action interface to tf2_web_republisher
+  if(this.ros.groovyCompatibility) {
+    if (this.currentGoal) {
+      this.currentGoal.cancel();
+    }
+    this.currentGoal = new Goal({
+      actionClient : this.actionClient,
+      goalMessage : goalMessage
+    });
+
+    this.currentGoal.on('feedback', this.processTFArray.bind(this));
+    this.currentGoal.send();
+  }
+  else {
+    // otherwise, use the service interface
+    // The service interface has the same parameters as the action,
+    // plus the timeout
+    goalMessage.timeout = this.topicTimeout;
+    var request = new ServiceRequest(goalMessage);
+
+    this.serviceClient.callService(request, this.processResponse.bind(this));
   }
 
-  this.currentGoal = new Goal({
-    actionClient : this.actionClient,
-    goalMessage : goalMessage
+  this.republisherUpdateRequested = false;
+};
+
+/**
+ * Process the service response and subscribe to the tf republisher
+ * topic
+ *
+ * @param response the service response containing the topic name
+ */
+TFClient.prototype.processResponse = function(response) {
+  // if we subscribed to a topic before, unsubscribe so
+  // the republisher stops publishing it
+  if (this.currentTopic) {
+    this.currentTopic.unsubscribe();
+  }
+
+  this.currentTopic = this.ros.Topic({
+    name: response.topic_name,
+    messageType: 'tf2_web_republisher/TFArray'
   });
-  this.currentGoal.on('feedback', this.processFeedback.bind(this));
-  this.currentGoal.send();
-  this.goalUpdateRequested = false;
+  this.currentTopic.subscribe(this.processTFArray.bind(this));
 };
 
 /**
@@ -1675,23 +1750,23 @@ TFClient.prototype.updateGoal = function() {
  */
 TFClient.prototype.subscribe = function(frameID, callback) {
   // remove leading slash, if it's there
-  if (frameID[0] === '/') {
+  if (frameID[0] === '/')
+  {
     frameID = frameID.substring(1);
   }
   // if there is no callback registered for the given frame, create emtpy callback list
-  if (this.frameInfos[frameID] === undefined) {
+  if (!this.frameInfos[frameID]) {
     this.frameInfos[frameID] = {
-      cbs : []
+      cbs: []
     };
-    if (!this.goalUpdateRequested) {
-      setTimeout(this.updateGoal.bind(this), this.goalUpdateDelay);
-      this.goalUpdateRequested = true;
+    if (!this.republisherUpdateRequested) {
+      setTimeout(this.updateGoal.bind(this), this.updateDelay);
+      this.republisherUpdateRequested = true;
     }
-  } else {
-    // if we already have a transform, call back immediately
-    if (this.frameInfos[frameID].transform !== undefined) {
-      callback(this.frameInfos[frameID].transform);
-    }
+  }
+  // if we already have a transform, call back immediately
+  else if (this.frameInfos[frameID].transform) {
+    callback(this.frameInfos[frameID].transform);
   }
   this.frameInfos[frameID].cbs.push(callback);
 };
@@ -1704,25 +1779,24 @@ TFClient.prototype.subscribe = function(frameID, callback) {
  */
 TFClient.prototype.unsubscribe = function(frameID, callback) {
   // remove leading slash, if it's there
-  if (frameID[0] === '/') {
+  if (frameID[0] === '/')
+  {
     frameID = frameID.substring(1);
   }
   var info = this.frameInfos[frameID];
-  if (info !== undefined) {
-    var cbIndex = info.cbs.indexOf(callback);
-    if (cbIndex >= 0) {
-      info.cbs.splice(cbIndex, 1);
-      if (info.cbs.length === 0) {
-        delete this.frameInfos[frameID];
-      }
-      this.needUpdate = true;
+  for (var cbs = info && info.cbs || [], idx = cbs.length; idx--;) {
+    if (cbs[idx] === callback) {
+      cbs.splice(idx, 1);
     }
+  }
+  if (!callback || cbs.length === 0) {
+    delete this.frameInfos[frameID];
   }
 };
 
 module.exports = TFClient;
 
-},{"../actionlib/ActionClient":5,"../actionlib/Goal":6,"../math/Transform":20}],25:[function(require,module,exports){
+},{"../actionlib/ActionClient":5,"../actionlib/Goal":6,"../core/Service.js":12,"../core/ServiceRequest.js":13,"../math/Transform":20}],25:[function(require,module,exports){
 var Ros = require('../core/Ros');
 var mixin = require('../mixin');
 
@@ -1848,11 +1922,13 @@ var UrdfVisual = require('./UrdfVisual');
  */
 function UrdfLink(options) {
   this.name = options.xml.getAttribute('name');
+  this.visuals = [];
   var visuals = options.xml.getElementsByTagName('visual');
-  if (visuals.length > 0) {
-    this.visual = new UrdfVisual({
-      xml : visuals[0]
-    });
+
+  for( var i=0; i<visuals.length; i++ ) {
+    this.visuals.push( new UrdfVisual({
+      xml : visuals[i]
+    }) );
   }
 }
 
@@ -1894,8 +1970,19 @@ function UrdfMaterial(options) {
   }
 }
 
+UrdfMaterial.prototype.isLink = function() {
+  return this.color === null && this.textureFilename === null;
+};
+
+var assign = require('object-assign');
+
+UrdfMaterial.prototype.assign = function(obj) {
+    return assign(this, obj);
+};
+
 module.exports = UrdfMaterial;
-},{"./UrdfColor":27}],32:[function(require,module,exports){
+
+},{"./UrdfColor":27,"object-assign":1}],32:[function(require,module,exports){
 /**
  * @author Benjamin Pitzer - ben.pitzer@gmail.com
  * @author Russell Toris - rctoris@wpi.edu
@@ -1940,7 +2027,7 @@ module.exports = UrdfMesh;
 var UrdfMaterial = require('./UrdfMaterial');
 var UrdfLink = require('./UrdfLink');
 var UrdfJoint = require('./UrdfJoint');
-var DOMParser = require('../util/DOMParser');
+var DOMParser = require('xmlshim').DOMParser;
 
 // See https://developer.mozilla.org/docs/XPathResult#Constants
 var XPATH_FIRST_ORDERED_NODE_TYPE = 9;
@@ -1984,7 +2071,11 @@ function UrdfModel(options) {
       });
       // Make sure this is unique
       if (this.materials[material.name] !== void 0) {
-        console.warn('Material ' + material.name + 'is not unique.');
+        if( this.materials[material.name].isLink() ) {
+          this.materials[material.name].assign( material );
+        } else {
+          console.warn('Material ' + material.name + 'is not unique.');
+        }
       } else {
         this.materials[material.name] = material;
       }
@@ -1997,11 +2088,15 @@ function UrdfModel(options) {
         console.warn('Link ' + link.name + ' is not unique.');
       } else {
         // Check for a material
-        if (link.visual && link.visual.material) {
-          if (this.materials[link.visual.material.name] !== void 0) {
-            link.visual.material = this.materials[link.visual.material.name];
-          } else {
-            this.materials[link.visual.material.name] = link.visual.material;
+        for( var j=0; j<link.visuals.length; j++ )
+        {
+          var mat = link.visuals[j].material; 
+          if ( mat !== null ) {
+            if (this.materials[mat.name] !== void 0) {
+              link.visuals[j].material = this.materials[mat.name];
+            } else {
+              this.materials[mat.name] = mat;
+            }
           }
         }
 
@@ -2019,7 +2114,7 @@ function UrdfModel(options) {
 
 module.exports = UrdfModel;
 
-},{"../util/DOMParser":38,"./UrdfJoint":29,"./UrdfLink":30,"./UrdfMaterial":31}],34:[function(require,module,exports){
+},{"./UrdfJoint":29,"./UrdfLink":30,"./UrdfMaterial":31,"xmlshim":2}],34:[function(require,module,exports){
 /**
  * @author Benjamin Pitzer - ben.pitzer@gmail.com
  * @author Russell Toris - rctoris@wpi.edu
@@ -2190,18 +2285,16 @@ module.exports = require('object-assign')({
 }, require('./UrdfTypes'));
 
 },{"./UrdfBox":26,"./UrdfColor":27,"./UrdfCylinder":28,"./UrdfLink":30,"./UrdfMaterial":31,"./UrdfMesh":32,"./UrdfModel":33,"./UrdfSphere":34,"./UrdfTypes":35,"./UrdfVisual":36,"object-assign":1}],38:[function(require,module,exports){
-module.exports = require('xmlshim').DOMParser;
-},{"xmlshim":2}],39:[function(require,module,exports){
 (function (global){
 module.exports = {
 	EventEmitter2: global.EventEmitter2
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],40:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function (global){
 module.exports = global.WebSocket;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /* global document */
 module.exports = function Canvas() {
 	return document.createElement('canvas');

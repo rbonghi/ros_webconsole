@@ -4,7 +4,7 @@
  */
 
 var ROS3D = ROS3D || {
-  REVISION : '0.14.0-SNAPSHOT'
+  REVISION : '0.15.0'
 };
 
 // Marker types
@@ -1190,7 +1190,7 @@ ROS3D.InteractiveMarkerControl = function(options) {
         // get the current pose as a ROSLIB.Pose...
         var newPose = new ROSLIB.Pose({
           position : markerHelper.position,
-          quaternion : markerHelper.quaternion
+          orientation : markerHelper.quaternion
         });
         // so we can apply the transform provided by the TFClient
         newPose.applyTransform(new ROSLIB.Transform(transformMsg));
@@ -1648,12 +1648,12 @@ ROS3D.OccupancyGrid = function(options) {
 
   // create the mesh
   THREE.Mesh.call(this, geom, material);
-  // move the map so the corner is at 0, 0
-  this.position.x = (width * message.info.resolution) / 2;
-  this.position.y = (height * message.info.resolution) / 2;
-  //window.alert(message.info.resolution);
-  this.position.x = -10 * message.info.resolution;
-  this.position.y = -1.0 * message.info.resolution;
+  // move the map so the corner is at X, Y and correct orientation (informations from message.info)
+  this.useQuaternion = true;
+  this.quaternion = message.info.origin.orientation;
+  this.position.x = (width * message.info.resolution) / 2 + message.info.origin.position.x;
+  this.position.y = (height * message.info.resolution) / 2 + message.info.origin.position.y;
+  this.position.z = message.info.origin.position.z;
   this.scale.x = message.info.resolution;
   this.scale.y = message.info.resolution;
 };
@@ -1767,13 +1767,13 @@ ROS3D.Marker = function(options) {
   else {
     this.msgScale = [1,1,1];
   }
-  this.msgColor = [message.color.r, message.color.g, message.color.b, message.color.a];
+  this.msgColor = message.color;
   this.msgMesh = undefined;
 
   // set the pose and get the color
   this.setPose(message.pose);
-  var colorMaterial = ROS3D.makeColorMaterial(this.msgColor[0],
-      this.msgColor[1], this.msgColor[2], this.msgColor[3]);
+  var colorMaterial = ROS3D.makeColorMaterial(this.msgColor.r,
+      this.msgColor.g, this.msgColor.b, this.msgColor.a);
 
   // create the object based on the type
   switch (message.type) {
@@ -1962,29 +1962,46 @@ ROS3D.Marker = function(options) {
     case ROS3D.MARKER_TEXT_VIEW_FACING:
       // only work on non-empty text
       if (message.text.length > 0) {
-        // setup the text
-        var textGeo = new THREE.TextGeometry(message.text, {
-          size: message.scale.x * 0.5,
-          height: 0.1 * message.scale.x,
-          curveSegments: 4,
-          font: 'helvetiker',
-          bevelEnabled: false,
-          bevelThickness: 2,
-          bevelSize: 2,
-          material: 0,
-          extrudeMaterial: 0
-        });
-        textGeo.computeVertexNormals();
-        textGeo.computeBoundingBox();
+        // Use a THREE.Sprite to always be view-facing
+        // ( code from http://stackoverflow.com/a/27348780 )
+        var textColor = this.msgColor;
 
-        // position the text and add it
-        var mesh = new THREE.Mesh(textGeo, colorMaterial);
-        var centerOffset = -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
-        mesh.position.y = -centerOffset;
-        mesh.rotation.x = Math.PI * 0.5;
-        mesh.rotation.y = Math.PI * 1.5;
-        this.add(mesh);
-      }
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        var textHeight = 100;
+        var fontString = 'normal ' + textHeight + 'px sans-serif';
+        context.font = fontString;
+        var metrics = context.measureText( message.text );
+        var textWidth = metrics.width;
+
+        canvas.width = textWidth;
+        // To account for overhang (like the letter 'g'), make the canvas bigger
+        // The non-text portion is transparent anyway
+        canvas.height = 1.5 * textHeight;
+
+        // this does need to be set again
+        context.font = fontString;
+        context.fillStyle = 'rgba('
+          + textColor.r + ', '
+          + textColor.g + ', '
+          + textColor.b + ', '
+          + textColor.a + ')';
+        context.textAlign = 'left';
+        context.textBaseline = 'middle';
+        context.fillText( message.text, 0, canvas.height/2);
+
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+
+        var spriteMaterial = new THREE.SpriteMaterial({
+          map: texture,
+          // NOTE: This is needed for THREE.js r61, unused in r70
+          useScreenCoordinates: false });
+        var sprite = new THREE.Sprite( spriteMaterial );
+        var textSize = message.scale.x;
+        sprite.scale.set(textWidth / canvas.height * textSize, textSize, 1);
+
+        this.add(sprite);      }
       break;
     case ROS3D.MARKER_MESH_RESOURCE:
       // load and add the mesh
@@ -2050,10 +2067,10 @@ ROS3D.Marker.prototype.update = function(message) {
   this.setPose(message.pose);
   
   // Update color
-  if(message.color.r !== this.msgColor[0] ||
-     message.color.g !== this.msgColor[1] ||
-     message.color.b !== this.msgColor[2] ||
-     message.color.a !== this.msgColor[3])
+  if(message.color.r !== this.msgColor.r ||
+     message.color.g !== this.msgColor.g ||
+     message.color.b !== this.msgColor.b ||
+     message.color.a !== this.msgColor.a)
   {
       var colorMaterial = ROS3D.makeColorMaterial(
           message.color.r, message.color.g,
@@ -2096,8 +2113,7 @@ ROS3D.Marker.prototype.update = function(message) {
           return false;
       }
       
-      this.msgColor = [message.color.r, message.color.g,
-            message.color.b, message.color.a];
+      this.msgColor = message.color;
   }
   
   // Update geometry
@@ -2517,10 +2533,8 @@ ROS3D.Grid = function(options) {
     linewidth: lineWidth
   });
 
-  var len = size/cellSize;
-  for (var i = 0; i <= len; ++i) {
-    //var edge = cellSize * size / 2;
-    var edge = size / 2;
+  for (var i = 0; i <= size; ++i) {
+    var edge = cellSize * size / 2;
     var position = edge - (i * cellSize);
     var geometryH = new THREE.Geometry();
     geometryH.vertices.push(
@@ -2597,9 +2611,14 @@ ROS3D.MeshResource = function(options) {
         collada.scene.scale = new THREE.Vector3(scale, scale, scale);
       }
 
+      // add a texture to anything that is missing one
       if(material !== null) {
         var setMaterial = function(node, material) {
-          node.material = material;
+          // do not overwrite the material
+          if (typeof node.material === 'undefined') {
+            node.material = material;
+          }
+          //node.material = material;
           if (node.children) {
             for (var i = 0; i < node.children.length; i++) {
               setMaterial(node.children[i], material);
@@ -2614,23 +2633,18 @@ ROS3D.MeshResource = function(options) {
     });
   } else if (fileType === '.stl') {
     loader = new THREE.STLLoader();
-    loader.addEventListener( 'error', function ( event ) {
-      if (that.warnings) {
-        console.warn(event.message);
-      }
-    });
-    loader.addEventListener( 'load', function ( event ) {
-      var geometry = event.content;
-      geometry.computeFaceNormals();
-      var mesh;
-      if(material !== null) {
-        mesh = new THREE.Mesh( geometry, material );
-      } else {
-        mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x999999 } ) );
-      }
-      that.add(mesh);
-    } );
-    loader.load(uri);
+    {
+      loader.load(uri, function ( geometry ) {
+        geometry.computeFaceNormals();
+        var mesh;
+        if(material !== null) {
+          mesh = new THREE.Mesh( geometry, material );
+        } else {
+          mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x999999 } ) );
+        }
+        that.add(mesh);
+      } );
+    }
   }
 };
 ROS3D.MeshResource.prototype.__proto__ = THREE.Object3D.prototype;
@@ -2746,81 +2760,89 @@ ROS3D.Urdf = function(options) {
   var links = urdfModel.links;
   for ( var l in links) {
     var link = links[l];
-    if (link.visual && link.visual.geometry) {
-      // Save frameID
-      var frameID = tfPrefix + '/' + link.name;
-      // Save color material
-      var colorMaterial = null;
-      if (link.visual.material && link.visual.material.color) {
-        var color = link.visual.material && link.visual.material.color;
-        colorMaterial = ROS3D.makeColorMaterial(color.r, color.g, color.b, color.a);
-      }
-      if (link.visual.geometry.type === ROSLIB.URDF_MESH) {
-        var uri = link.visual.geometry.filename;
-        var fileType = uri.substr(-4).toLowerCase();
-
-        // ignore mesh files which are not in Collada or STL format
-        if (fileType === '.dae' || fileType === '.stl') {
-          // create the model
-          var mesh = new ROS3D.MeshResource({
-            path : path,
-            resource : uri.substring(10),
-            loader : loader,
-            material : colorMaterial
-          });
-          
-          // check for a scale
-          if(link.visual.geometry.scale) {
-            mesh.scale = new THREE.Vector3(
-              link.visual.geometry.scale.x,
-              link.visual.geometry.scale.y,
-              link.visual.geometry.scale.z
-            );
+    for( var i=0; i<link.visuals.length; i++ ) {
+      var visual = link.visuals[i];
+      if (visual && visual.geometry) {
+        // Save frameID
+        var frameID = tfPrefix + '/' + link.name;
+        // Save color material
+        var colorMaterial = null;
+        if (visual.material && visual.material.color) {
+          var color = visual.material && visual.material.color;
+          colorMaterial = ROS3D.makeColorMaterial(color.r, color.g, color.b, color.a);
+        }
+        if (visual.geometry.type === ROSLIB.URDF_MESH) {
+          var uri = visual.geometry.filename;
+          // strips package://
+          var tmpIndex = uri.indexOf('package://');
+          if (tmpIndex !== -1) {
+            uri = uri.substr(tmpIndex + ('package://').length);
           }
+          var fileType = uri.substr(-4).toLowerCase();
 
-          // create a scene node with the model
-          var sceneNode = new ROS3D.SceneNode({
-            frameID : frameID,
-            pose : link.visual.origin,
-            tfClient : tfClient,
-            object : mesh
-          });
-          this.add(sceneNode);
+          // ignore mesh files which are not in Collada or STL format
+          if (fileType === '.dae' || fileType === '.stl') {
+            // create the model
+            var mesh = new ROS3D.MeshResource({
+              path : path,
+              resource : uri,
+              loader : loader,
+              material : colorMaterial
+            });
+
+            // check for a scale
+            if(link.visuals[i].geometry.scale) {
+              mesh.scale = new THREE.Vector3(
+                  visual.geometry.scale.x,
+                  visual.geometry.scale.y,
+                  visual.geometry.scale.z
+                  );
+            }
+
+            // create a scene node with the model
+            var sceneNode = new ROS3D.SceneNode({
+              frameID : frameID,
+                pose : visual.origin,
+                tfClient : tfClient,
+                object : mesh
+            });
+            this.add(sceneNode);
+          } else {
+            console.warn('Could not load geometry mesh: '+uri);
+          }
         } else {
-          console.warn('Could not load geometry mesh: '+uri);
-        }
-      } else {
-        if (!colorMaterial) {
-          colorMaterial = ROS3D.makeColorMaterial(0, 0, 0, 1);
-        }
-        var shapeMesh;
-        // Create a shape
-        switch (link.visual.geometry.type) {
+          if (!colorMaterial) {
+            colorMaterial = ROS3D.makeColorMaterial(0, 0, 0, 1);
+          }
+          var shapeMesh;
+          // Create a shape
+          switch (visual.geometry.type) {
             case ROSLIB.URDF_BOX:
-                var dimension = link.visual.geometry.dimension;
-                var cube = new THREE.CubeGeometry(dimension.x, dimension.y, dimension.z);
-                shapeMesh = new THREE.Mesh(cube, colorMaterial);
-                break;
+              var dimension = visual.geometry.dimension;
+              var cube = new THREE.CubeGeometry(dimension.x, dimension.y, dimension.z);
+              shapeMesh = new THREE.Mesh(cube, colorMaterial);
+              break;
             case ROSLIB.URDF_CYLINDER:
-                var radius = link.visual.geometry.radius;
-                var length = link.visual.geometry.length;
-                var cylinder = new THREE.CylinderGeometry(radius, radius, length, 16, 1, false);
-                shapeMesh = new THREE.Mesh(cylinder, colorMaterial);
-                shapeMesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI * 0.5);
-                break;
+              var radius = visual.geometry.radius;
+              var length = visual.geometry.length;
+              var cylinder = new THREE.CylinderGeometry(radius, radius, length, 16, 1, false);
+              shapeMesh = new THREE.Mesh(cylinder, colorMaterial);
+              shapeMesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI * 0.5);
+              break;
             case ROSLIB.URDF_SPHERE:
-                var sphere = new THREE.SphereGeometry(link.visual.geometry.radius, 16);
-                shapeMesh = new THREE.Mesh(sphere, colorMaterial);
-                break;
-        }
-        // Create a scene node with the shape
-        var scene = new ROS3D.SceneNode({
+              var sphere = new THREE.SphereGeometry(visual.geometry.radius, 16);
+              shapeMesh = new THREE.Mesh(sphere, colorMaterial);
+              break;
+          }
+          // Create a scene node with the shape
+          var scene = new ROS3D.SceneNode({
             frameID: frameID,
-            pose: link.visual.origin,
-            tfClient: tfClient,
-            object: shapeMesh
-        });
-        this.add(scene);
+              pose: visual.origin,
+              tfClient: tfClient,
+              object: shapeMesh
+          });
+          this.add(scene);
+        }
       }
     }
   }
@@ -2937,10 +2959,8 @@ ROS3D.SceneNode.prototype.__proto__ = THREE.Object3D.prototype;
  * @param pose - the pose to update with
  */
 ROS3D.SceneNode.prototype.updatePose = function(pose) {
-  this.position.x = pose.position.x;
-  this.position.y = pose.position.y;
-  this.position.z = pose.position.z;
-  this.quaternion = new THREE.Quaternion(pose.orientation.x, pose.orientation.y,
+  this.position.set( pose.position.x, pose.position.y, pose.position.z );
+  this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
   this.updateMatrixWorld(true);
 };
@@ -3068,6 +3088,18 @@ ROS3D.Viewer.prototype.addObject = function(object, selectable) {
   } else {
     this.scene.add(object);
   }
+};
+
+/**
+ * Resize 3D viewer
+ *
+ * @param width - new width value
+ * @param height - new height value
+ */
+ROS3D.Viewer.prototype.resize = function(width, height) {
+  this.camera.aspect = width / height;
+  this.camera.updateProjectionMatrix();
+  this.renderer.setSize(width, height);
 };
 
 /**

@@ -35,11 +35,17 @@
                 
                 var console = ROSCONSOLE.build_header(name_page);
                 
+                var heightHeader = $(this).find('[data-role="header"]').height();
+                var widthPage = $(window).width() - 16 * 2;
+                var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
+                
+                
+                
                 // The Ros object is responsible for connecting to rosbridge.
                 var ros = new ROSLIB.Ros();
                 ros.connect('ws://' + addr + ':' + port);
     
-                var map3D = ROSCONSOLE.ROS3Dmap(ros, {width: 200, height: 300, path: addr});
+                var map3D = ROSCONSOLE.ROS3Dmap(ros, {width: widthPage, height: heightPage, path: addr});
             });
         </script>
     </head>

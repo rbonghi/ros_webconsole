@@ -18,7 +18,11 @@ ROSCONSOLE.build_header = function(name_page) {
         pages[i] = information;
     }
     // Create navbar
-    var html_navbar = "<div data-role='navbar' id='navbar'>" + "<ul>";
+    if(ROSCONSOLE.isMobile().any()) {
+        var html_navbar = "<div data-role='navbar' id='navbar' data-iconpos='left'>" + "<ul>";
+    } else {
+        var html_navbar = "<div data-role='navbar' id='navbar' >" + "<ul>";
+    }
     for (var i = 0; i < pages.length; i++) {
         html_navbar += "<li>" +
                 "<a href='#" + pages[i].name + "' data-icon='" + pages[i].icon + "' data-transition='fade'" + ">" +
@@ -107,6 +111,13 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
         antialias: true
                 //background: '#EEEEEE'
     });
+    
+    window.onresize = function(event) {
+        var heightHeader = $(this).find('[data-role="header"]').height();
+        var widthPage = $(window).width() - 16 * 2;
+        var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
+        viewer3D.resize(widthPage, heightPage);
+    };
 
     // Add a grid.
     viewer3D.addObject(new ROS3D.Grid({

@@ -16,7 +16,13 @@
 	<script src="js/ros/eventemitter2/eventemitter2.js"></script>
 	<!-- Roslibjs handles core ROS functionality in the browser -->
 	<script src="js/ros/roslibjs/roslib.js"></script>
-
+	<!-- ROS2DJS -->
+	<!-- EaselJS is a dependency of ros2djs -->
+	<script src="js/ros/easeljs/easeljs.js"></script>
+	<!-- Ros2djs provides 2D scene support, including mapping and more -->
+	<script src="js/ros/ros2djs/ros2d.js"></script>
+	<!-- NAV2D -->
+	<script src="js/ros/nav2djs/nav2d.js"></script>
 	<!-- ROS3DJS -->
 	<!-- Three.js is the WebGL rendering library -->
 	<script src="js/ros/three/three.js"></script>
@@ -47,7 +53,23 @@
 			var map3D = ROSCONSOLE.ROS3Dmap(ros, {
 				width: widthPage,
 				height: heightPage,
-				path: addr
+				path: addr,
+				fixed_frame: "/base_link"
+			});
+
+			// Create the main viewer.
+			var viewer = new ROS2D.Viewer({
+				divID: 'nav',
+				width: 750,
+				height: 800
+			});
+
+			// Setup the nav client.
+			var nav = NAV2D.OccupancyGridClientNav({
+				ros: ros,
+				rootObject: viewer.scene,
+				viewer: viewer
+					//serverName: '/pr2_move_base'
 			});
 		});
 	</script>
@@ -64,7 +86,7 @@
 	<!-- 2D map -->
 	<div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
 		<div data-role="content">
-			<div id="twod-map" class="map2D"></div>
+			<div id="nav" class="map2D"></div>
 		</div>
 	</div>
 </body>

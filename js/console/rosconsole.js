@@ -94,7 +94,7 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
 	// ----------------------------------------------------------------------
 	// Rendering the robot in 3D
 	// ----------------------------------------------------------------------
-
+	console.log(fixed_frame);
 	// Create the scene manager and view port for the 3D world.
 	var viewer3D = new ROS3D.Viewer({
 		divID: divName,
@@ -125,7 +125,7 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
 		rate: 20.0,
 		//fixedFrame: '/base_link'
 		//fixedFrame: fixed_frame
-		fixedFrame: '/map'
+		fixedFrame: fixed_frame
 	});
 
 	// Add the URDF model of the robot.
@@ -141,6 +141,7 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
 	var grid3Client = new ROS3D.OccupancyGridClient({
 		ros: ros,
 		rootObject: viewer3D.scene,
+		//tfClient: tfClient,
 		continuous: true
 	});
 

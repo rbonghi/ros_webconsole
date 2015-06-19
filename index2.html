@@ -1,67 +1,72 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- CSS -->
-        <link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
-        
-        <!-- jQuery -->
-        <script src="js/jquery/jquery-2.1.0.js"></script>
-        <script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
-        
-        <!-- ROSLIBJS -->
-        <!-- EventEmitter2 is the sole dependency of roslibjs -->
-        <script src="js/ros/eventemitter2/eventemitter2.js"></script>
-        <!-- Roslibjs handles core ROS functionality in the browser -->
-        <script src="js/ros/roslibjs/roslib.js"></script>
-        
-        <!-- ROS3DJS -->
-        <!-- Three.js is the WebGL rendering library -->
-        <script src="js/ros/three/three.js"></script>
-        <!-- ColladaLoader2 loads collada models of the robot -->
-        <script src="js/ros/STLLoader/STLLoader.min.js"></script>
-        <!-- Ros3djs provides 3D scene support, including mapping and more -->
-        <script src="js/ros/ros3djs/ros3d.js"></script>
-        
-        <script src="js/console/Pages.js"></script>
-        
-        <script>
-            $(document).ready(function() {
-                
-                var name_page = "4UDE Web console";
-                var addr = "dude.local";
-                var port = "9090";
-                
-                var console = ROSCONSOLE.build_header(name_page);
-                
-                var heightHeader = $(this).find('[data-role="header"]').height();
-                var widthPage = $(window).width() - 16 * 2;
-                var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
-                
-                
-                
-                // The Ros object is responsible for connecting to rosbridge.
-                var ros = new ROSLIB.Ros();
-                ros.connect('ws://' + addr + ':' + port);
-    
-                var map3D = ROSCONSOLE.ROS3Dmap(ros, {width: widthPage, height: heightPage, path: addr});
-            });
-        </script>
-    </head>
-    <body>
-        <!-- pages -->
-        <!-- 3D map -->
-        <div data-role="page" id="3Dmap" data-title="3D map" data-icon="home">
-            <div data-role="content">
-                <div id="threed-map"></div>
-            </div>
-        </div>
-        <!-- 2D map -->
-        <div data-role="page" id="2Dmap" data-title="2D map" data-icon="home">
-            <div data-role="content">
-                <div id="twod-map" class="map2D"></div>
-            </div>
-        </div>
-    </body> 
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- CSS -->
+	<link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
+
+	<!-- jQuery -->
+	<script src="js/jquery/jquery-2.1.0.js"></script>
+	<script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
+
+	<!-- ROSLIBJS -->
+	<!-- EventEmitter2 is the sole dependency of roslibjs -->
+	<script src="js/ros/eventemitter2/eventemitter2.js"></script>
+	<!-- Roslibjs handles core ROS functionality in the browser -->
+	<script src="js/ros/roslibjs/roslib.js"></script>
+
+	<!-- ROS3DJS -->
+	<!-- Three.js is the WebGL rendering library -->
+	<script src="js/ros/three/three.js"></script>
+	<!-- ColladaLoader2 loads collada models of the robot -->
+	<script src="js/ros/STLLoader/STLLoader.min.js"></script>
+	<!-- Ros3djs provides 3D scene support, including mapping and more -->
+	<script src="js/ros/ros3djs/ros3d.js"></script>
+
+	<script src="js/console/rosconsole.js"></script>
+
+	<script>
+		$(document).ready(function() {
+
+			var name_page = "4UDE Web console";
+			var addr = "Labsis4-linux.local";
+			var port = "9090";
+
+			var console = ROSCONSOLE.build_header(name_page);
+
+			var heightHeader = $(this).find('[data-role="header"]').height();
+			var widthPage = $(window).width() - 16 * 2;
+			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
+
+			// The Ros object is responsible for connecting to rosbridge.
+			var ros = new ROSLIB.Ros();
+			ros.connect('ws://' + addr + ':' + port);
+
+			var map3D = ROSCONSOLE.ROS3Dmap(ros, {
+				width: widthPage,
+				height: heightPage,
+				path: addr
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<!-- pages -->
+	<!-- 3D map -->
+	<div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
+		<div data-role="content">
+			<div id="threed-map"></div>
+		</div>
+	</div>
+	<!-- 2D map -->
+	<div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
+		<div data-role="content">
+			<div id="twod-map" class="map2D"></div>
+		</div>
+	</div>
+</body>
+
 </html>

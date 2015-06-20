@@ -4,6 +4,8 @@ System interface to control a robot under ROS with web page.
 
 [![Video](https://i.ytimg.com/vi/fhCHS7ibFrw/mqdefault.jpg)](https://www.youtube.com/watch?v=fhCHS7ibFrw)
 
+:loudspeaker: **See demo console in: http://rbonghi.github.io/roswebconsole/** :loudspeaker:
+
 #Dependencies
 This web console depends on:
 - [EventEmitter2](https://github.com/hij1nx/EventEmitter2). The current supported version is 0.4.14.

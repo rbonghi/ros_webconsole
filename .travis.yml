@@ -5,8 +5,7 @@ node_js:
 
 branches:
   only:
-    - master
-    - develop
+    - responsive
 
 before_script:
   - npm install -g grunt-cli

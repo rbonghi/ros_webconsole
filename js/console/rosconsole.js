@@ -69,6 +69,10 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
 		fixedFrame: fixed_frame
 	});
 
+	tfClient.subscribe('odom', function(tf) {
+		console.log(tf);
+	});
+
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
 		ros: ros,
@@ -82,7 +86,7 @@ ROSCONSOLE.ROS3Dmap = function(ros, options) {
 	var grid3Client = new ROS3D.OccupancyGridClient({
 		ros: ros,
 		rootObject: viewer3D.scene,
-		//tfClient: tfClient,
+		tfClient: tfClient,
 		continuous: true
 	});
 
@@ -103,10 +107,16 @@ ROSCONSOLE.build_header = function(name_page) {
 	var html_header = '<div data-role="header" data-theme="a" data-position="fixed">';
 	html_header += '<h1>' + name_page + '</h1>';
 	//html_header += "<a href='#drivepanel' data-role='button' class='ui-btn-right' data-inline='true' data-icon='bars'>Drive</a>";
-	html_header += ROSCONSOLE.build_navbar();
+	//html_header += 
+	if (ROSCONSOLE.isMobile().any()) {
+		html_header += "<a href='#menu' data-role='button' class='ui-btn-left' data-inline='true' data-icon='bars'>Menu</a>";
+	}
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();
+
+	// Add menu
+	ROSCONSOLE.build_menu();
 
 	//$( "[data-role='navbar']" ).navbar();
 	$('[data-role="header"], [data-role="footer"]').toolbar({
@@ -137,21 +147,42 @@ ROSCONSOLE.build_header = function(name_page) {
 	});
 };
 
+ROSCONSOLE.build_menu = function() {
+
+	//$('[data-role=header]').append("<p>HELLO</p>");
+
+	//var mini_nav = ROSCONSOLE.isMobile().any() ? 'panel' : 'navbar';//'data-iconpos="left"' : '';
+	var menu = ''; //<div data-role="' + mini_nav + '" id="menu">';
+	if (ROSCONSOLE.isMobile().any()) {
+		menu += '<div data-role="panel" id="menu" data-theme="b" data-display="overlay">';
+	} else {
+		menu += '<div data-role="navbar" id="menu">'
+	}
+
+	menu += ROSCONSOLE.pages();
+	menu += '</div>';
+
+	if (!ROSCONSOLE.isMobile().any()) {
+		$('[data-role="header"]').append(menu);
+	} else {
+		$('body').append(menu);
+	}
+}
 
 
-ROSCONSOLE.build_navbar = function() {
 
-    // Find pages
-    var find_pages = $('div:jqmData(role="page")');
-    // Create navbar
-    var mini_nav = ROSCONSOLE.isMobile().any() ? 'data-iconpos="left"' : '';
-    var html_navbar = '<div data-role="navbar" id="navbar"' + mini_nav + '>' + '<ul>';
-    for (var i = 0; i < find_pages.length; i++) {
-        html_navbar += '<li>' +
-        '<a href="#' + $(find_pages[i]).attr('id') + '" data-icon="' + $(find_pages[i]).jqmData('icon') +
-        '" data-transition="fade"' + '>' +
-        $(find_pages[i]).jqmData('title') + '</a>' + '</li>';
-    }
-    html_navbar += '</ul>' + '</div>';
-    return html_navbar;
+ROSCONSOLE.pages = function() {
+
+	// Find pages
+	var find_pages = $('div:jqmData(role="page")');
+	// Create navbar
+	var html_navbar = '<ul>';
+	for (var i = 0; i < find_pages.length; i++) {
+		html_navbar += '<li>' +
+			'<a href="#' + $(find_pages[i]).attr('id') + '" data-icon="' + $(find_pages[i]).jqmData('icon') +
+			'" data-transition="fade"' + '>' +
+			$(find_pages[i]).jqmData('title') + '</a>' + '</li>';
+	}
+	html_navbar += '</ul>';
+	return html_navbar;
 };

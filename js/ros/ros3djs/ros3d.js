@@ -1635,10 +1635,10 @@ ROS3D.OccupancyGrid = function(options) {
 	// create the mesh
 	THREE.Mesh.call(this, geom, material);
 	// move the map so the corner is at X, Y and correct orientation (informations from message.info)
-	this.useQuaternion = true;
+	//this.useQuaternion = true;
 	this.quaternion = message.info.origin.orientation;
-	this.position.x = (width * message.info.resolution) / 2; // + message.info.origin.position.x;
-	this.position.y = (height * message.info.resolution) / 2; // + message.info.origin.position.y;
+	this.position.x = (width * message.info.resolution) / 2 + message.info.origin.position.x;
+	this.position.y = (height * message.info.resolution) / 2 + message.info.origin.position.y;
 	this.position.z = message.info.origin.position.z;
 	this.scale.x = message.info.resolution;
 	this.scale.y = message.info.resolution;
@@ -1696,15 +1696,12 @@ ROS3D.OccupancyGridClient = function(options) {
 
 		// check if we care about the scene
 		if (that.tfClient) {
-			console.log("YES! TF");
 			that.currentGrid = new ROS3D.SceneNode({
 				frameID: message.header.frame_id,
 				tfClient: that.tfClient,
-				object: newGrid,
-				pose: message.info.origin
+				object: newGrid
 			});
 		} else {
-			console.log("NO TF");
 			that.currentGrid = newGrid;
 		}
 

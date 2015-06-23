@@ -37,24 +37,23 @@
 		$(document).ready(function() {
 
 			var name_page = "4UDE Web console";
-			var addr = "labsis4-linux.local";
-			var port = "9090";
+			var connection = "labsis4-linux.local";
 
-			var rosconsole = ROSCONSOLE.build_header(name_page);
+			var ros = ROSCONSOLE.controller({
+				addr: connection,
+				fixed_frame: '/map'
+			});
+
+			var web_controller = ROSCONSOLE.build_header(name_page);
 
 			var heightHeader = $(this).find('[data-role="header"]').height();
 			var widthPage = $(window).width() - 16 * 2;
 			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
 
-			// The Ros object is responsible for connecting to rosbridge.
-			var ros = new ROSLIB.Ros();
-			ros.connect('ws://' + addr + ':' + port);
-
 			var map3D = ROSCONSOLE.ROS3Dmap(ros, {
 				width: widthPage,
 				height: heightPage,
-				path: addr,
-				fixed_frame: '/map'
+				path: connection
 			});
 
 			//var listener = new ROSLIB.Topic({
@@ -70,20 +69,37 @@
 			// Create the main viewer.
 			var viewer = new ROS2D.Viewer({
 				divID: 'nav',
-				width: 750,
-				height: 800
+				width: widthPage,
+				height: heightPage
 			});
 
 			// Setup the nav client.
 			var nav = NAV2D.OccupancyGridClientNav({
-				ros: ros,
-				//continuous: true,
+				ros: ros.ros,
+				tfClient: ros.tfClient,
+				continuous: true,
 				rootObject: viewer.scene,
 				viewer: viewer
 					//serverName: '/pr2_move_base'
 			});
 		});
 	</script>
+	<style>
+		#threed-map canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+		
+		.map2D canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+		
+		.border canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+	</style>
 </head>
 
 <body>

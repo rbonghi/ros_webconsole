@@ -1018,6 +1018,13 @@ ROS2D.Viewer = function(options) {
 	createjs.Ticker.addEventListener('tick', this.scene);
 };
 
+ROS2D.Viewer.prototype.resize = function(width, height) {
+	this.width = width;
+	this.height = height;
+	//canvas.width = this.width;
+	//canvas.height = this.height;
+}
+
 /**
  * Add the given createjs object to the global scene in the viewer.
  *

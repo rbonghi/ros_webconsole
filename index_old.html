@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+
+<head>
+	<title>Explorer Web console</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- CSS -->
+	<link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
+	<!-- jQuery and display.js are conveniences for interacting with the DOM -->
+	<script src="js/jquery/jquery-2.1.0.js"></script>
+	<script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
+	<!-- FLOTCHART -->
+	<script language="javascript" type="text/javascript" src="js/flot/jquery.flot.js"></script>
+
+	<!-- ROSLIBJS -->
+	<!-- EventEmitter2 is the sole dependency of roslibjs -->
+	<script src="js/ros/eventemitter2/eventemitter2.js"></script>
+	<!-- Roslibjs handles core ROS functionality in the browser -->
+	<script src="js/ros/roslibjs/roslib.js"></script>
+
+	<!-- ROS2DJS -->
+	<!-- EaselJS is a dependency of ros2djs -->
+	<script src="js/ros/easeljs/easeljs.js"></script>
+	<!-- Ros2djs provides 2D scene support, including mapping and more -->
+	<script src="js/ros/ros2djs/ros2d.js"></script>
+
+	<!-- ROS3DJS -->
+	<!-- Three.js is the WebGL rendering library -->
+	<script src="js/ros/three/three.js"></script>
+	<!-- ColladaLoader2 loads collada models of the robot -->
+	<script src="js/ros/STLLoader/STLLoader.min.js"></script>
+	<!-- Ros3djs provides 3D scene support, including mapping and more -->
+	<script src="js/ros/ros3djs/ros3d.js"></script>
+
+	<!-- ROSMJPG -->
+	<!--<script type="text/javascript" src="js/ros/mjpegcanvas.js"></script>-->
+
+	<!-- Console ROS -->
+	<script src="js/console_old/chart.js"></script>
+	<script src="js/console_old/Pages.js"></script>
+	<script src="js/console_old/ROScontroller.js"></script>
+	<script src="js/console_old/ROS2Dmap.js"></script>
+	<script src="js/console_old/ROS3Dmap.js"></script>
+
+	<script src="js/console_old/drive/DriveController.js"></script>
+	<script src="js/console_old/drive/Vector2.js"></script>
+	<script src="js/console_old/drive/Touch.js"></script>
+	<script src="js/console_old/drive/Keyboard.js"></script>
+
+	<script>
+		$(document).ready(function() {
+
+			/// Check WebGL on broswer
+			var hasWebGl = window.WebGLRenderingContext ? true : false;
+			var name_page = "4UDE Web console";
+			var name_robot = "labsis4-linux.local";
+
+			//find pages
+			var find_pages = $("div:jqmData(role='page')");
+			var pages = [];
+			for (var i = 0; i < find_pages.length; i++) {
+				var information = {
+					name: $(find_pages[i]).attr('id'),
+					title: $(find_pages[i]).jqmData("title"),
+					icon: $(find_pages[i]).jqmData("icon")
+				};
+				pages[i] = information;
+			}
+
+			var page_controller = new Pages(name_page, pages);
+			var heightHeader = $(this).find('[data-role="header"]').height();
+			var heightFooter = $(this).find('[data-role="footer"]').height();
+			var widthPage = $(window).width() - 16 * 2;
+			var halfPage = $(window).width() / 2 - 16 * 2;
+			var heightPage = $(window).height() - heightHeader - heightFooter - 16 * 2 - 10;
+
+			//+++++++++++++++++++++++
+			var ros = ROScontroller("console", {
+				addr: name_robot
+			});
+
+			var poseTopic = new ROSLIB.Topic({
+				ros: ros,
+				name: '/odometry/filtered',
+				messageType: 'nav_msgs/Odometry'
+			});
+			var velocityTopic = new ROSLIB.Topic({
+				ros: ros,
+				name: '/joy_vel',
+				messageType: 'geometry_msgs/Twist'
+			});
+
+			velocityTopic.subscribe(function(message) {
+				linear_data.updateArray(message.linear.x);
+				angular_data.updateArray(message.angular.z);
+
+				chart_linear.setData([{
+					label: "v<sub>d</sub>",
+					data: linear_data.updatePlot()
+				}, {
+					label: "v",
+					data: linear_measure_data.updatePlot()
+				}]);
+				chart_linear.setupGrid();
+				chart_linear.draw();
+
+				chart_angular.setData([{
+					label: "&omega;<sub>d</sub>",
+					data: angular_data.updatePlot()
+				}, {
+					label: "&omega;",
+					data: angular_measure_data.updatePlot()
+				}]);
+				chart_angular.setupGrid();
+				chart_angular.draw();
+			});
+
+			poseTopic.subscribe(function(message) {
+
+				var pose = message.pose.pose.position;
+				var orien = message.pose.pose.orientation;
+				var vel = message.twist.twist;
+				var den = Math.pow(orien.w, 2) - Math.pow(orien.z, 2);
+				var num = 2 * (orien.w * orien.z);
+
+				xData.updateArray(pose.x);
+				yData.updateArray(pose.y);
+				thData.updateArray(Math.atan(num / den));
+
+				chart_position.setData([{
+					label: "x",
+					data: xData.updatePlot()
+				}, {
+					label: "y",
+					data: yData.updatePlot()
+				}, {
+					label: "&theta;",
+					data: thData.updatePlot()
+				}]);
+				chart_position.setupGrid();
+				chart_position.draw();
+
+				map2D.update(pose, orien);
+				map2Dhome.update(pose, orien);
+
+				linear_measure_data.updateArray(vel.linear.x);
+				angular_measure_data.updateArray(vel.angular.z);
+			});
+
+			var map2Dhome;
+			var widthBox = heightPage / 3;
+			if (hasWebGl) {
+				$("#footer_page").text("PC system");
+				// 3D MAP
+				ROS3Dmap(ros, {
+					width: widthPage,
+					height: heightPage,
+					path: name_robot
+				});
+				// 2D MAP
+				map2Dhome = new ROS2Dmap(ros, {
+					width: widthBox,
+					height: widthBox
+				});
+				$('#twod-map').css({
+					position: 'absolute',
+					top: heightHeader + heightPage + 18 - widthBox,
+					left: 16
+				});
+			} else {
+				$("#footer_page").text("system without WebGL");
+				map2Dhome = new ROS2Dmap(ros, {
+					width: widthPage,
+					height: heightPage
+				});
+			}
+
+			var map2D = new ROS2Dmap(ros, {
+				divID: "twod-map-position",
+				width: halfPage,
+				height: heightPage
+			});
+			//+++++++++++++++++++++++
+			var motorLeftTopic = new ROSLIB.Topic({
+				ros: ros,
+				name: '/robot/motor/Left',
+				messageType: 'serial_bridge/Motor'
+			});
+			var motorRightTopic = new ROSLIB.Topic({
+				ros: ros,
+				name: '/robot/motor/Right',
+				messageType: 'serial_bridge/Motor'
+			});
+			//+++++++++++++++++++++++
+			var cmdVel = new ROSLIB.Topic({
+				ros: ros,
+				name: 'joy_web/cmd_vel',
+				messageType: 'geometry_msgs/Twist'
+			});
+			var cmdPos = new ROSLIB.Topic({
+				ros: ros,
+				name: '/robot/command/pose',
+				messageType: 'serial_bridge/Pose'
+			});
+			var driver = new DriveController("drivepanel", {
+				velocity: cmdVel,
+				position: cmdPos
+			});
+
+			//-----------------------
+			// VIDEO
+			//var image = new Image();
+			//image.src = 'images/motor.jpg';
+			/*
+			var viewer = new MJPEGCANVAS.Viewer({
+			    divID: 'mjpeg',
+			    host: name_robot,
+			    width: widthBox,
+			    height: widthBox,
+			    topic: '/usb_cam/image_raw',
+			    //overlay: image,
+			    quality: 50
+			});
+			$('#mjpeg').css({position: 'absolute', top: heightHeader + 18, left: 16});
+			*/
+
+			//-----------------------
+			// Add CODIAD LINK ON FOOTER
+
+			$("#footer-page").append("<a href='/Codiad' target='_blank' class='ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-edit'>Codiad</a>");
+			//-----------------------
+
+			// The ROSLIB.Topic handles subscribing and publishing a ROS topic. This
+			// topic interacts with the /robot_pose topic, published by the robot.
+			$(".chart").width(halfPage - 20);
+			$(".chart").height(heightPage / 2);
+
+			var xData = new dataPlot;
+			var yData = new dataPlot;
+			var thData = new dataPlot;
+
+			var chart_position = $.plot("#chart-position", [{
+				label: "x",
+				data: xData.updatePlot()
+			}, {
+				label: "y",
+				data: yData.updatePlot()
+			}, {
+				label: "&theta;",
+				data: thData.updatePlot()
+			}]);
+
+			var linear_data = new dataPlot;
+			var linear_measure_data = new dataPlot;
+			var angular_data = new dataPlot;
+			var angular_measure_data = new dataPlot;
+			//-----
+			var left_motor_rif = new dataPlot;
+			var left_motor_vel = new dataPlot;
+			var left_motor_con = new dataPlot;
+			//-----
+			var right_motor_rif = new dataPlot;
+			var right_motor_vel = new dataPlot;
+			var right_motor_con = new dataPlot;
+
+			var chart_linear = $.plot("#chart-velocity-linear", [{
+				label: "v<sub>d</sub>",
+				data: linear_data.updatePlot()
+			}, {
+				label: "v",
+				data: linear_measure_data.updatePlot()
+			}]);
+			var chart_angular = $.plot("#chart-velocity-angular", [{
+				label: "&omega;<sub>d</sub>",
+				data: angular_data.updatePlot()
+			}, {
+				label: "&omega;",
+				data: angular_measure_data.updatePlot()
+			}]);
+
+			var chart_left_motor = $.plot("#chart-motor-left", [{
+				label: "v<sub>d</sub>",
+				data: left_motor_rif.updatePlot()
+			}, {
+				label: "v",
+				data: left_motor_vel.updatePlot()
+			}, {
+				label: "con",
+				data: left_motor_con.updatePlot()
+			}]);
+
+			var chart_right_motor = $.plot("#chart-motor-right", [{
+				label: "v<sub>d</sub>",
+				data: right_motor_rif.updatePlot()
+			}, {
+				label: "v",
+				data: right_motor_vel.updatePlot()
+			}, {
+				label: "con",
+				data: right_motor_con.updatePlot()
+			}]);
+
+			var plot_process = new dataPlot(4);
+			var chart_process = $.plot("#chart-process", [{
+				data: plot_process.updatePlot(),
+				bars: {
+					barWidth: 0.8,
+					align: "center",
+					show: true
+				}
+			}], {
+				xaxis: {
+					axisLabel: "PIC process",
+					ticks: [
+						[0, "PID left"],
+						[1, "PID right"],
+						[2, "Velocity"],
+						[3, "Odometry"]
+					]
+				},
+				yaxis: {
+					tickFormatter: function(v, axis) {
+						return v + "us";
+					}
+				}
+			});
+
+			var processTopic = new ROSLIB.Topic({
+				ros: ros,
+				name: '/robot/process',
+				messageType: 'serial_bridge/Process'
+			});
+
+			$("#navbar").on("page", function(event, page) {
+				console.log("page: " + page);
+				if (page === "Motors") {
+					motorLeftTopic.subscribe(function(message) {
+						left_motor_rif.updateArray(message.reference);
+						left_motor_vel.updateArray(message.measure);
+						left_motor_con.updateArray(message.control);
+						chart_left_motor.setData([{
+							label: "v<sub>d</sub>",
+							data: left_motor_rif.updatePlot()
+						}, {
+							label: "v",
+							data: left_motor_vel.updatePlot()
+						}, {
+							label: "con",
+							data: left_motor_con.updatePlot()
+						}]);
+						chart_left_motor.setupGrid();
+						chart_left_motor.draw();
+					});
+					motorRightTopic.subscribe(function(message) {
+						right_motor_rif.updateArray(message.reference);
+						right_motor_vel.updateArray(message.measure);
+						right_motor_con.updateArray(message.control);
+						chart_right_motor.setData([{
+							label: "v<sub>d</sub>",
+							data: right_motor_rif.updatePlot()
+						}, {
+							label: "v",
+							data: right_motor_vel.updatePlot()
+						}, {
+							label: "con",
+							data: right_motor_con.updatePlot()
+						}]);
+						chart_right_motor.setupGrid();
+						chart_right_motor.draw();
+					});
+				} else {
+					motorLeftTopic.unsubscribe();
+					motorRightTopic.unsubscribe();
+				}
+				if (page === "Console") {
+					processTopic.subscribe(function(message) {
+						var process = message.process;
+						for (var i in process) {
+							plot_process.updateArray(1000 * process[i]);
+						}
+						chart_process.setData([{
+							data: plot_process.updatePlot(),
+							bars: {
+								barWidth: 0.8,
+								align: "center",
+								show: true
+							}
+						}]);
+						chart_process.setupGrid();
+						chart_process.draw();
+					});
+				} else {
+					processTopic.unsubscribe();
+				}
+			});
+		});
+	</script>
+	<style>
+		#threed-map canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+		
+		.map2D canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+		
+		.border canvas {
+			border-radius: 14px;
+			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+		}
+	</style>
+</head>
+
+<body>
+	<!-- pages -->
+	<!-- HOME PAGE -->
+	<div data-role="page" id="home" data-title="Home" data-icon="home">
+		<div data-role="content">
+			<div id="threed-map"></div>
+			<div id="twod-map" class="map2D"></div>
+			<div id="mjpeg" class="border"></div>
+		</div>
+	</div>
+	<!-- POSITION PAGE -->
+	<div data-role="page" id="position" data-title="Position" data-icon="navigation">
+		<div data-role="content">
+			<div class="ui-grid-a">
+				<div class="ui-block-a">
+					<h2 class="ui-bar ui-bar-a ui-corner-all">Position</h2>
+					<div id="chart-position" class="ui-body chart"></div>
+				</div>
+				<div class="ui-block-b">
+					<div id="twod-map-position" class="map2D"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- MOTORS PAGE -->
+	<div data-role="page" id="motors" data-title="Motors" data-icon="gear">
+		<div data-role="content">
+			<div class="ui-grid-a">
+				<div class="ui-block-a">
+					<h2 class="ui-bar ui-bar-a ui-corner-all">Linear velocity</h2>
+					<div id="chart-velocity-linear" class="ui-body chart"></div>
+				</div>
+				<div class="ui-block-b">
+					<h2 class="ui-bar ui-bar-a ui-corner-all">Angular velocity</h2>
+					<div id="chart-velocity-angular" class="ui-body chart"></div>
+				</div>
+			</div>
+			<div data-role="collapsible">
+				<h4>Left motor</h4>
+				<div class="ui-grid-a">
+					<div class="ui-block-a">
+						<!--<img src="images/motor.jpg" />-->
+						<div style="text-align:center;"><img alt="PID controller" src="images/PID_Loop.gif" width="350" /></div>
+					</div>
+					<div class="ui-block-b">
+						<div id="chart-motor-left" class="ui-body chart"></div>
+					</div>
+				</div>
+			</div>
+			<div data-role="collapsible">
+				<h4>Right motor</h4>
+				<div class="ui-grid-a">
+					<div class="ui-block-a">
+						<div style="text-align:center;"><img alt="PID controller" src="images/PID_Loop.gif" width="350" /></div>
+						<!--<img src="images/motor.jpg" />-->
+					</div>
+					<div class="ui-block-b">
+						<div id="chart-motor-right" class="ui-body chart"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- CONSOLE PAGE -->
+	<div data-role="page" id="console" data-title="Console" data-icon="grid">
+		<div data-role="content">
+			<div class="ui-grid-a">
+				<div class="ui-block-a">
+					<h2 class="ui-bar ui-bar-a ui-corner-all">ROS console</h2>
+					<div id="logger"></div>
+				</div>
+				<div class="ui-block-b">
+					<h2 class="ui-bar ui-bar-a ui-corner-all">Process on Micro</h2>
+					<div id="chart-process" class="chart"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /pages -->
+
+	<!-- panel -->
+	<!-- DRIVE PANEL -->
+	<div data-role="panel" id="drivepanel" data-theme="b" data-display="overlay" data-position="right" data-swipe-close="false">
+		<div id="visualcontroller">
+			<h3 align='center'>Controller</h3>
+			<p>v: <span class="velocity">-.-</span> [m/s]</p>
+			<p>&omega;: <span class="angular">-.-</span> [rad/s]</p>
+			<div id="controller"></div>
+			<div id="limit-controller" style="border: 1px dashed">
+				<form>
+					<label for='slider-max-velocity'>Max Velocity:</label>
+					<input type='range' name='Max Velocity' class='slider-max-velocity' min='0.1' max='0.7' step='0.05' value='0.3' data-highlight='true'>
+				</form>
+				<form>
+					<label for='slider-max-angular'>Max Angular:</label>
+					<input type='range' name='Max Angular' class='slider-max-angular' min='0.78' max='6.28' step='0.78' value='3.14' data-highlight='true'>
+				</form>
+			</div>
+			<a href='#reset' id="reset" class='ui-btn ui-mini ui-corner-all'>RESET COORD</a>
+		</div>
+	</div>
+	<!-- /panel -->
+</body>
+
+</html>

@@ -21,8 +21,7 @@
 	<script src="js/ros/easeljs/easeljs.js"></script>
 	<!-- Ros2djs provides 2D scene support, including mapping and more -->
 	<script src="js/ros/ros2djs/ros2d.js"></script>
-	<!-- NAV2D -->
-	<script src="js/ros/nav2djs/nav2d.js"></script>
+
 	<!-- ROS3DJS -->
 	<!-- Three.js is the WebGL rendering library -->
 	<script src="js/ros/three/three.js"></script>
@@ -32,12 +31,14 @@
 	<script src="js/ros/ros3djs/ros3d.js"></script>
 
 	<script src="js/console/rosconsole.js"></script>
-
+	<!-- NAV2D -->
+	<script src="js/console/ros_nav2d.js"></script>
+	
 	<script>
 		$(document).ready(function() {
 
-			var name_page = "4UDE Web console";
-			var connection = "labsis4-linux.local";
+			var name_page = "ROS Web console";
+			var connection = "dude.local";
 
 			var ros = ROSCONSOLE.controller({
 				addr: connection,
@@ -55,6 +56,8 @@
 				height: heightPage,
 				path: connection
 			});
+			
+			ROSNAV2D.init(widthPage,heightPage);
 
 			//var listener = new ROSLIB.Topic({
 			//	ros: ros,
@@ -65,31 +68,14 @@
 			//console.log('Received message on'); // ' + listener.name + ': ' + message.data);
 			//listener.unsubscribe();
 			//});
-
-			// Create the main viewer.
-			var viewer = new ROS2D.Viewer({
-				divID: 'nav',
-				width: widthPage,
-				height: heightPage
-			});
-
-			// Setup the nav client.
-			var nav = NAV2D.OccupancyGridClientNav({
-				ros: ros.ros,
-				tfClient: ros.tfClient,
-				continuous: true,
-				rootObject: viewer.scene,
-				viewer: viewer
-					//serverName: '/pr2_move_base'
-			});
-			
+			/*
 			window.onresize = function(event) {
 			    console.log("RESIZE 2D");
         		var heightHeader = $(this).find('[data-role="header"]').height();
         		var widthPage = $(window).width() - 16 * 2;
         		var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
         		viewer.resize(widthPage, heightPage);
-			}
+			}*/
 		});
 	</script>
 	<style>

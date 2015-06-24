@@ -157,6 +157,7 @@ NAV2D.Navigator = function(options) {
 	var initScaleSet = false;
 
 	tfClient.subscribe('base_link', function(tf) {
+	    console.log("I'M HERE! - TF");
 		robotMarker.x = tf.translation.x;
 		robotMarker.y = -tf.translation.y;
 		if (!initScaleSet) {
@@ -359,6 +360,17 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		continuous: continuous,
 		topic: topic
 	});
+	/*
+	var gridMap = new ROS2D.Grid({
+        size: 10,
+        cellSize: 0.05
+    })
+    this.rootObject.addChild(gridMap);
+	*/
+	this.viewer.scaleToDimensions(20, 20);
+	this.viewer.shift(-20/2, -20/2);
+	
+	/*
 	client.on('change', function() {
 		that.navigator = new NAV2D.Navigator({
 			ros: that.ros,
@@ -368,9 +380,11 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			rootObject: that.rootObject,
 			withOrientation: that.withOrientation
 		});
-
+		
 		// scale the viewer to fit the map
 		that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
 		that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
 	});
+	*/
+	
 };

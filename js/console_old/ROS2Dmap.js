@@ -32,6 +32,7 @@ function ROS2Dmap(ros, options) {
     // the map, and renders the map in the scene.
     this.gridClient = new ROS2D.OccupancyGridClient({
         ros: ros,
+        continuous: true,
         rootObject: viewer2D.scene
     });
 

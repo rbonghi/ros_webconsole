@@ -22,7 +22,9 @@ This web console depends on:
 
 ##ROS Dependencies
 ```
-$ sudo apt-get install
+$ sudo apt-get install ros-indigo-rosbridge-suite
+$ sudo apt-get install ros-indigo-tf2-web-republisher
+$ sudo apt-get install ros-indigo-interactive-marker-proxy 
 ```
 
 #Installation

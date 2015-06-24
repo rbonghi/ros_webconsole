@@ -32,13 +32,13 @@
 
 	<script src="js/console/rosconsole.js"></script>
 	<!-- NAV2D -->
-	<script src="js/console/ros_nav2d.js"></script>
+	<script src="js/ros/nav2djs/nav2d.js"></script>
 	
 	<script>
 		$(document).ready(function() {
 
 			var name_page = "ROS Web console";
-			var connection = "dude.local";
+			var connection = "enterprise-linux.local";
 
 			var ros = ROSCONSOLE.controller({
 				addr: connection,
@@ -57,7 +57,23 @@
 				path: connection
 			});
 			
-			ROSNAV2D.init(widthPage,heightPage);
+			
+			var viewer = new ROS2D.Viewer({
+				divID: 'nav',
+				width: widthPage,
+				height: heightPage
+			});
+
+			// Setup the nav client.
+			var nav = NAV2D.OccupancyGridClientNav({
+				ros: ros.ros,
+				tfClient: ros.tfClient,
+				//continuous: true,
+				rootObject: viewer.scene,
+				withOrientation: true, 
+				viewer: viewer
+					//serverName: '/pr2_move_base'
+			});
 
 			//var listener = new ROSLIB.Topic({
 			//	ros: ros,

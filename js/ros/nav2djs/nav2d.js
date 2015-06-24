@@ -90,6 +90,9 @@ NAV2D.Navigator = function(options) {
 	var withOrientation = options.withOrientation || false;
 	this.rootObject = options.rootObject || new createjs.Container();
 
+	var goal_idx = -1;
+	var goalMarker = null;
+	
 	// setup the actionlib client
 	var actionClient = new ROSLIB.ActionClient({
 		ros: ros,
@@ -116,20 +119,24 @@ NAV2D.Navigator = function(options) {
 			}
 		});
 		goal.send();
-
+		
+		console.log("Index: " + goal_idx);
 		// create a marker for the goal
-		var goalMarker = new ROS2D.NavigationArrow({
-			size: 15,
-			strokeSize: 1,
-			fillColor: createjs.Graphics.getRGB(255, 64, 128, 0.66),
-			pulse: true
-		});
+		if(goal_idx == -1) {
+			goalMarker = new ROS2D.NavigationArrow({
+				size: 15,
+				strokeSize: 1,
+				fillColor: createjs.Graphics.getRGB(255, 64, 128, 0.66),
+				pulse: true
+			});
+			that.rootObject.addChild(goalMarker);
+			goal_idx = that.rootObject.getChildIndex(goalMarker);
+		}
 		goalMarker.x = pose.position.x;
 		goalMarker.y = -pose.position.y;
 		goalMarker.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
 		goalMarker.scaleX = 1.0 / stage.scaleX;
 		goalMarker.scaleY = 1.0 / stage.scaleY;
-		that.rootObject.addChild(goalMarker);
 
 		goal.on('result', function() {
 			that.rootObject.removeChild(goalMarker);
@@ -157,7 +164,8 @@ NAV2D.Navigator = function(options) {
 	var initScaleSet = false;
 
 	tfClient.subscribe('base_link', function(tf) {
-	    console.log("I'M HERE! - TF");
+	    //console.log("I'M HERE! - TF");
+	    
 		robotMarker.x = tf.translation.x;
 		robotMarker.y = -tf.translation.y;
 		if (!initScaleSet) {
@@ -367,11 +375,11 @@ NAV2D.OccupancyGridClientNav = function(options) {
     })
     this.rootObject.addChild(gridMap);
 	*/
-	this.viewer.scaleToDimensions(20, 20);
-	this.viewer.shift(-20/2, -20/2);
+	//this.viewer.scaleToDimensions(20, 20);
+	//this.viewer.shift(-20/2, -20/2);
 	
-	/*
 	client.on('change', function() {
+		console.log("AAAA");
 		that.navigator = new NAV2D.Navigator({
 			ros: that.ros,
 			tfClient: that.tfClient,
@@ -385,6 +393,5 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
 		that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
 	});
-	*/
 	
 };

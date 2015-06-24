@@ -256,11 +256,14 @@ ROS2D.OccupancyGridClient = function(options) {
 		messageType: 'nav_msgs/OccupancyGrid',
 		compression: 'png'
 	});
-
+	var index = -1;
+	
 	rosTopic.subscribe(function(message) {
 		// check for an old map
 
-		var index = null;
+		
+		console.log("Index: " + index);
+		
 		if (that.currentGrid) {
 			index = that.rootObject.getChildIndex(that.currentGrid);
 			that.rootObject.removeChild(that.currentGrid);
@@ -269,7 +272,7 @@ ROS2D.OccupancyGridClient = function(options) {
 		that.currentGrid = new ROS2D.OccupancyGrid({
 			message: message
 		});
-		if (index !== null) {
+		if (index != -1) {
 			that.rootObject.addChildAt(that.currentGrid, index);
 		} else {
 			that.rootObject.addChild(that.currentGrid);

@@ -33,31 +33,31 @@
 	<script src="js/console/rosconsole.js"></script>
 	<!-- NAV2D -->
 	<script src="js/ros/nav2djs/nav2d.js"></script>
-	
+
 	<script>
 		$(document).ready(function() {
 
 			var name_page = "ROS Web console";
-			var connection = "enterprise-linux.local";
+			var connection = "labsis4-linux.local";
 
-			var ros = ROSCONSOLE.controller({
+			var ros = new ROSCONSOLE.controller({
 				addr: connection,
 				fixed_frame: '/map'
 			});
 
-			var web_controller = ROSCONSOLE.build_header(name_page);
+			var web_controller = new ROSCONSOLE.build_header(name_page);
 
 			var heightHeader = $(this).find('[data-role="header"]').height();
 			var widthPage = $(window).width() - 16 * 2;
 			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
 
-			var map3D = ROSCONSOLE.ROS3Dmap(ros, {
+			var map3D = new ROSCONSOLE.ROS3Dmap(ros, {
 				width: widthPage,
 				height: heightPage,
 				path: connection
 			});
-			
-			
+
+
 			var viewer = new ROS2D.Viewer({
 				divID: 'nav',
 				width: widthPage,
@@ -65,12 +65,12 @@
 			});
 
 			// Setup the nav client.
-			var nav = NAV2D.OccupancyGridClientNav({
+			var nav = new NAV2D.OccupancyGridClientNav({
 				ros: ros.ros,
 				tfClient: ros.tfClient,
-				//continuous: true,
+				continuous: true,
 				rootObject: viewer.scene,
-				withOrientation: true, 
+				withOrientation: true,
 				viewer: viewer
 					//serverName: '/pr2_move_base'
 			});

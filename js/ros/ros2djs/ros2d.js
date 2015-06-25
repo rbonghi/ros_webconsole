@@ -233,58 +233,53 @@ ROS2D.OccupancyGrid.prototype.__proto__ = createjs.Bitmap.prototype;
  *   * continuous (optional) - if the map should be continuously loaded (e.g., for SLAM)
  */
 ROS2D.OccupancyGridClient = function(options) {
-	var that = this;
-	options = options || {};
-	var ros = options.ros;
-	var topic = options.topic || '/map';
-	this.continuous = options.continuous;
-	this.rootObject = options.rootObject || new createjs.Container();
+  var that = this;
+  options = options || {};
+  var ros = options.ros;
+  var topic = options.topic || '/map';
+  this.continuous = options.continuous;
+  this.rootObject = options.rootObject || new createjs.Container();
 
-	// current grid that is displayed
-	// create an empty shape to start with, so that the order remains correct.
-	this.currentGrid = new createjs.Shape();
-	this.rootObject.addChild(this.currentGrid);
-	// work-around for a bug in easeljs -- needs a second object to render correctly
-	this.rootObject.addChild(new ROS2D.Grid({
-		size: 1
-	}));
+  // current grid that is displayed
+  // create an empty shape to start with, so that the order remains correct.
+  this.currentGrid = new createjs.Shape();
+  this.rootObject.addChild(this.currentGrid);
+  // work-around for a bug in easeljs -- needs a second object to render correctly
+  this.rootObject.addChild(new ROS2D.Grid({size:1}));
 
-	// subscribe to the topic
-	var rosTopic = new ROSLIB.Topic({
-		ros: ros,
-		name: topic,
-		messageType: 'nav_msgs/OccupancyGrid',
-		compression: 'png'
-	});
-	var index = -1;
-	
-	rosTopic.subscribe(function(message) {
-		// check for an old map
+  // subscribe to the topic
+  var rosTopic = new ROSLIB.Topic({
+    ros : ros,
+    name : topic,
+    messageType : 'nav_msgs/OccupancyGrid',
+    compression : 'png'
+  });
 
-		
-		console.log("Index: " + index);
-		
-		if (that.currentGrid) {
-			index = that.rootObject.getChildIndex(that.currentGrid);
-			that.rootObject.removeChild(that.currentGrid);
-		}
+  rosTopic.subscribe(function(message) {
+    // check for an old map
+    var index = null;
+    if (that.currentGrid) {
+      index = that.rootObject.getChildIndex(that.currentGrid);
+      that.rootObject.removeChild(that.currentGrid);
+    }
 
-		that.currentGrid = new ROS2D.OccupancyGrid({
-			message: message
-		});
-		if (index != -1) {
-			that.rootObject.addChildAt(that.currentGrid, index);
-		} else {
-			that.rootObject.addChild(that.currentGrid);
-		}
-
-		that.emit('change');
-
-		// check if we should unsubscribe
-		if (!that.continuous) {
-			rosTopic.unsubscribe();
-		}
-	});
+    that.currentGrid = new ROS2D.OccupancyGrid({
+      message : message
+    });
+    if (index !== null) {
+      that.rootObject.addChildAt(that.currentGrid, index);
+    }
+    else {
+      that.rootObject.addChild(that.currentGrid);
+    }
+    
+    that.emit('change');
+    
+    // check if we should unsubscribe
+    if (!that.continuous) {
+      rosTopic.unsubscribe();
+    }
+  });
 };
 ROS2D.OccupancyGridClient.prototype.__proto__ = EventEmitter2.prototype;
 
@@ -406,7 +401,7 @@ ROS2D.ArrowShape = function(options) {
 };
 ROS2D.ArrowShape.prototype.__proto__ = createjs.Shape.prototype;
 
-/**
+/** 
  * @author Raffaello Bonghi - raffaello.bonghi@officinerobotiche.it
  */
 

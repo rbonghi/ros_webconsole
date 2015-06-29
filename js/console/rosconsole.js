@@ -162,6 +162,7 @@ ROSCONSOLE.build_header = function(name_page) {
 	if (ROSCONSOLE.isMobile().any()) {
 		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
 	}
+	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all">No text</a>';
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();

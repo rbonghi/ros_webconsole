@@ -38,7 +38,7 @@
 		$(document).ready(function() {
 
 			var name_page = "ROS Web console";
-			var connection = "labsis4-linux.local";
+			var connection = "dude.local";
 
 			var ros = new ROSCONSOLE.controller({
 				addr: connection,
@@ -75,23 +75,31 @@
 					//serverName: '/pr2_move_base'
 			});
 
-			//var listener = new ROSLIB.Topic({
-			//	ros: ros,
-			//	name: '/map',
-			//	messageType: 'nav_msgs/OccupancyGrid'
-			//});
-			//listener.subscribe(function(message) {
-			//console.log('Received message on'); // ' + listener.name + ': ' + message.data);
-			//listener.unsubscribe();
-			//});
-			/*
-			window.onresize = function(event) {
-			    console.log("RESIZE 2D");
-        		var heightHeader = $(this).find('[data-role="header"]').height();
-        		var widthPage = $(window).width() - 16 * 2;
-        		var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-        		viewer.resize(widthPage, heightPage);
-			}*/
+/*
+			var listener = new ROSLIB.Topic({
+				 ros: ros,
+				 name: '/map',
+				 messageType:
+							//'nav_msgs/OccupancyGrid'
+				 });
+				 listener.subscribe(function(message) {
+							//console.log('Received message on'); // ' + listener.name + ': ' +
+							//message.data);
+				 listener.unsubscribe();
+				 });
+				*/
+				 /*
+				 window.onresize =
+							//function(event) {
+				 console.log("RESIZE 2D");
+				 var heightHeader =
+							//$(this).find('[data-role="header"]').height();
+				 var widthPage =
+							//$(window).width() - 16 * 2;
+				 var heightPage = $(window).height() -
+							//heightHeader - 16 * 2 - 110;
+				 viewer.resize(widthPage, heightPage);
+				 }*/
 		});
 	</script>
 	<style>
@@ -99,12 +107,12 @@
 			border-radius: 14px;
 			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
 		}
-		
+
 		.map2D canvas {
 			border-radius: 14px;
 			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
 		}
-		
+
 		.border canvas {
 			border-radius: 14px;
 			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;

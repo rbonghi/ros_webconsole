@@ -4,11 +4,17 @@ ROSCONSOLE.build_header = function(name_page) {
 	// Create header
 	var html_header = '<div data-role="header" data-theme="a" data-position="fixed">';
 	html_header += '<h1>' + name_page + '</h1>';
-	//html_header += "<a href='#drivepanel' data-role='button' class='ui-btn-right' data-inline='true' data-icon='bars'>Drive</a>";
-	html_header += ROSCONSOLE.build_navbar();
+
+	if (ROSCONSOLE.isMobile().any()) {
+		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
+	}
+	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all">No text</a>';
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();
+
+	// Add menu
+	ROSCONSOLE.build_menu();
 
 	//$( "[data-role='navbar']" ).navbar();
 	$('[data-role="header"], [data-role="footer"]').toolbar({
@@ -38,3 +44,14 @@ ROSCONSOLE.build_header = function(name_page) {
 		});
 	});
 };
+
+ROSCONSOLE.build_menu = function() {
+
+	if (ROSCONSOLE.isMobile().any()) {
+		$('body').append('<div data-role="panel" id="menu" data-theme="b" data-display="push"></div>');
+	} else {
+		$('[data-role="header"]').append('<div data-role="navbar" id="menu"></div>');
+	}
+
+	$('#menu').append(ROSCONSOLE.pages());
+}

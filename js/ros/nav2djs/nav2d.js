@@ -64,6 +64,7 @@ NAV2D.ImageMapClientNav = function(options) {
 /**
  * @author Russell Toris - rctoris@wpi.edu
  * @author Lars Kunze - l.kunze@cs.bham.ac.uk
+ * @author Raffaello Bonghi - raffaello.bonghi@officinerobotiche.it
  */
 
 /**
@@ -84,7 +85,8 @@ NAV2D.Navigator = function(options) {
 	var that = this;
 	options = options || {};
 	var ros = options.ros;
-	var tfClient = options.tfClient;
+	var tfClient = options.tfClient || null;
+	var robot_pose = options.robot_pose || '/robot_pose';
 	var serverName = options.serverName || '/move_base';
 	var actionName = options.actionName || 'move_base_msgs/MoveBaseAction';
 	var withOrientation = options.withOrientation || false;
@@ -119,7 +121,6 @@ NAV2D.Navigator = function(options) {
 		});
 		goal.send();
 
-		//console.log("Index: " + goal_idx);
 		// create a marker for the goal
 		if (that.goalMarker == null) {
 			that.goalMarker = new ROS2D.NavigationArrow({
@@ -162,44 +163,37 @@ NAV2D.Navigator = function(options) {
 	this.rootObject.addChild(robotMarker);
 	var initScaleSet = false;
 
-	tfClient.subscribe('base_link', function(tf) {
-		//console.log("I'M HERE! - TF");
+	var updateRobotPosition = function(pose, orientation) {
+    // update the robots position on the map
+    robotMarker.x = pose.x;
+    robotMarker.y = -pose.y;
+    if (!initScaleSet) {
+      robotMarker.scaleX = 1.0 / stage.scaleX;
+      robotMarker.scaleY = 1.0 / stage.scaleY;
+      initScaleSet = true;
+    }
+    // change the angle
+    robotMarker.rotation = stage.rosQuaternionToGlobalTheta(orientation);
+    // Set visible
+    robotMarker.visible = true;
+  }
 
-		robotMarker.x = tf.translation.x;
-		robotMarker.y = -tf.translation.y;
-		if (!initScaleSet) {
-			robotMarker.scaleX = 1.0 / stage.scaleX;
-			robotMarker.scaleY = 1.0 / stage.scaleY;
-			initScaleSet = true;
-		}
-		// change the angle
-		robotMarker.rotation = stage.rosQuaternionToGlobalTheta(tf.rotation);
-
-		robotMarker.visible = true;
-	});
-
-	// setup a listener for the robot pose
-	var poseListener = new ROSLIB.Topic({
-		ros: ros,
-		name: '/robot_pose',
-		messageType: 'geometry_msgs/Pose',
-		throttle_rate: 100
-	});
-	poseListener.subscribe(function(pose) {
-		// update the robots position on the map
-		robotMarker.x = pose.position.x;
-		robotMarker.y = -pose.position.y;
-		if (!initScaleSet) {
-			robotMarker.scaleX = 1.0 / stage.scaleX;
-			robotMarker.scaleY = 1.0 / stage.scaleY;
-			initScaleSet = true;
-		}
-
-		// change the angle
-		robotMarker.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
-
-		robotMarker.visible = true;
-	});
+  if(tfClient !== null) {
+    tfClient.subscribe(robot_pose, function(tf) {
+      updateRobotPosition(tf.translation,tf.rotation);
+    });
+  } else {
+    // setup a listener for the robot pose
+    var poseListener = new ROSLIB.Topic({
+      ros: ros,
+      name: robot_pose,
+      messageType: 'geometry_msgs/Pose',
+      throttle_rate: 100
+    });
+    poseListener.subscribe(function(pose) {
+      updateRobotPosition(pose.position,pose.orientation);
+    });
+  }
 
 	if (withOrientation === false) {
 		// setup a double click listener (no orientation)
@@ -325,7 +319,6 @@ NAV2D.Navigator = function(options) {
 		});
 	}
 };
-
 /**
  * @author Russell Toris - rctoris@wpi.edu
  */
@@ -351,6 +344,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 	this.ros = options.ros;
 	this.tfClient = options.tfClient;
 	var topic = options.topic || '/map';
+	this.robot_pose = options.robot_pose || '/robot_pose';
 	var continuous = options.continuous;
 	this.serverName = options.serverName || '/move_base';
 	this.actionName = options.actionName || 'move_base_msgs/MoveBaseAction';
@@ -358,7 +352,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 	this.viewer = options.viewer;
 	this.withOrientation = options.withOrientation || false;
 
-	this.navigator = null;
+	this.old_state = {x:0, y:0, width: 0, height: 0};
 
 	// setup a client to get the map
 	var client = new ROS2D.OccupancyGridClient({
@@ -367,34 +361,34 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		continuous: continuous,
 		topic: topic
 	});
-	
+
 	var gridMap = new ROS2D.Grid({
         size: 10,
         cellSize: 1
     })
     this.rootObject.addChild(gridMap);
-	
-	//that.viewer.scaleToDimensions(10, 10);
-	that.viewer.shift(-10/2, -10/2);
-	that.viewer.shift(-10/2, -10/2);
-	//that.viewer.shift(-10/2, -10/2);
-	//that.viewer.scaleToDimensions(10, 10);
-	client.on('change', function() {
-		console.log("Alive");
-		
-		that.navigator = new NAV2D.Navigator({
-			ros: that.ros,
-			tfClient: that.tfClient,
-			serverName: that.serverName,
-			actionName: that.actionName,
-			rootObject: that.rootObject,
-			withOrientation: that.withOrientation
-		});
-		
-		// scale the viewer to fit the map
-		//that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
-		//that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
-	});
-	
 
+	var navigator = new NAV2D.Navigator({
+			ros: this.ros,
+			tfClient: this.tfClient,
+			serverName: this.serverName,
+			actionName: this.actionName,
+			robot_pose : this.robot_pose,
+			rootObject: this.rootObject,
+			withOrientation: this.withOrientation
+		});
+
+	client.on('change', function() {
+		// scale the viewer to fit the map
+		if (that.old_state.width != client.currentGrid.width || that.old_state.height != client.currentGrid.height) {
+			that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
+			that.old_state.width = client.currentGrid.width;
+			that.old_state.height = client.currentGrid.height;
+		}
+		if (that.old_state.x != client.currentGrid.pose.position.x || that.old_state.y != client.currentGrid.pose.position.y) {
+			that.viewer.shift((-that.old_state.x+client.currentGrid.pose.position.x)/1, (-that.old_state.y+client.currentGrid.pose.position.y)/1);
+			that.old_state.x = client.currentGrid.pose.position.x;
+			that.old_state.y = client.currentGrid.pose.position.y;
+		}
+	});
 };

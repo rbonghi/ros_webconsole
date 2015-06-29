@@ -9,7 +9,7 @@ var ROSNAV2D = ROSNAV2D || {
 
 /**
  * Window option
- * 
+ *
  * @param size - size screen
  */
 ROSNAV2D.view_property = function(viewer, withScreen, heightScreen) {
@@ -31,7 +31,7 @@ ROSNAV2D.view_property.prototype.center = function() {
 
 /**
  * Initalize 2D navigator
- * 
+ *
  * @param with - width screen
  * @param height - height screen
  */
@@ -53,7 +53,7 @@ ROSNAV2D.init = function(options) {
         height: heightScreen,
         background: '#ddd'
     });
-    
+
     // Subscribes to the robot's OccupancyGrid, which is ROS representation of
     // the map, and renders the map in the scene.
     this.client = new ROS2D.OccupancyGridClient({
@@ -61,27 +61,27 @@ ROSNAV2D.init = function(options) {
         continuous: true,
         rootObject: this.viewer.scene
     });
-    
+
     var gridMap = new ROS2D.Grid({
         size: 10,
         cellSize: 0.5
     });
     this.client.rootObject.addChild(gridMap);
-    
+
     tfClient.subscribe(tf_base, function(tf) {
     	//console.log("I'M HERE! - TF");
     });
-    
+
     this.client.on('change', function() {
     	console.log("I'M HERE!");
-    	//console.log("client.currentGrid.width: "+ client.currentGrid.width + 
+    	//console.log("client.currentGrid.width: "+ client.currentGrid.width +
     	//" - client.currentGrid.height: " + client.currentGrid.height);
     	//that.viewer.scaleToDimensions(that.client.currentGrid.width, that.client.currentGrid.height);
 		//console.log("client.currentGrid.pose.position.x: " + client.currentGrid.pose.position.x +
 		//" - client.currentGrid.pose.position.y: " + client.currentGrid.pose.position.y)
 		//that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
     });
-    
+
     var size = 20;
     var old_pose = {x: 0.0, y: 0.0};
     var center = {x: size / 2, y: size / 2};
@@ -90,8 +90,8 @@ ROSNAV2D.init = function(options) {
 
     this.viewer.scaleToDimensions(size, size);
     this.viewer.shift(-center.x, -center.y);
-    
-    
+
+
 
     /*
 
@@ -105,7 +105,7 @@ ROSNAV2D.init = function(options) {
         pulse: false
     });
     this.gridClient.rootObject.addChild(robotMarker);
-    
+
     viewer2D.scaleToDimensions(1, 1);
     viewer2D.shift(-center.x, -center.y);
     robotMarker.x = 0;

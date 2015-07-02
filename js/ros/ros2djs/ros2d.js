@@ -272,9 +272,9 @@ ROS2D.OccupancyGridClient = function(options) {
     else {
       that.rootObject.addChild(that.currentGrid);
     }
-    
+
     that.emit('change');
-    
+
     // check if we should unsubscribe
     if (!that.continuous) {
       rosTopic.unsubscribe();
@@ -401,7 +401,7 @@ ROS2D.ArrowShape = function(options) {
 };
 ROS2D.ArrowShape.prototype.__proto__ = createjs.Shape.prototype;
 
-/** 
+/**
  * @author Raffaello Bonghi - raffaello.bonghi@officinerobotiche.it
  */
 
@@ -997,31 +997,37 @@ ROS2D.Viewer = function(options) {
 	var background = options.background || '#111111';
 
 	// create the canvas to render to
-	var canvas = document.createElement('canvas');
-	canvas.width = this.width;
-	canvas.height = this.height;
-	canvas.style.background = background;
-	document.getElementById(divID).appendChild(canvas);
+	this.canvas = document.createElement('canvas');
+	this.canvas.width = this.width;
+	this.canvas.height = this.height;
+	this.canvas.style.background = background;
+	document.getElementById(divID).appendChild(this.canvas);
 	// create the easel to use
-	this.scene = new createjs.Stage(canvas);
+	this.scene = new createjs.Stage(this.canvas);
 
 	// change Y axis center
 	this.scene.y = this.height;
 
 	// add the renderer to the page
-	document.getElementById(divID).appendChild(canvas);
+	document.getElementById(divID).appendChild(this.canvas);
 
 	// update at 30fps
 	createjs.Ticker.setFPS(30);
 	createjs.Ticker.addEventListener('tick', this.scene);
 };
 
+/**
+ * Resize 2D viewer
+ *
+ * @param width - new width value
+ * @param height - new height value
+ */
 ROS2D.Viewer.prototype.resize = function(width, height) {
 	this.width = width;
 	this.height = height;
-	//canvas.width = this.width;
-	//canvas.height = this.height;
-}
+	this.canvas.width = this.width;
+	this.canvas.height = this.height;
+};
 
 /**
  * Add the given createjs object to the global scene in the viewer.

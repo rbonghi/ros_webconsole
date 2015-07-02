@@ -28,22 +28,22 @@ ROSCONSOLE.isMobile = function() {
 
 ROSCONSOLE.controller = function(options) {
 	options = options || {};
-	var addr = options.addr || "localhost";
-	var port = options.port || "9090";
+	var addr = options.addr || 'localhost';
+	var port = options.port || '9090';
 	var fixed_frame = options.fixed_frame || '/odom';
 
 	//Default color
-	var def_color = $('[data-role="header"]').css("background-color");
+	var def_color = $('[data-role="header"]').css('background-color');
 	// The Ros object is responsible for connecting to rosbridge.
 	var ros_console = new ROSLIB.Ros();
 
 	ros_console.on('connection', function(e) {
 		// displaySuccess is a convenience function for outputting messages in HTML.
-		$('[data-role="header"]').css("background-color", def_color);
+		$('[data-role="header"]').css('background-color', def_color);
 	});
 
 	ros_console.on('error', function(e) {
-		$('[data-role="header"]').css("background-color", "rgba(255,0,0,0.5)");
+		$('[data-role="header"]').css('background-color', 'rgba(255,0,0,0.5)');
 	});
 
 	ros_console.connect('ws://' + addr + ':' + port);
@@ -65,36 +65,17 @@ ROSCONSOLE.controller = function(options) {
 		ros: ros_console,
 		tfClient: tfClient
 	};
-}
+};
 
-ROSCONSOLE.ROS3Dmap = function(ros_console, options) {
-
-	ros_console = ros_console || {};
-	var ros = ros_console.ros;
-	var tfClient = ros_console.tfClient;
-
+ROSCONSOLE.ROS3Dmap = function(options) {
 	options = options || {};
+	var ros = options.ros;
+	var tfClient = options.tfClient;
+	var viewer3D = options.viewer;
 	var divName = options.divID || 'threed-map';
 	var width = options.width || 200;
 	var height = options.height || 200;
 	var path = options.path || 'localhost';
-
-	//console.log(fixed_frame);
-	// Create the scene manager and view port for the 3D world.
-	var viewer3D = new ROS3D.Viewer({
-		divID: divName,
-		width: width,
-		height: height,
-		antialias: true
-			//background: '#EEEEEE'
-	});
-
-	window.onresize = function(event) {
-		var heightHeader = $(this).find('[data-role="header"]').height();
-		var widthPage = $(window).width() - 16 * 2;
-		var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-		viewer3D.resize(widthPage, heightPage);
-	};
 
 	// Add a grid.
 	viewer3D.addObject(new ROS3D.Grid({
@@ -153,8 +134,8 @@ ROSCONSOLE.ROS3Dmap = function(ros_console, options) {
 };
 
 
-ROSCONSOLE.build_header = function(name_page) {
-
+ROSCONSOLE.WindowController = function(name_page) {
+  var that = this;
 	// Create header
 	var html_header = '<div data-role="header" data-theme="a" data-position="fixed">';
 	html_header += '<h1>' + name_page + '</h1>';
@@ -162,7 +143,7 @@ ROSCONSOLE.build_header = function(name_page) {
 	if (ROSCONSOLE.isMobile().any()) {
 		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
 	}
-	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all">No text</a>';
+	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all" target="_blank">No text</a>';
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();
@@ -208,7 +189,7 @@ ROSCONSOLE.build_menu = function() {
 	}
 
 	$('#menu').append(ROSCONSOLE.pages());
-}
+};
 
 
 
@@ -217,11 +198,13 @@ ROSCONSOLE.pages = function() {
 	// Find pages
 	var find_pages = $('div:jqmData(role="page")');
 	// Create navbar
-	if (ROSCONSOLE.isMobile().any())
-		var html_navbar = '<ul data-role="listview">';
-	else
-		var html_navbar = '<ul>';
-
+	var html_navbar = '';
+	if (ROSCONSOLE.isMobile().any()) {
+		html_navbar = '<ul data-role="listview">';
+	} else {
+		html_navbar = '<ul>';
+	}
+	
 	for (var i = 0; i < find_pages.length; i++) {
 		html_navbar += '<li>' +
 			'<a href="#' + $(find_pages[i]).attr('id') + '" data-icon="' + $(find_pages[i]).jqmData('icon') +

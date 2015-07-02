@@ -45,18 +45,28 @@
 				fixed_frame: '/map'
 			});
 
-			var web_controller = new ROSCONSOLE.build_header(name_page);
+			var windowController = new ROSCONSOLE.WindowController(name_page);
 
 			var heightHeader = $(this).find('[data-role="header"]').height();
 			var widthPage = $(window).width() - 16 * 2;
 			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
 
-			var map3D = new ROSCONSOLE.ROS3Dmap(ros, {
+			// Create the scene manager and view port for the 3D world.
+			var viewer3D = new ROS3D.Viewer({
+				divID: 'threed-map',
+				width: widthPage,
+				height: heightPage,
+				antialias: true
+					//background: '#EEEEEE'
+			});
+			var map3D = new ROSCONSOLE.ROS3Dmap({
+				ros: ros.ros,
+				tfClient: ros.tfClient,
+				viewer: viewer3D,
 				width: widthPage,
 				height: heightPage,
 				path: connection
 			});
-
 
 			var viewer = new ROS2D.Viewer({
 				divID: 'nav',
@@ -75,6 +85,14 @@
 					//serverName: '/pr2_move_base'
 			});
 
+			window.onresize = function(event) {
+				var heightHeader = $(this).find('[data-role="header"]').height();
+				var widthPage = $(window).width() - 16 * 2;
+				var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
+				viewer.resize(widthPage, heightPage);
+				viewer3D.resize(widthPage, heightPage);
+			};
+
 /*
 			var listener = new ROSLIB.Topic({
 				 ros: ros,
@@ -88,18 +106,8 @@
 				 listener.unsubscribe();
 				 });
 				*/
-				 /*
-				 window.onresize =
-							//function(event) {
-				 console.log("RESIZE 2D");
-				 var heightHeader =
-							//$(this).find('[data-role="header"]').height();
-				 var widthPage =
-							//$(window).width() - 16 * 2;
-				 var heightPage = $(window).height() -
-							//heightHeader - 16 * 2 - 110;
-				 viewer.resize(widthPage, heightPage);
-				 }*/
+
+
 		});
 	</script>
 	<style>

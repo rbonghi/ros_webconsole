@@ -67,34 +67,14 @@ ROSCONSOLE.controller = function(options) {
 	};
 };
 
-ROSCONSOLE.ROS3Dmap = function(ros_console, options) {
-
-	ros_console = ros_console || {};
-	var ros = ros_console.ros;
-	var tfClient = ros_console.tfClient;
-
+ROSCONSOLE.ROS3Dmap = function(options) {
 	options = options || {};
-	var divName = options.divID || 'threed-map';
+	var ros = options.ros;
+	var tfClient = options.tfClient;
+	var viewer3D = options.viewer;
 	var width = options.width || 200;
 	var height = options.height || 200;
 	var path = options.path || 'localhost';
-
-	//console.log(fixed_frame);
-	// Create the scene manager and view port for the 3D world.
-	var viewer3D = new ROS3D.Viewer({
-		divID: divName,
-		width: width,
-		height: height,
-		antialias: true
-			//background: '#EEEEEE'
-	});
-
-	window.onresize = function(event) {
-		var heightHeader = $(this).find('[data-role="header"]').height();
-		var widthPage = $(window).width() - 16 * 2;
-		var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-		viewer3D.resize(widthPage, heightPage);
-	};
 
 	// Add a grid.
 	viewer3D.addObject(new ROS3D.Grid({

@@ -1,6 +1,5 @@
 
-ROSCONSOLE.build_header = function(name_page) {
-
+ROSCONSOLE.WindowController = function(name_page) {
 	// Create header
 	var html_header = '<div data-role="header" data-theme="a" data-position="fixed">';
 	html_header += '<h1>' + name_page + '</h1>';
@@ -8,7 +7,7 @@ ROSCONSOLE.build_header = function(name_page) {
 	if (ROSCONSOLE.isMobile().any()) {
 		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
 	}
-	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all">No text</a>';
+	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all" target="_blank">No text</a>';
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();

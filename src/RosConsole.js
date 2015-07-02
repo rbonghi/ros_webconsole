@@ -28,22 +28,22 @@ ROSCONSOLE.isMobile = function() {
 
 ROSCONSOLE.controller = function(options) {
 	options = options || {};
-	var addr = options.addr || "localhost";
-	var port = options.port || "9090";
+	var addr = options.addr || 'localhost';
+	var port = options.port || '9090';
 	var fixed_frame = options.fixed_frame || '/odom';
 
 	//Default color
-	var def_color = $('[data-role="header"]').css("background-color");
+	var def_color = $('[data-role="header"]').css('background-color');
 	// The Ros object is responsible for connecting to rosbridge.
 	var ros_console = new ROSLIB.Ros();
 
 	ros_console.on('connection', function(e) {
 		// displaySuccess is a convenience function for outputting messages in HTML.
-		$('[data-role="header"]').css("background-color", def_color);
+		$('[data-role="header"]').css('background-color', def_color);
 	});
 
 	ros_console.on('error', function(e) {
-		$('[data-role="header"]').css("background-color", "rgba(255,0,0,0.5)");
+		$('[data-role="header"]').css('background-color', 'rgba(255,0,0,0.5)');
 	});
 
 	ros_console.connect('ws://' + addr + ':' + port);

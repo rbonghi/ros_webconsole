@@ -54,4 +54,4 @@ ROSCONSOLE.build_menu = function() {
 	}
 
 	$('#menu').append(ROSCONSOLE.pages());
-}
+};

@@ -65,7 +65,7 @@ ROSCONSOLE.controller = function(options) {
 		ros: ros_console,
 		tfClient: tfClient
 	};
-}
+};
 
 ROSCONSOLE.ROS3Dmap = function(ros_console, options) {
 

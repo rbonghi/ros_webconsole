@@ -5,10 +5,11 @@ ROSCONSOLE.pages = function() {
 	// Find pages
 	var find_pages = $('div:jqmData(role="page")');
 	// Create navbar
+	var html_navbar = '';
 	if (ROSCONSOLE.isMobile().any())
-		var html_navbar = '<ul data-role="listview">';
+		html_navbar = '<ul data-role="listview">';
 	else
-		var html_navbar = '<ul>';
+		html_navbar = '<ul>';
 
 	for (var i = 0; i < find_pages.length; i++) {
 		html_navbar += '<li>' +

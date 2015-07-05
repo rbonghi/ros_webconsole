@@ -38,7 +38,7 @@
 		$(document).ready(function() {
 
 			var name_page = "ROS Web console";
-			var connection = "dude.local";
+			var connection = "ubuntu.local";
 
 			var ros = new ROSCONSOLE.controller({
 				addr: connection,
@@ -79,6 +79,7 @@
 				ros: ros.ros,
 				tfClient: ros.tfClient,
 				continuous: true,
+				robot_pose: '/base_link',
 				rootObject: viewer.scene,
 				withOrientation: true,
 				viewer: viewer
@@ -93,21 +94,50 @@
 				viewer3D.resize(widthPage, heightPage);
 			};
 
-/*
-			var listener = new ROSLIB.Topic({
-				 ros: ros,
-				 name: '/map',
-				 messageType:
-							//'nav_msgs/OccupancyGrid'
-				 });
-				 listener.subscribe(function(message) {
-							//console.log('Received message on'); // ' + listener.name + ': ' +
-							//message.data);
-				 listener.unsubscribe();
-				 });
-				*/
+			var button_connect = '<a href="#" id="ros-test" data-role="button" data-icon="recycle" class="ui-btn-right">Test</a>';
+			$('div:jqmData(role="header")').append(button_connect).trigger('create');
 
+			$("#ros-test").click(function(){
+				console.log("click");
+			});
 
+			var advpoint = new ROSLIB.Topic({
+    		ros : ros.ros,
+    		name : '/point_map',
+    		messageType : 'geometry_msgs/Vector3'
+  		});
+
+			var mouseDown = false;
+			var writeEventHandler = function(event, mouseState) {
+
+				//console.log('event: ' + mouseState + ' - mouse: ' + mouseDown);
+
+				if (mouseState === 'down') {
+					mouseDown = true;
+				} else if(mouseState === 'move') {
+					if(mouseDown === true) {
+						var position = viewer.scene.globalToRos(event.stageX, event.stageY);
+						var positionVec3 = new ROSLIB.Vector3(position);
+						console.log('[x:' + positionVec3.x + ',y:' + positionVec3.y + ']');
+						advpoint.publish(new ROSLIB.Message(positionVec3));
+					}
+				} else if(mouseState === 'up') {
+					mouseDown = false;
+				}
+			};
+
+			viewer.scene.addEventListener('stagemousedown', function(event) {
+				writeEventHandler(event, 'down');
+			});
+
+			viewer.scene.addEventListener('stagemousemove', function(event) {
+				writeEventHandler(event, 'move');
+			});
+
+			viewer.scene.addEventListener('stagemouseup', function(event) {
+				writeEventHandler(event, 'up');
+			});
+			
 		});
 	</script>
 	<style>

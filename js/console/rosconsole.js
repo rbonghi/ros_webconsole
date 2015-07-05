@@ -72,7 +72,6 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 	var ros = options.ros;
 	var tfClient = options.tfClient;
 	var viewer3D = options.viewer;
-	var divName = options.divID || 'threed-map';
 	var width = options.width || 200;
 	var height = options.height || 200;
 	var path = options.path || 'localhost';
@@ -82,13 +81,8 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		size: 20,
 		cellSize: 1.0
 	}));
-
-
-
-	/*
-		var button_connect = '<a href="#" id="ros-test" data-role="button" data-icon="recycle" class="ui-btn-right">Test</a>';
-		$("div:jqmData(role='header')").append(button_connect).trigger('create');
-
+	
+		/*
 		$("#ros-test").on("click", function(e) {
 			console.log("test");
 			tfClient = new ROSLIB.TFClient({
@@ -135,7 +129,6 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 
 
 ROSCONSOLE.WindowController = function(name_page) {
-  var that = this;
 	// Create header
 	var html_header = '<div data-role="header" data-theme="a" data-position="fixed">';
 	html_header += '<h1>' + name_page + '</h1>';
@@ -143,6 +136,7 @@ ROSCONSOLE.WindowController = function(name_page) {
 	if (ROSCONSOLE.isMobile().any()) {
 		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
 	}
+	/// Added a Codiad button
 	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all" target="_blank">No text</a>';
 	html_header += '</div>';
 

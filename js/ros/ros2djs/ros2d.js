@@ -1025,8 +1025,9 @@ ROS2D.Viewer = function(options) {
 ROS2D.Viewer.prototype.resize = function(width, height) {
 	this.width = width;
 	this.height = height;
-	this.canvas.width = this.width;
-	this.canvas.height = this.height;
+	this.canvas.width = width;
+	this.canvas.height = height;
+	//this.scaleToDimensions(1,1);
 };
 
 /**

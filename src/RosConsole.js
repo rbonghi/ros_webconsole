@@ -81,13 +81,8 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		size: 20,
 		cellSize: 1.0
 	}));
-
-
-
-	/*
-		var button_connect = '<a href="#" id="ros-test" data-role="button" data-icon="recycle" class="ui-btn-right">Test</a>';
-		$("div:jqmData(role='header')").append(button_connect).trigger('create');
-
+	
+		/*
 		$("#ros-test").on("click", function(e) {
 			console.log("test");
 			tfClient = new ROSLIB.TFClient({

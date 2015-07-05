@@ -365,7 +365,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 	var gridMap = new ROS2D.Grid({
         size: 10,
         cellSize: 1
-    })
+    });
     this.rootObject.addChild(gridMap);
 
 	var navigator = new NAV2D.Navigator({
@@ -379,6 +379,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		});
 
 	client.on('change', function() {
+		console.log("Update");
 		// scale the viewer to fit the map
 		if (that.old_state.width != client.currentGrid.width || that.old_state.height != client.currentGrid.height) {
 			that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);

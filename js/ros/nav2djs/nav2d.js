@@ -92,6 +92,7 @@ NAV2D.Navigator = function(options) {
 	var withOrientation = options.withOrientation || false;
 	this.rootObject = options.rootObject || new createjs.Container();
 
+	this.setgoal = true;
 	this.goalMarker = null;
 
 	// setup the actionlib client
@@ -307,18 +308,26 @@ NAV2D.Navigator = function(options) {
 		};
 
 		this.rootObject.addEventListener('stagemousedown', function(event) {
-			mouseEventHandler(event, 'down');
+			if(that.setgoal)
+				mouseEventHandler(event, 'down');
 		});
 
 		this.rootObject.addEventListener('stagemousemove', function(event) {
-			mouseEventHandler(event, 'move');
+			if(that.setgoal)
+				mouseEventHandler(event, 'move');
 		});
 
 		this.rootObject.addEventListener('stagemouseup', function(event) {
-			mouseEventHandler(event, 'up');
+			if(that.setgoal)
+				mouseEventHandler(event, 'up');
 		});
 	}
 };
+
+NAV2D.Navigator.prototype.enableGoal = function(setgoal) {
+	this.setgoal = setgoal;
+}
+
 /**
  * @author Russell Toris - rctoris@wpi.edu
  */
@@ -368,7 +377,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
     });
     this.rootObject.addChild(gridMap);
 
-	var navigator = new NAV2D.Navigator({
+	this.navigator = new NAV2D.Navigator({
 			ros: this.ros,
 			tfClient: this.tfClient,
 			serverName: this.serverName,
@@ -393,3 +402,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		}
 	});
 };
+
+NAV2D.OccupancyGridClientNav.prototype.enableGoal = function(setgoal) {
+	this.navigator.enableGoal(setgoal);
+}

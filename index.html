@@ -31,12 +31,13 @@
 	<script src="js/ros/ros3djs/ros3d.js"></script>
 
 	<script src="js/console/rosconsole.js"></script>
+	<script src="js/console/rosmap.js"></script>
 	<!-- NAV2D -->
 	<script src="js/ros/nav2djs/nav2d.js"></script>
 
 	<script>
 		$(document).ready(function() {
-
+			
 			var name_page = "ROS Web console";
 			var connection = "ubuntu.local";
 
@@ -71,9 +72,11 @@
 			var viewer = new ROS2D.Viewer({
 				divID: 'nav',
 				width: widthPage,
-				height: heightPage
+				height: heightPage,
+				background: '#99FFCC'
 			});
-
+			
+			
 			// Setup the nav client.
 			var nav = new NAV2D.OccupancyGridClientNav({
 				ros: ros.ros,
@@ -85,6 +88,13 @@
 				viewer: viewer
 					//serverName: '/pr2_move_base'
 			});
+			
+			var map_editor = new ROSMAP.Editor({
+				ros: ros.ros,
+				rootObject: viewer.scene,
+			});
+			
+			//nav.enableGoal(false);
 
 			window.onresize = function(event) {
 				var heightHeader = $(this).find('[data-role="header"]').height();
@@ -101,11 +111,31 @@
 				console.log("click");
 			});
 
+			// ------- NEW EDITOR CONTROL
+
+			var addTwoIntsClient = new ROSLIB.Service({
+			    ros : ros.ros,
+			    name : '/map_editor',
+			    serviceType : 'dynamic_map/Editor'
+			  });
+			
+			  var request = new ROSLIB.ServiceRequest({
+			    type : 1,
+			    thickness : 2
+			  });
+			
+			  addTwoIntsClient.callService(request, function(result) {
+			    console.log('Result for service call on ');
+			     // + addTwoIntsClient.name
+			     // + ': '
+			     // + result.sum);
+			  });
+
 			var advpoint = new ROSLIB.Topic({
-    		ros : ros.ros,
-    		name : '/point_map',
-    		messageType : 'geometry_msgs/Vector3'
-  		});
+	    		ros : ros.ros,
+	    		name : '/point_map',
+	    		messageType : 'geometry_msgs/Vector3'
+  			});
 
 			var mouseDown = false;
 			var writeEventHandler = function(event, mouseState) {

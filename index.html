@@ -89,6 +89,19 @@
 					//serverName: '/pr2_move_base'
 			});
 			
+			/*
+			var robotMarker = new ROS2D.NavigationArrow({
+		      size : 50,
+		      strokeSize : 1,
+		      fillColor : createjs.Graphics.getRGB(255, 128, 0, 0.66),
+		      pulse : true
+		    });
+		    robotMarker.x = 200;
+		    robotMarker.y = -200;
+		    robotMarker.visible = true;
+			viewer.scene.addChild(robotMarker);
+			*/
+			
 			var map_editor = new ROSMAP.Editor({
 				ros: ros.ros,
 				rootObject: viewer.scene,
@@ -148,7 +161,8 @@
 					if(mouseDown === true) {
 						var position = viewer.scene.globalToRos(event.stageX, event.stageY);
 						var positionVec3 = new ROSLIB.Vector3(position);
-						console.log('[x:' + positionVec3.x + ',y:' + positionVec3.y + ']');
+						//TODO Console log
+						//console.log('[x:' + positionVec3.x + ',y:' + positionVec3.y + ']');
 						advpoint.publish(new ROSLIB.Message(positionVec3));
 					}
 				} else if(mouseState === 'up') {

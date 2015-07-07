@@ -76,7 +76,7 @@
 				background: '#99FFCC'
 			});
 			
-			
+			/*
 			// Setup the nav client.
 			var nav = new NAV2D.OccupancyGridClientNav({
 				ros: ros.ros,
@@ -88,22 +88,15 @@
 				viewer: viewer
 					//serverName: '/pr2_move_base'
 			});
-			
-			/*
-			var robotMarker = new ROS2D.NavigationArrow({
-		      size : 50,
-		      strokeSize : 1,
-		      fillColor : createjs.Graphics.getRGB(255, 128, 0, 0.66),
-		      pulse : true
-		    });
-		    robotMarker.x = 200;
-		    robotMarker.y = -200;
-		    robotMarker.visible = true;
-			viewer.scene.addChild(robotMarker);
 			*/
+			
+			viewer.scaleToDimensions(1800,1800);
+			
+			//viewer.scaleToDimensions(1, 1);
 			
 			var map_editor = new ROSMAP.Editor({
 				ros: ros.ros,
+				//client: nav.client,
 				rootObject: viewer.scene,
 			});
 			
@@ -125,7 +118,7 @@
 			});
 
 			// ------- NEW EDITOR CONTROL
-
+            /*
 			var addTwoIntsClient = new ROSLIB.Service({
 			    ros : ros.ros,
 			    name : '/map_editor',
@@ -181,7 +174,7 @@
 			viewer.scene.addEventListener('stagemouseup', function(event) {
 				writeEventHandler(event, 'up');
 			});
-			
+			*/
 		});
 	</script>
 	<style>

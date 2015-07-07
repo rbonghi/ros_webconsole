@@ -123,7 +123,7 @@ NAV2D.Navigator = function(options) {
 		goal.send();
 
 		// create a marker for the goal
-		if (that.goalMarker == null) {
+		if (that.goalMarker === null) {
 			that.goalMarker = new ROS2D.NavigationArrow({
 				size: 15,
 				strokeSize: 1,
@@ -177,7 +177,7 @@ NAV2D.Navigator = function(options) {
     robotMarker.rotation = stage.rosQuaternionToGlobalTheta(orientation);
     // Set visible
     robotMarker.visible = true;
-  }
+  };
 
   if(tfClient !== null) {
     tfClient.subscribe(robot_pose, function(tf) {
@@ -326,7 +326,7 @@ NAV2D.Navigator = function(options) {
 
 NAV2D.Navigator.prototype.enableGoal = function(setgoal) {
 	this.setgoal = setgoal;
-}
+};
 
 /**
  * @author Russell Toris - rctoris@wpi.edu
@@ -364,7 +364,7 @@ NAV2D.OccupancyGridClientNav = function(options) {
 	this.old_state = {x:0, y:0, width: 0, height: 0};
 
 	// setup a client to get the map
-	var client = new ROS2D.OccupancyGridClient({
+	this.client = new ROS2D.OccupancyGridClient({
 		ros: this.ros,
 		rootObject: this.rootObject,
 		continuous: continuous,
@@ -387,22 +387,22 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			withOrientation: this.withOrientation
 		});
 
-	client.on('change', function() {
+	this.client.on('change', function() {
 		console.log("Update");
 		// scale the viewer to fit the map
-		if (that.old_state.width != client.currentGrid.width || that.old_state.height != client.currentGrid.height) {
-			that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
-			that.old_state.width = client.currentGrid.width;
-			that.old_state.height = client.currentGrid.height;
+		if (that.old_state.width != that.client.currentGrid.width || that.old_state.height != that.client.currentGrid.height) {
+			that.viewer.scaleToDimensions(that.client.currentGrid.width, that.client.currentGrid.height);
+			that.old_state.width = that.client.currentGrid.width;
+			that.old_state.height = that.client.currentGrid.height;
 		}
-		if (that.old_state.x != client.currentGrid.pose.position.x || that.old_state.y != client.currentGrid.pose.position.y) {
-			that.viewer.shift((-that.old_state.x+client.currentGrid.pose.position.x)/1, (-that.old_state.y+client.currentGrid.pose.position.y)/1);
-			that.old_state.x = client.currentGrid.pose.position.x;
-			that.old_state.y = client.currentGrid.pose.position.y;
+		if (that.old_state.x != that.client.currentGrid.pose.position.x || that.old_state.y != that.client.currentGrid.pose.position.y) {
+			that.viewer.shift((-that.old_state.x+that.client.currentGrid.pose.position.x)/1, (-that.old_state.y+that.client.currentGrid.pose.position.y)/1);
+			that.old_state.x = that.client.currentGrid.pose.position.x;
+			that.old_state.y = that.client.currentGrid.pose.position.y;
 		}
 	});
 };
 
 NAV2D.OccupancyGridClientNav.prototype.enableGoal = function(setgoal) {
 	this.navigator.enableGoal(setgoal);
-}
+};

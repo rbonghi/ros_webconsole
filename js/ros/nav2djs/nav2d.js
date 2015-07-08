@@ -385,12 +385,12 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			robot_pose : this.robot_pose,
 			rootObject: this.rootObject,
 			withOrientation: this.withOrientation
-		});
-
+	});
+	
 	this.client.on('change', function() {
-		console.log("Update");
-		// scale the viewer to fit the map
+        // scale the viewer to fit the map
 		if (that.old_state.width != that.client.currentGrid.width || that.old_state.height != that.client.currentGrid.height) {
+		    
 			that.viewer.scaleToDimensions(that.client.currentGrid.width, that.client.currentGrid.height);
 			that.old_state.width = that.client.currentGrid.width;
 			that.old_state.height = that.client.currentGrid.height;
@@ -401,6 +401,8 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			that.old_state.y = that.client.currentGrid.pose.position.y;
 		}
 	});
+	
+	
 };
 
 NAV2D.OccupancyGridClientNav.prototype.enableGoal = function(setgoal) {

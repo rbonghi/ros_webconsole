@@ -28,9 +28,13 @@ ROSMAP.Editor = function(options) {
 	var mapeditortopic = options.topic || '/map_editor';
 	this.client = options.client || null;
 	this.rootObject = options.rootObject || new createjs.Container();
-    this.strokeSize = options.strokeSize || 10;//3;
+    this.strokeSize = options.strokeSize || 1;
     this.strokeColor = options.strokeColor || createjs.Graphics.getRGB(0, 0, 0);
-    
+
+    // internal drawing canvas
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    /*
     // subscribe to the topic
     this.mapEditorTopic = new ROSLIB.Topic({
         ros : ros,
@@ -38,60 +42,88 @@ ROSMAP.Editor = function(options) {
         messageType : 'nav_msgs/OccupancyGrid',
         //compression : 'png'
     });
-    /*
-    var init = true;
-    
-    this.client.on('change', function() {
-        if(init) {
-            console.log("AAA");
-            that.rootObject.addChild(that);
-            init = false;
-        }
-    });
     */
     
+    var redraw = function(lineWidth) {
+        context.beginPath();
+        context.lineWidth = lineWidth;
+        context.rect(context.lineWidth/2,context.lineWidth/2,canvas.width-context.lineWidth,canvas.height-context.lineWidth);
+        context.strokeStyle = createjs.Graphics.getRGB(0, 0, 255);
+        context.stroke();
+    };
     
+    this.client.on('change', function() {
+
+        
+        // create the bitmap
+        createjs.Bitmap.call(that, canvas);
+        
+		that.y = -that.height * that.client.currentGrid.scaleX;
+		that.scaleX = that.client.currentGrid.scaleX;
+		that.scaleY = that.client.currentGrid.scaleX;
+		
+		that.width = that.client.currentGrid.width;
+		that.height = that.client.currentGrid.height;
+        canvas.width = that.width/that.scaleX;
+        canvas.height = that.height/that.scaleY;
+        console.log("W:" + canvas.width + " H:" + canvas.height);
+        that.x += that.client.currentGrid.pose.position.x;
+        that.y -= that.client.currentGrid.pose.position.y;
+        
+		//redraw(5);
+	    that.rootObject.addChild(that);
+    });
     
-    // internal drawing canvas
-    var canvas = document.createElement('canvas');
-    this.context = canvas.getContext('2d');
-    
-    this.width = this.rootObject.canvas.width;
-    this.height = this.rootObject.canvas.height;
-    canvas.width = this.width;
-    canvas.height = this.height;
+    // set the size
+    this.scaleX = 1;
+    this.scaleY = 1;
+    this.width = 384;
+    this.height = 384;
+    //this.width = this.rootObject.canvas.width;
+    //this.height = this.rootObject.canvas.height;
+    //canvas.width = this.width;
+    //canvas.height = this.height;
+ 
+    this.y = -this.rootObject.canvas.height;
+
+    //redraw(5);
 	
-	// create the bitmap
-    createjs.Bitmap.call(this, canvas);
-	
-    this.oldPt;
-    this.oldMidPt;
-  
+    var oldPt;
+    var oldMidPt;
+
+    
     this.handleMouseMove = function(event) {
         if (!event.primary) { return; }
-        var midPt = new createjs.Point(that.oldPt.x + event.stageX >> 1, that.oldPt.y + event.stageY >> 1);
+        var position = that.rootObject.globalToRos(event.stageX, -event.stageY);
+		position.x = (position.x - that.x)/that.scaleX;
+		position.y = (position.y + that.y)/that.scaleY;
+        var midPt = new createjs.Point(oldPt.x + position.x >> 1, oldPt.y + position.y >> 1);
         
-        that.context.beginPath();
-        that.context.moveTo(midPt.x, midPt.y);
-        console.log("OLD [" + that.oldPt.x + "," + that.oldPt.y + "] - MID [" + that.oldMidPt.x + "," + that.oldMidPt.y + "]");
-        that.context.quadraticCurveTo(that.oldPt.x, that.oldPt.y, that.oldMidPt.x, that.oldMidPt.y);
-        that.context.lineWidth = that.strokeSize;
-        that.context.strokeStyle = that.strokeColor;
-        that.context.stroke();
-        that.context.lineCap = 'round';
+        context.beginPath();
+        context.moveTo(midPt.x, midPt.y);
+        console.log("OLD [" + oldPt.x + "," + oldPt.y + "] - MID [" + oldMidPt.x + "," + oldMidPt.y + "]");
+        context.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
+        context.lineWidth = that.strokeSize;
+        context.strokeStyle = that.strokeColor;
+        context.stroke();
+        context.lineCap = 'round';
         
         /// Update all points
-        that.oldPt.x = event.stageX;
-		that.oldPt.y = event.stageY;
-		that.oldMidPt.x = midPt.x;
-		that.oldMidPt.y = midPt.y;
+        oldPt.x = position.x;
+		oldPt.y = position.y;
+		oldMidPt.x = midPt.x;
+		oldMidPt.y = midPt.y;
     };
     
 	var handleMouseUp = function(event) {
 		if (!event.primary) { return; }
 		that.rootObject.removeEventListener("stagemousemove", that.handleMouseMove);
 		
-		var imageData = that.context.getImageData(0, 0, that.width, that.height);
+		// GET BITMAP
+		// GET ONLY greyscale value
+		// Send new map to server ROS
+		
+		var imageData = context.getImageData(0, 0, that.width*that.scaleX, that.height);
 		var data = ROSMAP.filterImage(imageData.data);
 		
 		if(that.info !== undefined) {
@@ -100,28 +132,24 @@ ROSMAP.Editor = function(options) {
             });
             that.mapEditorTopic.publish(map);
 		} else {
-		    that.context.clearRect(0, 0, that.width, that.height);
+		    context.clearRect(0, 0, that.width/that.scaleX, that.height/that.scaleY);
 		}
-		// GET BITMAP
-		// GET ONLY greyscale value
-		// Send new map to server ROS
-
+		
 	};
 	
 	var handleMouseDown = function(event) {
 		if (!event.primary) { return; }
-		that.oldPt = new createjs.Point(event.stageX, event.stageY);
-		that.oldMidPt = that.oldPt.clone();
+		var position = that.rootObject.globalToRos(event.stageX, -event.stageY);
+		position.x = (position.x - that.x)/that.scaleX;
+		position.y = (position.y + that.y)/that.scaleY;
+		oldPt = new createjs.Point(position.x, position.y);
+		oldMidPt = oldPt.clone();
 		that.rootObject.addEventListener("stagemousemove", that.handleMouseMove);
 	};
 	
 	this.rootObject.addEventListener("stagemousedown", handleMouseDown);
 	this.rootObject.addEventListener("stagemouseup", handleMouseUp);
-
-	console.log("Load ROSMAP");
 	
-	this.y -= this.rootObject.canvas.width;
-	this.rootObject.addChild(this);
 };
 ROSMAP.Editor.prototype.__proto__ = createjs.Bitmap.prototype;
 
@@ -135,6 +163,12 @@ ROSMAP.Editor.prototype.setStroke = function(stroke) {
 /**
  * 
  */
-ROSMAP.Editor.prototype.setType = function(type) {
+ROSMAP.Editor.prototype.resize = function(width, height) {
+    this.scaleX = 1;
+	this.scaleY = 1;
+    this.width = width;
+    this.height = height;
+    this.width *= this.scaleX;
+    this.height *= this.scaleY;
     
 }

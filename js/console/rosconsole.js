@@ -2,6 +2,10 @@ var ROSCONSOLE = ROSCONSOLE || {
 	REVISION: '0.0.1'
 };
 
+ROSCONSOLE.Radiomap = function(name) {
+    console.log($( name + " fieldset"));
+};
+
 ROSCONSOLE.isMobile = function() {
 	var isMobile = {
 		Android: function() {

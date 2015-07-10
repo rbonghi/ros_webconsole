@@ -222,7 +222,7 @@ ROSMAP.Editor = function(options) {
 };
 
 /**
- * 
+ * load last draw
  */
 ROSMAP.Editor.prototype.undo = function() {
     //this.rootObject.removeChild(this.map);
@@ -231,7 +231,7 @@ ROSMAP.Editor.prototype.undo = function() {
 };
 
 /**
- * 
+ * Enable or disable draw controller
  */
 ROSMAP.Editor.prototype.enable = function(enable) {
     if(enable) {

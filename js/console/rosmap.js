@@ -12,8 +12,7 @@ var ROSMAP = ROSMAP || {
 ROSMAP.square = function(options) {
     options = options || {};
     var map = options.EditorMap;
-    var context = options.context;
-    var canvas = options.canvas;
+    var color = options.color || 'red';
     var lineWidth = options.lineWidth;
     
     var width = map.width/map.scaleX;
@@ -22,7 +21,7 @@ ROSMAP.square = function(options) {
     map.context.lineWidth = lineWidth;
     map.context.rect(map.context.lineWidth/2, map.context.lineWidth/2, 
                     width-map.context.lineWidth, height-map.context.lineWidth);
-    map.context.strokeStyle = createjs.Graphics.getRGB(0, 0, 255);
+    map.context.strokeStyle = color;
     map.context.stroke();
 };
 
@@ -30,7 +29,6 @@ ROSMAP.square = function(options) {
  * 
  */
 ROSMAP.EditorMap = function(options) {
-    var that = this;
 	options = options || {};
 	var currentGrid = options.currentGrid;
 	
@@ -64,7 +62,7 @@ ROSMAP.EditorMap.prototype.__proto__ = createjs.Bitmap.prototype;
  * 
  */
 ROSMAP.EditorMap.prototype.getMatrix = function() {
-    var imageData = this.context.getImageData(0, 0, canvas.width, canvas.height);
+    var imageData = this.context.getImageData(0, 0, this.width/this.scaleX, this.height/this.scaleY);
     var data = [];
 	for (var i = 0; i < imageData.data.length; i += 4) {
 		data.push(imageData.data[i]);
@@ -86,29 +84,39 @@ ROSMAP.Editor = function(options) {
 	var that = this;
 	options = options || {};
 	var client = options.client || null;
+	var ros = options.ros;
+	var mapeditortopic = options.topic || '/map_editor';
 	var start_index = options.index || 0;
     this.rootObject = options.rootObject || new createjs.Container();
     // Draw information
     this.strokeSize = options.strokeSize || 1;
     this.strokeColor = options.strokeColor || createjs.Graphics.getRGB(0, 0, 0);
-    /*
-    var ros = options.ros;
-	var maptopic = options.topic || '/map';
-	var mapeditortopic = options.topic || '/map_editor';
+    
     // subscribe to the topic
-    this.mapEditorTopic = new ROSLIB.Topic({
+    var mapEditorTopic = new ROSLIB.Topic({
         ros : ros,
         name : mapeditortopic,
         messageType : 'nav_msgs/OccupancyGrid',
         //compression : 'png'
     });
-    */
+    var map_message = new ROSLIB.Message({
+        header : 0,
+        info : {
+            map_load_time: 0,
+            resolution: 0,
+            width: 0,
+            height: 0,
+            origin: 0,
+        },
+        data : 0
+    });
     
     // Map information
-    var map = new createjs.Shape();
+    this.map = new createjs.Shape();
+    this.oldMap = null;
     // Add in client
-    this.rootObject.addChildAt(map, start_index);
-    var index = that.rootObject.getChildIndex(map);
+    this.rootObject.addChildAt(this.map, start_index);
+    this.index = that.rootObject.getChildIndex(this.map);
     // Border
     this.frameBorder = null;
 
@@ -117,36 +125,40 @@ ROSMAP.Editor = function(options) {
     var oldMidPt;
 
     client.on('change', function() {
-        console.log("build map");
+        //Prepare ROS message
+        map_message.info.resolution = client.currentGrid.scaleX;
+        map_message.info.width = client.currentGrid.width/client.currentGrid.scaleX;
+        map_message.info.height = client.currentGrid.height/client.currentGrid.scaleY;
+        map_message.info.origin = client.currentGrid.pose;
         // Add frame border
         that.frameBorder = new ROSMAP.EditorMap({
             currentGrid: client.currentGrid
         });
-        that.rootObject.addChildAt(that.frameBorder, index);
+        that.rootObject.addChildAt(that.frameBorder, that.index);
         // Add editor map
-        that.rootObject.removeChild(map);
-        map = new ROSMAP.EditorMap({
+        that.rootObject.removeChild(that.map);
+        that.map = new ROSMAP.EditorMap({
             currentGrid: client.currentGrid
         });
-        that.rootObject.addChildAt(map, index);
+        that.rootObject.addChildAt(that.map, that.index);
     });
     
     var handleMouseMove = function(event) {
         if (!event.primary) { return; }
         var position = that.rootObject.globalToRos(event.stageX, -event.stageY);
-		position.x = (position.x - map.x)/map.scaleX;
-		position.y = (position.y + map.y)/map.scaleY;
+		position.x = (position.x - that.map.x)/that.map.scaleX;
+		position.y = (position.y + that.map.y)/that.map.scaleY;
         var midPt = new createjs.Point(oldPt.x + position.x >> 1, oldPt.y + position.y >> 1);
         
         //console.log("OLD [" + oldPt.x + "," + oldPt.y + "] - MID [" + oldMidPt.x + "," + oldMidPt.y + "]");
 
-        map.context.beginPath();
-        map.context.moveTo(midPt.x, midPt.y);
-        map.context.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
-        map.context.lineWidth = that.strokeSize;
-        map.context.strokeStyle = that.strokeColor;
-        map.context.stroke();
-        map.context.lineCap = 'round';
+        that.map.context.beginPath();
+        that.map.context.moveTo(midPt.x, midPt.y);
+        that.map.context.quadraticCurveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
+        that.map.context.lineWidth = that.strokeSize;
+        that.map.context.strokeStyle = that.strokeColor;
+        that.map.context.stroke();
+        that.map.context.lineCap = 'round';
         /// Update all points
         oldPt.x = position.x;
 		oldPt.y = position.y;
@@ -157,13 +169,18 @@ ROSMAP.Editor = function(options) {
 	this.handleMouseUp = function(event) {
 		if (!event.primary) { return; }
 		that.rootObject.removeEventListener("stagemousemove", handleMouseMove);
+		// Save old map
+		that.oldMap = that.map;
+		
+        //Send Map message
+        //mapEditorTopic.publish(map_message);
 	};
     
 	this.handleMouseDown = function(event) {
 		if (!event.primary) { return; }
 		var position = that.rootObject.globalToRos(event.stageX, -event.stageY);
-		position.x = (position.x - map.x)/map.scaleX;
-		position.y = (position.y + map.y)/map.scaleY;
+		position.x = (position.x - that.map.x)/that.map.scaleX;
+		position.y = (position.y + that.map.y)/that.map.scaleY;
 		oldPt = new createjs.Point(position.x, position.y);
 		oldMidPt = oldPt.clone();
 		that.rootObject.addEventListener("stagemousemove", handleMouseMove);
@@ -174,6 +191,14 @@ ROSMAP.Editor = function(options) {
 	this.rootObject.addEventListener("stagemouseup", this.handleMouseUp);
 };
 
+ROSMAP.Editor.prototype.undo = function() {
+    if(this.map !== null) {
+        this.rootObject.removeChild(this.map);
+        this.map = this.oldMap;
+        this.rootObject.addChildAt(this.map, this.index);
+    }
+};
+
 /**
  * 
  */
@@ -182,6 +207,7 @@ ROSMAP.Editor.prototype.enable = function(enable) {
         // Draw square
         ROSMAP.square({
             EditorMap: this.frameBorder,
+            color: 'blue',
             lineWidth: 5
         });
     	this.rootObject.addEventListener("stagemousedown", this.handleMouseDown);

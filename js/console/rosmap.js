@@ -90,7 +90,16 @@ ROSMAP.EditorMap.prototype.clearMap = function() {
 };
 
 /**
+ * Build a map editor
  * 
+ * @constructor
+ * @param options - object with following keys:
+ *   * ros - the ROSLIB.Ros connection handle
+ *   * client - The occupancy Grid client
+ *   * topic (optional) - the map meta data topic to listen to
+ *   * rootObject (optional) - the root object to add this marker to 
+ *   * strokeSize (optional) - stroke for the pen editor
+ *   * strokeColor (optional) - Color for the pen
  */
 ROSMAP.Editor = function(options) {
 	var that = this;

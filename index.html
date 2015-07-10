@@ -140,6 +140,24 @@
                 }
             });
             
+            var control_buttons = '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' + 
+                '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
+                '</div>';
+            $("#editor").append(control_buttons).trigger('create');
+            
+            $("#editor-map-control a").mousedown(function(e) {
+                $(this).addClass('ui-btn-active');
+                console.log($(e.target).attr('href').replace(/^#/, ""));
+                switch($(e.target).attr('href').replace(/^#/, "")){
+                    case 'undo':
+                        map_editor.undo();
+                        break;
+                }
+                //actions($(e.target).attr('href').replace(/^#/, ""));
+            }).mouseup(function(e) {
+                $(this).removeClass('ui-btn-active');
+            });
+            
             var slider = "<div id='sliders'>" +
                 "<form>" +
                 "<label for='map-editor-thickness'>Thickness:</label>" +
@@ -154,7 +172,8 @@
                 '<a href="#" class="ui-btn ui-corner-all ui-icon-action ui-btn-icon-top">Unknown</a>' +
                 '</div>';
 */
-            var buttons = '<form id="TypeControl">' +
+            
+            var editor_buttons = '<form id="TypeControl">' +
                 '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
                     '<legend>Horizontal, mini sized:</legend>' +
                     '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
@@ -166,7 +185,7 @@
                 '</fieldset>' +
                 '</form>';
                 
-            $("#editor").append(buttons).trigger('create');
+            $("#editor").append(editor_buttons).trigger('create');
             
             $( "#TypeControl"  ).bind( "change", function( e ) {
                 console.log("Check:" + e.target.id);
@@ -233,6 +252,7 @@
                                 <label for="radio-map-editor">Map editor</label>
                             </fieldset>
                         </form>
+                        <hr/>
                         <div id="editor">
                         </div>
                     </div>

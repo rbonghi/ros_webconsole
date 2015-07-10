@@ -40,7 +40,6 @@ ROSMAP.EditorMap = function(options) {
 	this.height = currentGrid.height/currentGrid.scaleY;
     canvas.width = this.width;
     canvas.height = this.height;
-    //console.log("W:" + canvas.width + " H:" + canvas.height);
 
     // create the bitmap
     createjs.Bitmap.call(this, canvas);
@@ -65,7 +64,20 @@ ROSMAP.EditorMap.prototype.getMatrix = function() {
     var imageData = this.context.getImageData(0, 0, this.width/this.scaleX, this.height/this.scaleY);
     var data = [];
 	for (var i = 0; i < imageData.data.length; i += 4) {
-		data.push(imageData.data[i]);
+	    switch(imageData.data[i]) {
+	        // Obstacle
+	        case 0:
+	            data.push(100);
+	            break;
+	        // Free space
+	        case 255:
+	            data.push(0);
+	            break;
+	        // Unknown
+	        default:
+	            data.push(-1);
+	            break;
+	    }
 	}
 	return data;
 };
@@ -100,9 +112,13 @@ ROSMAP.Editor = function(options) {
         //compression : 'png'
     });
     var map_message = new ROSLIB.Message({
-        header : 0,
+        header : {
+            seq: 0,
+            stamp : {secs : 0, nsecs : 100},
+            frame_id: ''
+        },
         info : {
-            map_load_time: 0,
+            map_load_time: {secs : 0, nsecs : 100},
             resolution: 0,
             width: 0,
             height: 0,
@@ -110,10 +126,11 @@ ROSMAP.Editor = function(options) {
         },
         data : 0
     });
+  
     
     // Map information
     this.map = new createjs.Shape();
-    this.oldMap = null;
+    this.oldMap = new createjs.Shape();
     // Add in client
     this.rootObject.addChildAt(this.map, start_index);
     this.index = that.rootObject.getChildIndex(this.map);
@@ -140,6 +157,7 @@ ROSMAP.Editor = function(options) {
         that.map = new ROSMAP.EditorMap({
             currentGrid: client.currentGrid
         });
+        that.oldMap = that.map;
         that.rootObject.addChildAt(that.map, that.index);
     });
     
@@ -170,10 +188,13 @@ ROSMAP.Editor = function(options) {
 		if (!event.primary) { return; }
 		that.rootObject.removeEventListener("stagemousemove", handleMouseMove);
 		// Save old map
-		that.oldMap = that.map;
+		//var ctx = that.map.context.getImageData(0, 0, that.map.width/that.map.scaleX, that.map.height/that.map.scaleY);
+		that.oldMap.context = that.map.context;
 		
+		map_message.data = that.map.getMatrix();
         //Send Map message
-        //mapEditorTopic.publish(map_message);
+        console.log("Data size: " + map_message.data.length);
+        mapEditorTopic.publish(map_message);
 	};
     
 	this.handleMouseDown = function(event) {
@@ -191,12 +212,13 @@ ROSMAP.Editor = function(options) {
 	this.rootObject.addEventListener("stagemouseup", this.handleMouseUp);
 };
 
+/**
+ * 
+ */
 ROSMAP.Editor.prototype.undo = function() {
-    if(this.map !== null) {
-        this.rootObject.removeChild(this.map);
-        this.map = this.oldMap;
-        this.rootObject.addChildAt(this.map, this.index);
-    }
+    //this.rootObject.removeChild(this.map);
+    this.map.context = this.oldMap.context;
+    //this.rootObject.addChildAt(this.map, this.index);
 };
 
 /**

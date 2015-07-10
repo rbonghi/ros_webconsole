@@ -86,6 +86,7 @@ ROSMAP.Editor = function(options) {
 	var that = this;
 	options = options || {};
 	var client = options.client || null;
+	var start_index = options.index || 0;
     this.rootObject = options.rootObject || new createjs.Container();
     // Draw information
     this.strokeSize = options.strokeSize || 1;
@@ -104,8 +105,13 @@ ROSMAP.Editor = function(options) {
     */
     
     // Map information
-    var map;
+    var map = new createjs.Shape();
+    // Add in client
+    this.rootObject.addChildAt(map, start_index);
+    var index = that.rootObject.getChildIndex(map);
+    // Border
     this.frameBorder = null;
+
     // Points
     var oldPt;
     var oldMidPt;
@@ -116,12 +122,13 @@ ROSMAP.Editor = function(options) {
         that.frameBorder = new ROSMAP.EditorMap({
             currentGrid: client.currentGrid
         });
-        that.rootObject.addChild(that.frameBorder);
+        that.rootObject.addChildAt(that.frameBorder, index);
         // Add editor map
+        that.rootObject.removeChild(map);
         map = new ROSMAP.EditorMap({
             currentGrid: client.currentGrid
         });
-        that.rootObject.addChild(map);
+        that.rootObject.addChildAt(map, index);
     });
     
     var handleMouseMove = function(event) {

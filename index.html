@@ -51,7 +51,7 @@
 			var heightHeader = $(this).find('[data-role="header"]').height();
 			var widthPage = $(window).width() - 16 * 2;
 			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
-            
+            /*
 			// Create the scene manager and view port for the 3D world.
 			var viewer3D = new ROS3D.Viewer({
 				divID: 'threed-map',
@@ -68,7 +68,7 @@
 				height: heightPage,
 				path: connection
 			});
-            
+            */
             var square = Math.min(widthPage, heightPage);
 			var viewer = new ROS2D.Viewer({
 				divID: 'nav',
@@ -92,8 +92,11 @@
 			var map_editor = new ROSMAP.Editor({
 				ros: ros.ros,
 				client: nav.client,
+				index: nav.map_index,
 				rootObject: viewer.scene,
 			});
+
+        	
 
 		    $("#nav").css("width", square+20);
 			$("#nav-menu").css("width", widthPage-square-20);
@@ -124,7 +127,7 @@
             nav.enableGoal(true);
             map_editor.enable(false);
             $( "#nav-controller"  ).bind( "change", function( e ) {
-                console.log("Check:" + e.target.id);
+                //console.log("Check:" + e.target.id);
                 switch(e.target.id) {
                     case 'radio-position':
                         nav.enableGoal(true);
@@ -139,11 +142,46 @@
             
             var slider = "<div id='sliders'>" +
                 "<form>" +
-                "<label for='map-editor-thickness'>Velocity:</label>" +
-                "<input type='range' name='Velocity' class='map-editor-thickness' min='1' max='10' step='0.5' value='" + map_editor.strokeSize + "' data-highlight='true'>" +
+                "<label for='map-editor-thickness'>Thickness:</label>" +
+                "<input type='range' name='Thickness' class='map-editor-thickness' min='1' max='10' step='0.5' value='" + map_editor.strokeSize + "' data-highlight='true'>" +
                 "</form>" +
                 "</div>";
-            $("#editor").html(slider).trigger('create');
+            $("#editor").append(slider).trigger('create');
+            /*
+            var buttons = '<div data-role="controlgroup" data-type="horizontal" data-mini="true">' +
+                '<a href="#" class="ui-btn ui-corner-all ui-icon-forbidden ui-btn-icon-top">Obstacle</a>' +
+                '<a href="#" class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-top">Checked</a>' +
+                '<a href="#" class="ui-btn ui-corner-all ui-icon-action ui-btn-icon-top">Unknown</a>' +
+                '</div>';
+*/
+            var buttons = '<form id="TypeControl">' +
+                '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
+                    '<legend>Horizontal, mini sized:</legend>' +
+                    '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
+                    '<label for="radio-obstacle">Obstacle</label>' +
+                    '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +
+                    '<label for="radio-checked">Checked</label>' +
+                    '<input type="radio" name="radio-choice-h-6" id="radio-unknown" value="other">' +
+                    '<label for="radio-unknown">Unknown</label>' +
+                '</fieldset>' +
+                '</form>';
+                
+            $("#editor").append(buttons).trigger('create');
+            
+            $( "#TypeControl"  ).bind( "change", function( e ) {
+                console.log("Check:" + e.target.id);
+                switch(e.target.id) {
+                    case 'radio-obstacle':
+                        map_editor.strokeColor = createjs.Graphics.getRGB(0, 0, 0);
+                        break;
+                    case 'radio-checked':
+                        map_editor.strokeColor = createjs.Graphics.getRGB(255, 255, 255);
+                        break;
+                    case 'radio-unknown':
+                        map_editor.strokeColor = createjs.Graphics.getRGB(127, 127, 127);
+                        break;
+                }
+            });
             
             $("#sliders .map-editor-thickness").on("slidestop", function(event, ui) {
                 map_editor.strokeSize = $("#sliders .map-editor-thickness").val();
@@ -184,23 +222,19 @@
             <div class="ui-grid-a">
                 <div id="nav" class="ui-block-a map2D"></div>
                 <div id="nav-menu" class="ui-block-b">
-                    <div class="ui-bar ui-bar-a">Map controller</div>
-                    <div class="ui-bar ui-bar-a">
+                    <h3 class="ui-bar ui-bar-a ui-corner-all">Map controller</h3>
+                    <div class="ui-body ui-body-a ui-corner-all">
                         <form id="nav-controller">
-                        <fieldset data-role="controlgroup">
-                            <legend>Vertical:</legend>
-                            <input type="radio" name="radio-choice-v-2" id="radio-position" value="on" checked="checked">
-                            <label for="radio-position">Set robot position</label>
-                            <input type="radio" name="radio-choice-v-2" id="radio-map-editor" value="off">
-                            <label for="radio-map-editor">Map editor</label>
-                        </fieldset>
+                            <fieldset data-role="controlgroup">
+                                <legend>Vertical:</legend>
+                                <input type="radio" name="radio-choice-v-2" id="radio-position" value="on" checked="checked">
+                                <label for="radio-position">Set robot position</label>
+                                <input type="radio" name="radio-choice-v-2" id="radio-map-editor" value="off">
+                                <label for="radio-map-editor">Map editor</label>
+                            </fieldset>
                         </form>
-                    </div>
-                    <div id="editor" class="ui-bar ui-bar-a">
-                        <form>
-                            <label for="map-editor-thickness">Thikness:</label>
-                            <input type="range" name="slider" id="map-editor-thickness" data-highlight="true" min="0" max="10" value="5">
-                        </form>
+                        <div id="editor">
+                        </div>
                     </div>
                 </div>
             </div><!-- /grid-a -->

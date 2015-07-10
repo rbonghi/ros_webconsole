@@ -371,12 +371,6 @@ NAV2D.OccupancyGridClientNav = function(options) {
 		topic: topic
 	});
 
-	var gridMap = new ROS2D.Grid({
-        size: 10,
-        cellSize: 1
-    });
-    this.rootObject.addChild(gridMap);
-
 	this.navigator = new NAV2D.Navigator({
 			ros: this.ros,
 			tfClient: this.tfClient,
@@ -386,6 +380,13 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			rootObject: this.rootObject,
 			withOrientation: this.withOrientation
 	});
+	
+	var gridMap = new ROS2D.Grid({
+                size: 10,
+                cellSize: 1
+            });
+    this.rootObject.addChild(gridMap);
+	this.map_index = this.rootObject.getChildIndex(gridMap) - 1;
 	
 	this.client.on('change', function() {
         // scale the viewer to fit the map

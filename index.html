@@ -2,242 +2,242 @@
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- CSS -->
-	<link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CSS -->
+  <link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
 
-	<!-- jQuery -->
-	<script src="js/jquery/jquery-2.1.0.js"></script>
-	<script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
+  <!-- jQuery -->
+  <script src="js/jquery/jquery-2.1.0.js"></script>
+  <script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
 
-	<!-- ROSLIBJS -->
-	<!-- EventEmitter2 is the sole dependency of roslibjs -->
-	<script src="js/ros/eventemitter2/eventemitter2.js"></script>
-	<!-- Roslibjs handles core ROS functionality in the browser -->
-	<script src="js/ros/roslibjs/roslib.js"></script>
-	<!-- ROS2DJS -->
-	<!-- EaselJS is a dependency of ros2djs -->
-	<script src="js/ros/easeljs/easeljs.js"></script>
-	<!-- Ros2djs provides 2D scene support, including mapping and more -->
-	<script src="js/ros/ros2djs/ros2d.js"></script>
+  <!-- ROSLIBJS -->
+  <!-- EventEmitter2 is the sole dependency of roslibjs -->
+  <script src="js/ros/eventemitter2/eventemitter2.js"></script>
+  <!-- Roslibjs handles core ROS functionality in the browser -->
+  <script src="js/ros/roslibjs/roslib.js"></script>
+  <!-- ROS2DJS -->
+  <!-- EaselJS is a dependency of ros2djs -->
+  <script src="js/ros/easeljs/easeljs.js"></script>
+  <!-- Ros2djs provides 2D scene support, including mapping and more -->
+  <script src="js/ros/ros2djs/ros2d.js"></script>
 
-	<!-- ROS3DJS -->
-	<!-- Three.js is the WebGL rendering library -->
-	<script src="js/ros/three/three.js"></script>
-	<!-- ColladaLoader2 loads collada models of the robot -->
-	<script src="js/ros/STLLoader/STLLoader.min.js"></script>
-	<!-- Ros3djs provides 3D scene support, including mapping and more -->
-	<script src="js/ros/ros3djs/ros3d.js"></script>
+  <!-- ROS3DJS -->
+  <!-- Three.js is the WebGL rendering library -->
+  <script src="js/ros/three/three.js"></script>
+  <!-- ColladaLoader2 loads collada models of the robot -->
+  <script src="js/ros/STLLoader/STLLoader.min.js"></script>
+  <!-- Ros3djs provides 3D scene support, including mapping and more -->
+  <script src="js/ros/ros3djs/ros3d.js"></script>
 
-	<script src="js/console/rosconsole.js"></script>
-	<script src="js/console/rosmap.js"></script>
-	<!-- NAV2D -->
-	<script src="js/ros/nav2djs/nav2d.js"></script>
+  <script src="js/console/rosconsole.js"></script>
+  <script src="js/console/rosmap.js"></script>
+  <!-- NAV2D -->
+  <script src="js/ros/nav2djs/nav2d.js"></script>
 
-	<script>
-		$(document).ready(function() {
-			
-			var name_page = "ROS Web console";
-			var connection = "ubuntu.local";
+  <script>
+    $(document).ready(function() {
 
-			var ros = new ROSCONSOLE.controller({
-				addr: connection,
-				fixed_frame: '/base_link'
-			});
+      var name_page = "ROS Web console";
+      var connection = "ubuntu.local";
 
-			var windowController = new ROSCONSOLE.WindowController(name_page);
+      var ros = new ROSCONSOLE.controller({
+        addr: connection,
+        fixed_frame: '/base_link'
+      });
 
-			var heightHeader = $(this).find('[data-role="header"]').height();
-			var widthPage = $(window).width() - 16 * 2;
-			var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
+      var windowController = new ROSCONSOLE.WindowController(name_page);
+
+      var heightHeader = $(this).find('[data-role="header"]').height();
+      var widthPage = $(window).width() - 16 * 2;
+      var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
             /*
-			// Create the scene manager and view port for the 3D world.
-			var viewer3D = new ROS3D.Viewer({
-				divID: 'threed-map',
-				width: widthPage,
-				height: heightPage,
-				antialias: true
-					//background: '#EEEEEE'
-			});
-			var map3D = new ROSCONSOLE.ROS3Dmap({
-				ros: ros.ros,
-				tfClient: ros.tfClient,
-				viewer: viewer3D,
-				width: widthPage,
-				height: heightPage,
-				path: connection
-			});
+      // Create the scene manager and view port for the 3D world.
+      var viewer3D = new ROS3D.Viewer({
+        divID: 'threed-map',
+        width: widthPage,
+        height: heightPage,
+        antialias: true
+          //background: '#EEEEEE'
+      });
+      var map3D = new ROSCONSOLE.ROS3Dmap({
+        ros: ros.ros,
+        tfClient: ros.tfClient,
+        viewer: viewer3D,
+        width: widthPage,
+        height: heightPage,
+        path: connection
+      });
             */
-            var square = Math.min(widthPage, heightPage);
-			var viewer = new ROS2D.Viewer({
-				divID: 'nav',
-				width: square,
-				height: square,
-				background: '#99FFCC'
-			});
-			
-			// Setup the nav client.
-			var nav = new NAV2D.OccupancyGridClientNav({
-				ros: ros.ros,
-				tfClient: ros.tfClient,
-				continuous: true,
-				robot_pose: '/base_link',
-				rootObject: viewer.scene,
-				withOrientation: true,
-				viewer: viewer
-					//serverName: '/pr2_move_base'
-			});
-			
-			var map_editor = new ROSMAP.Editor({
-				ros: ros.ros,
-				client: nav.client,
-				index: nav.map_index,
-				rootObject: viewer.scene,
-			});
+      var square = Math.min(widthPage, heightPage);
+      var viewer = new ROS2D.Viewer({
+        divID: 'nav',
+        width: square,
+        height: square,
+        background: '#99FFCC'
+      });
 
-        	
+      // Setup the nav client.
+      var nav = new NAV2D.OccupancyGridClientNav({
+        ros: ros.ros,
+        tfClient: ros.tfClient,
+        continuous: true,
+        robot_pose: '/base_link',
+        rootObject: viewer.scene,
+        withOrientation: true,
+        viewer: viewer
+          //serverName: '/pr2_move_base'
+      });
 
-		    $("#nav").css("width", square+20);
-			$("#nav-menu").css("width", widthPage-square-20);
-			
-			window.onresize = function(event) {
-				var heightHeader = $(this).find('[data-role="header"]').height();
-				var widthPage = $(window).width() - 16 * 2;
-				var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-				square = Math.min(widthPage, heightPage);
-				viewer.resize(square, square);
-				//viewer3D.resize(widthPage, heightPage);
-				$("#nav").css("width", square+20);
-				$("#nav-menu").css("width", widthPage-square-20);
-			};
-			
-			//var button_connect = '<a href="#" id="ros-test" data-role="button" data-icon="recycle" class="ui-btn-right">Test</a>';
-			//$('div:jqmData(role="header")').append(button_connect).trigger('create');
+      var map_editor = new ROSMAP.Editor({
+        ros: ros.ros,
+        client: nav.client,
+        index: nav.map_index,
+        rootObject: viewer.scene,
+      });
+
+
+
+        $("#nav").css("width", square+20);
+      $("#nav-menu").css("width", widthPage-square-20);
+
+      window.onresize = function(event) {
+        var heightHeader = $(this).find('[data-role="header"]').height();
+        var widthPage = $(window).width() - 16 * 2;
+        var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
+        square = Math.min(widthPage, heightPage);
+        viewer.resize(square, square);
+        //viewer3D.resize(widthPage, heightPage);
+        $("#nav").css("width", square+20);
+        $("#nav-menu").css("width", widthPage-square-20);
+      };
+
+      //var button_connect = '<a href="#" id="ros-test" data-role="button" data-icon="recycle" class="ui-btn-right">Test</a>';
+      //$('div:jqmData(role="header")').append(button_connect).trigger('create');
 /*
             var status = false;
-			$("#ros-test").click(function(){
-				nav.enableGoal(status);
-				status = !status;
-				console.log("Status: " + status);
-			});
+      $("#ros-test").click(function(){
+        nav.enableGoal(status);
+        status = !status;
+        console.log("Status: " + status);
+      });
             */
             //ROSCONSOLE.Radiomap("#nav-controller");
-            
-            nav.enableGoal(true);
-            map_editor.enable(false);
-            $( "#nav-controller"  ).bind( "change", function( e ) {
-                //console.log("Check:" + e.target.id);
-                switch(e.target.id) {
-                    case 'radio-position':
-                        nav.enableGoal(true);
-                        map_editor.enable(false);
-                        break;
-                    case 'radio-map-editor':
-                        nav.enableGoal(false);
-                        map_editor.enable(true);
-                        break;
-                }
-            });
-            
-            var control_buttons = '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' + 
-                '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
-                '</div>';
-            $("#editor").append(control_buttons).trigger('create');
-            
-            $("#editor-map-control a").mousedown(function(e) {
-                $(this).addClass('ui-btn-active');
-                console.log($(e.target).attr('href').replace(/^#/, ""));
-                switch($(e.target).attr('href').replace(/^#/, "")){
-                    case 'undo':
-                        map_editor.undo();
-                        break;
-                }
-                //actions($(e.target).attr('href').replace(/^#/, ""));
-            }).mouseup(function(e) {
-                $(this).removeClass('ui-btn-active');
-            });
-            
-            var slider = "<div id='sliders'>" +
-                "<form>" +
-                "<label for='map-editor-thickness'>Thickness:</label>" +
-                "<input type='range' name='Thickness' class='map-editor-thickness' min='1' max='10' step='0.5' value='" + map_editor.strokeSize + "' data-highlight='true'>" +
-                "</form>" +
-                "</div>";
-            $("#editor").append(slider).trigger('create');
-            /*
-            var buttons = '<div data-role="controlgroup" data-type="horizontal" data-mini="true">' +
-                '<a href="#" class="ui-btn ui-corner-all ui-icon-forbidden ui-btn-icon-top">Obstacle</a>' +
-                '<a href="#" class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-top">Checked</a>' +
-                '<a href="#" class="ui-btn ui-corner-all ui-icon-action ui-btn-icon-top">Unknown</a>' +
-                '</div>';
+
+      nav.enableGoal(true);
+      map_editor.enable(false);
+      $( "#nav-controller"  ).bind( "change", function( e ) {
+          //console.log("Check:" + e.target.id);
+          switch(e.target.id) {
+              case 'radio-position':
+                  nav.enableGoal(true);
+                  map_editor.enable(false);
+                  break;
+              case 'radio-map-editor':
+                  nav.enableGoal(false);
+                  map_editor.enable(true);
+                  break;
+          }
+      });
+
+      var control_buttons = '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' +
+          '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
+          '</div>';
+      $("#editor").append(control_buttons).trigger('create');
+
+      $("#editor-map-control a").mousedown(function(e) {
+          $(this).addClass('ui-btn-active');
+          console.log($(e.target).attr('href').replace(/^#/, ""));
+          switch($(e.target).attr('href').replace(/^#/, "")){
+              case 'undo':
+                  map_editor.undo();
+                  break;
+          }
+          //actions($(e.target).attr('href').replace(/^#/, ""));
+      }).mouseup(function(e) {
+          $(this).removeClass('ui-btn-active');
+      });
+
+      var slider = "<div id='sliders'>" +
+          "<form>" +
+          "<label for='map-editor-thickness'>Thickness:</label>" +
+          "<input type='range' name='Thickness' class='map-editor-thickness' min='1' max='10' step='0.5' value='" + map_editor.strokeSize + "' data-highlight='true'>" +
+          "</form>" +
+          "</div>";
+      $("#editor").append(slider).trigger('create');
+      /*
+      var buttons = '<div data-role="controlgroup" data-type="horizontal" data-mini="true">' +
+          '<a href="#" class="ui-btn ui-corner-all ui-icon-forbidden ui-btn-icon-top">Obstacle</a>' +
+          '<a href="#" class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-top">Checked</a>' +
+          '<a href="#" class="ui-btn ui-corner-all ui-icon-action ui-btn-icon-top">Unknown</a>' +
+          '</div>';
 */
-            
-            var editor_buttons = '<form id="TypeControl">' +
-                '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
-                    '<legend>Horizontal, mini sized:</legend>' +
-                    '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
-                    '<label for="radio-obstacle">Obstacle</label>' +
-                    '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +
-                    '<label for="radio-checked">Checked</label>' +
-                    '<input type="radio" name="radio-choice-h-6" id="radio-unknown" value="other">' +
-                    '<label for="radio-unknown">Unknown</label>' +
-                '</fieldset>' +
-                '</form>';
-                
-            $("#editor").append(editor_buttons).trigger('create');
-            
-            $( "#TypeControl"  ).bind( "change", function( e ) {
-                console.log("Check:" + e.target.id);
-                switch(e.target.id) {
-                    case 'radio-obstacle':
-                        map_editor.strokeColor = createjs.Graphics.getRGB(0, 0, 0);
-                        break;
-                    case 'radio-checked':
-                        map_editor.strokeColor = createjs.Graphics.getRGB(255, 255, 255);
-                        break;
-                    case 'radio-unknown':
-                        map_editor.strokeColor = createjs.Graphics.getRGB(127, 127, 127);
-                        break;
-                }
-            });
-            
-            $("#sliders .map-editor-thickness").on("slidestop", function(event, ui) {
-                map_editor.strokeSize = $("#sliders .map-editor-thickness").val();
-                //console.log(map_editor.strokeSize);
-            });
-            
-		});
-	</script>
-	<style>
-		#threed-map canvas {
-			border-radius: 14px;
-			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-		}
 
-		.map2D canvas {
-			border-radius: 14px;
-			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-		}
+      var editor_buttons = '<form id="TypeControl">' +
+          '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
+              '<legend>Horizontal, mini sized:</legend>' +
+              '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
+              '<label for="radio-obstacle">Obstacle</label>' +
+              '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +
+              '<label for="radio-checked">Checked</label>' +
+              '<input type="radio" name="radio-choice-h-6" id="radio-unknown" value="other">' +
+              '<label for="radio-unknown">Unknown</label>' +
+          '</fieldset>' +
+          '</form>';
 
-		.border canvas {
-			border-radius: 14px;
-			box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-		}
-	</style>
+      $("#editor").append(editor_buttons).trigger('create');
+
+      $( "#TypeControl"  ).bind( "change", function( e ) {
+          //console.log("Check:" + e.target.id);
+          switch(e.target.id) {
+              case 'radio-obstacle':
+                  map_editor.strokeColor = createjs.Graphics.getRGB(0, 0, 0);
+                  break;
+              case 'radio-checked':
+                  map_editor.strokeColor = createjs.Graphics.getRGB(255, 255, 255);
+                  break;
+              case 'radio-unknown':
+                  map_editor.strokeColor = createjs.Graphics.getRGB(127, 127, 127);
+                  break;
+          }
+      });
+
+      $("#sliders .map-editor-thickness").on("slidestop", function(event, ui) {
+          map_editor.strokeSize = $("#sliders .map-editor-thickness").val();
+          //console.log(map_editor.strokeSize);
+      });
+
+    });
+  </script>
+  <style>
+    #threed-map canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+
+    .map2D canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+
+    .border canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+  </style>
 </head>
 
 <body>
-	<!-- pages -->
-	<!-- 3D map -->
-	<div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
-		<div data-role="content">
-			<div id="threed-map"></div>
-		</div>
-	</div>
-	<!-- 2D map -->
-	<div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
-		<div data-role="content">
+  <!-- pages -->
+  <!-- 3D map -->
+  <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
+    <div data-role="content">
+      <div id="threed-map"></div>
+    </div>
+  </div>
+  <!-- 2D map -->
+  <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
+    <div data-role="content">
             <div class="ui-grid-a">
                 <div id="nav" class="ui-block-a map2D"></div>
                 <div id="nav-menu" class="ui-block-b">
@@ -258,8 +258,8 @@
                     </div>
                 </div>
             </div><!-- /grid-a -->
-		</div>
-	</div>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -159,6 +159,9 @@ NAV2D.Navigator = function(options) {
 		fillColor: createjs.Graphics.getRGB(255, 128, 0, 0.66),
 		pulse: true
 	});
+	robotMarker.addEventListener("click", function(evt) {
+		console.log("type: "+evt.type+" target: "+evt.target+" stageX: "+evt.stageX);
+	});
 	// wait for a pose to come in first
 	robotMarker.visible = false;
 	this.rootObject.addChild(robotMarker);
@@ -380,18 +383,18 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			rootObject: this.rootObject,
 			withOrientation: this.withOrientation
 	});
-	
+
 	var gridMap = new ROS2D.Grid({
                 size: 10,
                 cellSize: 1
             });
     this.rootObject.addChild(gridMap);
 	this.map_index = this.rootObject.getChildIndex(gridMap) - 1;
-	
+
 	this.client.on('change', function() {
         // scale the viewer to fit the map
 		if (that.old_state.width != that.client.currentGrid.width || that.old_state.height != that.client.currentGrid.height) {
-		    
+
 			that.viewer.scaleToDimensions(that.client.currentGrid.width, that.client.currentGrid.height);
 			that.old_state.width = that.client.currentGrid.width;
 			that.old_state.height = that.client.currentGrid.height;
@@ -402,8 +405,8 @@ NAV2D.OccupancyGridClientNav = function(options) {
 			that.old_state.y = that.client.currentGrid.pose.position.y;
 		}
 	});
-	
-	
+
+
 };
 
 NAV2D.OccupancyGridClientNav.prototype.enableGoal = function(setgoal) {

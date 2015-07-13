@@ -142,6 +142,7 @@
 
       var control_buttons = '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' +
           '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
+          '<a href="#forward" class="ui-btn ui-corner-all ui-icon-forward ui-btn-icon-top">Redo</a>' +
           '</div>';
       $("#editor").append(control_buttons).trigger('create');
 
@@ -150,13 +151,17 @@
           console.log($(e.target).attr('href').replace(/^#/, ""));
           switch($(e.target).attr('href').replace(/^#/, "")){
               case 'undo':
-                  map_editor.undo();
-                  break;
+                map_editor.undo();
+                break;
+              case 'forward':
+                map_editor.redo();
+                break;
           }
           //actions($(e.target).attr('href').replace(/^#/, ""));
       }).mouseup(function(e) {
           $(this).removeClass('ui-btn-active');
       });
+
 
       var slider = "<div id='sliders'>" +
           "<form>" +
@@ -175,7 +180,7 @@
 
       var editor_buttons = '<form id="TypeControl">' +
           '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
-              '<legend>Horizontal, mini sized:</legend>' +
+              '<legend>Type:</legend>' +
               '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
               '<label for="radio-obstacle">Obstacle</label>' +
               '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +

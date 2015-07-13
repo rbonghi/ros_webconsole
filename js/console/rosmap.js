@@ -9,6 +9,14 @@ var ROSMAP = ROSMAP || {
 /**
  *
  */
+Array.prototype.repeat= function(what, L){
+ while(L) this[--L]= what;
+ return this;
+};
+
+/**
+ *
+ */
 ROSMAP.square = function(options) {
 	options = options || {};
 	var map = options.EditorMap;
@@ -71,20 +79,24 @@ ROSMAP.EditorMap.prototype.getMatrix = function() {
 	var imageData = this.context.getImageData(0, 0, this.width/this.scaleX, this.height/this.scaleY);
 	var data = [];
 	for (var i = 0; i < imageData.data.length; i += 4) {
-		switch(imageData.data[i]) {
-			// Obstacle
-			case 0:
-				data.push(100);
-				break;
-			// Free space
-			case 255:
-				data.push(0);
-				break;
-			// Unknown
-			default:
-				data.push(-1);
-				break;
-		}
+    if(imageData.data[i + 3] === 0) {
+      data.push(-1);
+    } else {
+  		switch(imageData.data[i]) {
+  			// Obstacle
+  			case 0:
+  				data.push(100);
+  				break;
+  			// Free space
+  			case 255:
+  				data.push(0);
+  				break;
+  			// Unknown
+  			default:
+  				data.push(-1);
+  				break;
+  		}
+    }
 	}
 	return data;
 };

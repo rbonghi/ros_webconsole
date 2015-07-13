@@ -124,17 +124,17 @@
             */
             //ROSCONSOLE.Radiomap("#nav-controller");
 
-      nav.enableGoal(true);
+      nav.enableGoal('scroll');
       map_editor.enable(false);
       $( "#nav-controller"  ).bind( "change", function( e ) {
           //console.log("Check:" + e.target.id);
           switch(e.target.id) {
               case 'radio-position':
-                  nav.enableGoal(true);
+                  nav.enableGoal('goal');
                   map_editor.enable(false);
                   break;
               case 'radio-map-editor':
-                  nav.enableGoal(false);
+                  nav.enableGoal('scroll');
                   map_editor.enable(true);
                   break;
           }

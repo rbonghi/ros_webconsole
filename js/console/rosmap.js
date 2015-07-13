@@ -9,6 +9,7 @@ var ROSMAP = ROSMAP || {
 ROSMAP.VALUE_OBSTACLE = 100;
 ROSMAP.VALUE_FREE_SPACE = 0;
 ROSMAP.VALUE_UNKNOWN = -1;
+ROSMAP.VALUE_UNWRITTEN = 120;
 
 /**
  *
@@ -96,7 +97,7 @@ ROSMAP.EditorMap.prototype.getMatrix = function() {
       var i = (widthPX*y + x) * 4;
     // Check if alpha value is zero
       if(imageData.data[i + 3] === 0) {
-        data.push(ROSMAP.VALUE_UNKNOWN);
+        data.push(ROSMAP.VALUE_UNWRITTEN);
       } else {
     		switch(imageData.data[i]) {
     			// Obstacle

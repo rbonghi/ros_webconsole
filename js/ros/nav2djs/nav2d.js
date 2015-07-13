@@ -92,7 +92,7 @@ NAV2D.Navigator = function(options) {
 	var withOrientation = options.withOrientation || false;
 	this.rootObject = options.rootObject || new createjs.Container();
 
-	this.setgoal = true;
+	this.mapcontrol = 'scroll';
 	this.goalMarker = null;
 
 	// setup the actionlib client
@@ -311,24 +311,24 @@ NAV2D.Navigator = function(options) {
 		};
 
 		this.rootObject.addEventListener('stagemousedown', function(event) {
-			if(that.setgoal)
+			if(that.mapcontrol == 'goal')
 				mouseEventHandler(event, 'down');
 		});
 
 		this.rootObject.addEventListener('stagemousemove', function(event) {
-			if(that.setgoal)
+			if(that.mapcontrol == 'goal')
 				mouseEventHandler(event, 'move');
 		});
 
 		this.rootObject.addEventListener('stagemouseup', function(event) {
-			if(that.setgoal)
+			if(that.mapcontrol == 'goal')
 				mouseEventHandler(event, 'up');
 		});
 	}
 };
 
 NAV2D.Navigator.prototype.enableGoal = function(setgoal) {
-	this.setgoal = setgoal;
+	this.mapcontrol = setgoal;
 };
 
 /**

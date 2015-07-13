@@ -6,6 +6,10 @@ var ROSMAP = ROSMAP || {
   REVISION: '0.0.1'
 };
 
+ROSMAP.VALUE_OBSTACLE = 100;
+ROSMAP.VALUE_FREE_SPACE = 0;
+ROSMAP.VALUE_UNKNOWN = -1;
+
 /**
  *
  */
@@ -76,26 +80,35 @@ ROSMAP.EditorMap.prototype.__proto__ = createjs.Bitmap.prototype;
  *
  */
 ROSMAP.EditorMap.prototype.getMatrix = function() {
-	var imageData = this.context.getImageData(0, 0, this.width/this.scaleX, this.height/this.scaleY);
+
+  var widthPX = this.width/this.scaleX;
+  var heightPX = this.height/this.scaleY;
+  // Get image matrix
+	var imageData = this.context.getImageData(0, 0, widthPX, heightPX);
 	var data = [];
-	for (var i = 0; i < imageData.data.length; i += 4) {
-    if(imageData.data[i + 3] === 0) {
-      data.push(-1);
-    } else {
-  		switch(imageData.data[i]) {
-  			// Obstacle
-  			case 0:
-  				data.push(100);
-  				break;
-  			// Free space
-  			case 255:
-  				data.push(0);
-  				break;
-  			// Unknown
-  			default:
-  				data.push(-1);
-  				break;
-  		}
+  // Flip map matrix on y axis
+  for (var y = heightPX; y > 0; y--) {
+    for (var x = 0; x < widthPX; x++) {
+      var i = (widthPX*y + x) * 4;
+    // Check if alpha value is zero
+      if(imageData.data[i + 3] === 0) {
+        data.push(ROSMAP.VALUE_UNKNOWN);
+      } else {
+    		switch(imageData.data[i]) {
+    			// Obstacle
+    			case 0:
+    				data.push(ROSMAP.VALUE_OBSTACLE);
+    				break;
+    			// Free space
+    			case 255:
+    				data.push(ROSMAP.VALUE_FREE_SPACE);
+    				break;
+    			// Unknown
+    			default:
+    				data.push(ROSMAP.VALUE_UNKNOWN);
+    				break;
+    		}
+      }
     }
 	}
 	return data;

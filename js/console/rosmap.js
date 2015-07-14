@@ -81,6 +81,36 @@ ROSMAP.EditorMap.prototype.__proto__ = createjs.Bitmap.prototype;
 
 /**
  *
+ *
+ */
+ROSMAP.EditorMap.prototype.updateSize = function(currentGrid) {
+  var that = this;
+  var canvasPic = new Image();
+  canvasPic.src = this.canvas.toDataURL();
+
+  this.width = currentGrid.width/currentGrid.scaleX;
+  this.height = currentGrid.height/currentGrid.scaleY;
+  this.canvas.width = that.width;
+  this.canvas.height = that.height;
+
+  this.y = -this.height * currentGrid.scaleX;
+
+  this.scaleX = currentGrid.scaleX;
+  this.scaleY = currentGrid.scaleY;
+
+  this.width *= this.scaleX;
+  this.height *= this.scaleY;
+
+  this.x = currentGrid.pose.position.x;
+  this.y -= currentGrid.pose.position.y;
+  
+  canvasPic.onload = function () {
+    that.context.drawImage(canvasPic, 0, 0);
+  };
+};
+
+/**
+ *
  */
 ROSMAP.EditorMap.prototype.getMatrix = function() {
 
@@ -186,6 +216,7 @@ ROSMAP.Editor = function(options) {
 		rootObject: this.rootObject,
 		currentGrid: client.currentGrid
 	});
+  this.rootObject.addChildAt(this.frameBorder, start_index+1);
 
   // Points
   var oldPt;
@@ -210,17 +241,20 @@ ROSMAP.Editor = function(options) {
 		map_message.info.height = client.currentGrid.height/client.currentGrid.scaleY;
 		map_message.info.origin = client.currentGrid.pose;
 		// Add frame border
-		that.frameBorder = new ROSMAP.EditorMap({
-		    currentGrid: client.currentGrid
-		});
-		that.rootObject.addChildAt(that.frameBorder, that.index);
+    that.frameBorder.updateSize(client.currentGrid);
+    //that.rootObject.removeChild(that.frameBorder);
+		//that.frameBorder = new ROSMAP.EditorMap({
+		//    currentGrid: client.currentGrid
+		//});
+		//that.rootObject.addChildAt(that.frameBorder, that.index+1);
 		// Add editor map
 		that.rootObject.removeChild(that.map);
 		that.map = new ROSMAP.EditorMap({
 		    currentGrid: client.currentGrid
 		});
-    cPush(that.map.canvas);
 		that.rootObject.addChildAt(that.map, that.index);
+    // Add in history
+    cPush(that.map.canvas);
   });
 
   var handleMouseMove = function(event) {

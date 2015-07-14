@@ -204,8 +204,8 @@ NAV2D.Navigator = function(options) {
 
   // marker for the robot
   var robotMarker = null;
-  if (use_image && ROS2D.hasOwnProperty('ImageNavigator')) {
-    robotMarker = new ROS2D.ImageNavigator({
+  if (use_image && ROS2D.hasOwnProperty('NavigationImage')) {
+    robotMarker = new ROS2D.NavigationImage({
       size: 2.5,
       image: use_image,
       pulse: true

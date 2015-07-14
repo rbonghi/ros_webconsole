@@ -2,6 +2,7 @@
   "globals": {
     "$": false,
     "module": true,
+    "createjs": true, 
     "EventEmitter2": true,
     "ROSLIB": true,
     "ROS3D": true,
@@ -28,4 +29,3 @@
   "proto": true,
   "laxbreak": true
 }
-

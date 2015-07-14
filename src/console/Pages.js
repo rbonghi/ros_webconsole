@@ -11,7 +11,7 @@ ROSCONSOLE.pages = function() {
 	} else {
 		html_navbar = '<ul>';
 	}
-	
+
 	for (var i = 0; i < find_pages.length; i++) {
 		html_navbar += '<li>' +
 			'<a href="#' + $(find_pages[i]).attr('id') + '" data-icon="' + $(find_pages[i]).jqmData('icon') +

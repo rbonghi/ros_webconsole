@@ -1,27 +1,29 @@
 
 
-ROSCONSOLE.initEditor = function(map_editor) {
-  var editor_buttons = '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' +
-      '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
-      '<a href="#forward" class="ui-btn ui-corner-all ui-icon-forward ui-btn-icon-top">Redo</a>' +
-    '</div>' +
-    '<div id="sliders">' +
-      '<form>' +
-        '<label for="map-editor-thickness">Thickness:</label>' +
-        '<input type="range" name="Thickness" class="map-editor-thickness" min="1" max="10" step="0.5" value="' + map_editor.strokeSize + '" data-highlight="true">' +
+ROSCONSOLE.initEditor = function(map_editor, button_pos) {
+  var editor_buttons = '<div id="editor">' +
+      '<div id="editor-map-control" data-role="controlgroup" data-type="horizontal">' +
+        '<a href="#undo" class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-top">Undo</a>' +
+        '<a href="#forward" class="ui-btn ui-corner-all ui-icon-forward ui-btn-icon-top">Redo</a>' +
+      '</div>' +
+      '<div id="sliders">' +
+        '<form>' +
+          '<label for="map-editor-thickness">Thickness:</label>' +
+          '<input type="range" name="Thickness" class="map-editor-thickness" min="1" max="10" step="0.5" value="' + map_editor.strokeSize + '" data-highlight="true">' +
+        '</form>' +
+      '</div>' +
+      '<form id="TypeControl">' +
+        '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
+          '<legend>Type:</legend>' +
+          '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
+          '<label for="radio-obstacle">Obstacle</label>' +
+          '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +
+          '<label for="radio-checked">Checked</label>' +
+          '<input type="radio" name="radio-choice-h-6" id="radio-unknown" value="other">' +
+          '<label for="radio-unknown">Unknown</label>' +
+        '</fieldset>' +
       '</form>' +
-    '</div>' +
-    '<form id="TypeControl">' +
-      '<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">' +
-        '<legend>Type:</legend>' +
-        '<input type="radio" name="radio-choice-h-6" id="radio-obstacle" value="on" checked="checked">' +
-        '<label for="radio-obstacle">Obstacle</label>' +
-        '<input type="radio" name="radio-choice-h-6" id="radio-checked" value="off">' +
-        '<label for="radio-checked">Checked</label>' +
-        '<input type="radio" name="radio-choice-h-6" id="radio-unknown" value="other">' +
-        '<label for="radio-unknown">Unknown</label>' +
-      '</fieldset>' +
-    '</form>';
+    '</div>';
   /*
   var buttons = '<div data-role="controlgroup" data-type="horizontal" data-mini="true">' +
       '<a href="#" class="ui-btn ui-corner-all ui-icon-forbidden ui-btn-icon-top">Obstacle</a>' +
@@ -30,7 +32,8 @@ ROSCONSOLE.initEditor = function(map_editor) {
       '</div>';
   */
 
-  $('#editor').append(editor_buttons).trigger('create');
+  $(button_pos).append(editor_buttons).trigger('create');
+  $('#editor').hide();
 
   $('#editor-map-control a').mousedown(function(e) {
       $(this).addClass('ui-btn-active');

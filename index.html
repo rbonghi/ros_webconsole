@@ -111,24 +111,22 @@
         $("#nav-menu").css("width", widthPage-square-20);
       };
 
-      nav.setControlType('scroll');
-      map_editor.enable(false);
-      $( "#nav-controller"  ).bind( "change", function( e ) {
-          //console.log("Check:" + e.target.id);
-          switch(e.target.id) {
-              case 'radio-position':
-                  nav.setControlType('goal');
-                  map_editor.enable(false);
-                  break;
-              case 'radio-map-editor':
-                  nav.setControlType('scroll');
-                  map_editor.enable(true);
-                  break;
-          }
+      var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
+
+      map2DCont.addController({
+        radio_name: 'editor',
+        name: 'Map editor',
+        func_run: function(e){
+          $('#editor').slideDown();
+          map_editor.enable(true);
+        },
+        func_stop: function(e){
+          $('#editor').slideUp();
+          map_editor.enable(false);
+        }
       });
-      
       // Initialize map editor controller
-      ROSCONSOLE.initEditor(map_editor);
+      ROSCONSOLE.initEditor(map_editor, '#nav-button-controllers');
 
     });
   </script>
@@ -166,17 +164,16 @@
                 <div id="nav-menu" class="ui-block-b">
                     <h3 class="ui-bar ui-bar-a ui-corner-all">Map controller</h3>
                     <div class="ui-body ui-body-a ui-corner-all">
-                        <form id="nav-controller">
+                      <form id="nav-controller">
                             <fieldset data-role="controlgroup">
-                                <legend>Vertical:</legend>
-                                <input type="radio" name="radio-choice-v-2" id="radio-position" value="on" checked="checked">
-                                <label for="radio-position">Set robot position</label>
-                                <input type="radio" name="radio-choice-v-2" id="radio-map-editor" value="off">
-                                <label for="radio-map-editor">Map editor</label>
+                                <input type="radio" name="radio-choice-v-2" id="radio-map-zoom" value="on" checked="checked">
+                                <label for="radio-map-zoom">Zoom</label>
+                                <input type="radio" name="radio-choice-v-2" id="radio-map-goal" value="off">
+                                <label for="radio-map-goal">Set goal</label>
                             </fieldset>
                         </form>
-                        <hr/>
-                        <div id="editor">
+                        <div id="nav-button-controllers">
+                          
                         </div>
                     </div>
                 </div>

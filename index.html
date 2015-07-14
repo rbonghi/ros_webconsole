@@ -31,8 +31,6 @@
   <script src="js/ros/ros3djs/ros3d.js"></script>
   <!-- NAV2D -->
   <script src="js/ros/nav2djs/nav2d.js"></script>
-  <!-- ROS MAP  - Editor for maps -->
-  <script src="js/ros/rosmapjs/rosmap.js"></script>
 
   <script src="js/console/rosconsole.js"></script>
 
@@ -52,7 +50,7 @@
       var heightHeader = $(this).find('[data-role="header"]').height();
       var widthPage = $(window).width() - 16 * 2;
       var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
-            /*
+
       // Create the scene manager and view port for the 3D world.
       var viewer3D = new ROS3D.Viewer({
         divID: 'threed-map',
@@ -69,7 +67,7 @@
         height: heightPage,
         path: connection
       });
-            */
+
       var square = Math.min(widthPage, heightPage);
       var viewer = new ROS2D.Viewer({
         divID: 'nav',
@@ -90,13 +88,6 @@
           //serverName: '/pr2_move_base'
       });
 
-      var map_editor = new ROSMAP.Editor({
-        ros: ros.ros,
-        client: nav.client,
-        index: nav.map_index,
-        rootObject: viewer.scene,
-      });
-
       $("#nav").css("width", square+20);
       $("#nav-menu").css("width", widthPage-square-20);
 
@@ -106,27 +97,12 @@
         var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
         square = Math.min(widthPage, heightPage);
         viewer.resize(square, square);
-        //viewer3D.resize(widthPage, heightPage);
+        viewer3D.resize(widthPage, heightPage);
         $("#nav").css("width", square+20);
         $("#nav-menu").css("width", widthPage-square-20);
       };
 
       var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-
-      map2DCont.addController({
-        radio_name: 'editor',
-        name: 'Map editor',
-        func_run: function(e){
-          $('#editor').slideDown();
-          map_editor.enable(true);
-        },
-        func_stop: function(e){
-          $('#editor').slideUp();
-          map_editor.enable(false);
-        }
-      });
-      // Initialize map editor controller
-      ROSCONSOLE.initEditor(map_editor, '#nav-button-controllers');
 
     });
   </script>
@@ -173,7 +149,7 @@
                             </fieldset>
                         </form>
                         <div id="nav-button-controllers">
-                          
+
                         </div>
                     </div>
                 </div>

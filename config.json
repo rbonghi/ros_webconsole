@@ -1,5 +1,5 @@
 {
-  "server": "demo.robotwebtools.org",
-  "fixed_frame": "/base_footprint",
-  "path_mesh": "resources.robotwebtools.org"
+  "server": "ubuntu.local",
+  "fixed_frame": "/base_link",
+  "path_mesh": "ubuntu.local"
 }

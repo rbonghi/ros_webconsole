@@ -27,6 +27,8 @@
   <script src="js/ros/three/three.js"></script>
   <!-- ColladaLoader2 loads collada models of the robot -->
   <script src="js/ros/STLLoader/STLLoader.min.js"></script>
+  <!-- ColladaLoader loads collada models of the robot -->
+	<script src="js/ros/ColladaLoader/ColladaLoader.js"></script>
   <!-- Ros3djs provides 3D scene support, including mapping and more -->
   <script src="js/ros/ros3djs/ros3d.js"></script>
   <!-- NAV2D -->
@@ -37,91 +39,105 @@
   <script>
     $(document).ready(function() {
 
-      var name_page = "ROS Web console";
-      var connection = "ubuntu.local";
-
-      var ros = new ROSCONSOLE.controller({
-        addr: connection,
-        fixed_frame: '/base_link'
-      });
-
-      var windowController = new ROSCONSOLE.WindowController(name_page);
-
       var heightHeader = $(this).find('[data-role="header"]').height();
       var widthPage = $(window).width() - 16 * 2;
-      var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
-      /*
-      // Create the scene manager and view port for the 3D world.
-      var viewer3D = new ROS3D.Viewer({
-        divID: 'threed-map',
-        width: widthPage,
-        height: heightPage,
-        antialias: true
-          //background: '#EEEEEE'
-      });
-      var map3D = new ROSCONSOLE.ROS3Dmap({
-        ros: ros.ros,
-        tfClient: ros.tfClient,
-        viewer: viewer3D,
-        width: widthPage,
-        height: heightPage,
-        path: connection
-      });
-      */
-      var square = Math.min(widthPage, heightPage);
-      var viewer = new ROS2D.Viewer({
-        divID: 'nav',
-        width: square,
-        height: square,
-        background: '#99FFCC'
-      });
+      var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
 
-      // Setup the nav client.
-      var nav = new NAV2D.OccupancyGridClientNav({
-        ros: ros.ros,
-        tfClient: ros.tfClient,
-        continuous: true,
-        robot_pose: '/odom',
-        rootObject: viewer.scene,
-        withOrientation: true,
-        viewer: viewer,
-        //image: 'images/dude.png'
-          //serverName: '/pr2_move_base'
-      });
 
-      $("#nav").css("width", square+20);
-      $("#nav-menu").css("width", widthPage-square-20);
+      var runControl = function(json) {
 
-      window.onresize = function(event) {
-        var heightHeader = $(this).find('[data-role="header"]').height();
-        var widthPage = $(window).width() - 16 * 2;
-        var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-        square = Math.min(widthPage, heightPage);
-        viewer.resize(square, square);
-        //viewer3D.resize(widthPage, heightPage);
+        var name_page = "ROS Web console";
+        var connection = json.server;
+
+        var ros = new ROSCONSOLE.controller({
+          addr: connection,
+          fixed_frame: json.fixed_frame
+        });
+
+        var windowController = new ROSCONSOLE.WindowController(name_page);
+
+        // Create the scene manager and view port for the 3D world.
+        var viewer3D = new ROS3D.Viewer({
+          divID: 'threed-map',
+          width: widthPage,
+          height: heightPage,
+          antialias: true
+            //background: '#EEEEEE'
+        });
+        var map3D = new ROSCONSOLE.ROS3Dmap({
+          ros: ros.ros,
+          tfClient: ros.tfClient,
+          viewer: viewer3D,
+          width: widthPage,
+          height: heightPage,
+          path: json.path_mesh
+        });
+
+        var square = Math.min(widthPage, heightPage);
+        var viewer = new ROS2D.Viewer({
+          divID: 'nav',
+          width: square,
+          height: square,
+          background: '#99FFCC'
+        });
+
+        // Setup the nav client.
+        var nav = new NAV2D.OccupancyGridClientNav({
+          ros: ros.ros,
+          tfClient: ros.tfClient,
+          continuous: true,
+          robot_pose: '/odom',
+          rootObject: viewer.scene,
+          withOrientation: true,
+          viewer: viewer,
+          //image: 'images/dude.png'
+            //serverName: '/pr2_move_base'
+        });
+
         $("#nav").css("width", square+20);
         $("#nav-menu").css("width", widthPage-square-20);
+
+        window.onresize = function(event) {
+          var heightHeader = $(this).find('[data-role="header"]').height();
+          var widthPage = $(window).width() - 16 * 2;
+          var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
+          square = Math.min(widthPage, heightPage);
+          //viewer.resize(square, square);
+          viewer3D.resize(widthPage, heightPage);
+          $("#nav").css("width", square+20);
+          $("#nav-menu").css("width", widthPage-square-20);
+        };
+
+        var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
+
+        var pathListener = new ROSLIB.Topic({
+          ros: ros.ros,
+          name: '/move_base/DWAPlannerROS/global_plan',
+          messageType: 'nav_msgs/Path',
+          //throttle_rate: 100
+        });
+
+        var pathShape = new ROS2D.PathShape({
+          strokeColor: 'green'
+        });
+        viewer.scene.addChild(pathShape);
+
+        pathListener.subscribe(function(path) {
+          //console.log("Path!");
+          pathShape.setPath(path);
+          pathShape.scaleX = 1.0 / viewer.scene.scaleX;
+          pathShape.scaleY = 1.0 / viewer.scene.scaleY;
+        });
       };
 
-      var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-
-      var pathListener = new ROSLIB.Topic({
-        ros: ros.ros,
-        name: '/move_base/DWAPlannerROS/global_plan',
-        messageType: 'nav_msgs/Path',
-        //throttle_rate: 100
-      });
-
-      var pathShape = new ROS2D.PathShape({
-        strokeColor: 'green'
-      });
-      viewer.scene.addChild(pathShape);
-
-      pathListener.subscribe(function(path) {
-        //console.log("Path!");
-        pathShape.setPath(path);
-        pathShape.scaleX = 1.0 / viewer.scene.scaleX;
-        pathShape.scaleY = 1.0 / viewer.scene.scaleY;
+      $.getJSON( "config.json" )
+      .done(function( json ) {
+        console.log( "JSON Data: " + json.server );
+        runControl(json);
+      })
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
       });
 
     });

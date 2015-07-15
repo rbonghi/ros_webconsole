@@ -1,0 +1,5 @@
+{
+  "server": "demo.robotwebtools.org",
+  "fixed_frame": "/base_footprint",
+  "path_mesh": "resources.robotwebtools.org"
+}

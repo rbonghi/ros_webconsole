@@ -44,7 +44,7 @@
 
       var ros = new ROSCONSOLE.controller({
         addr: connection,
-        fixed_frame: '/base_link'
+        fixed_frame: '/map'
       });
 
       var windowController = new ROSCONSOLE.WindowController(name_page);
@@ -52,7 +52,7 @@
       var heightHeader = $(this).find('[data-role="header"]').height();
       var widthPage = $(window).width() - 16 * 2;
       var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
-            /*
+
       // Create the scene manager and view port for the 3D world.
       var viewer3D = new ROS3D.Viewer({
         divID: 'threed-map',
@@ -69,7 +69,7 @@
         height: heightPage,
         path: connection
       });
-            */
+      
       var square = Math.min(widthPage, heightPage);
       var viewer = new ROS2D.Viewer({
         divID: 'nav',
@@ -105,8 +105,8 @@
         var widthPage = $(window).width() - 16 * 2;
         var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
         square = Math.min(widthPage, heightPage);
-        viewer.resize(square, square);
-        //viewer3D.resize(widthPage, heightPage);
+        //viewer.resize(square, square);
+        viewer3D.resize(widthPage, heightPage);
         $("#nav").css("width", square+20);
         $("#nav-menu").css("width", widthPage-square-20);
       };

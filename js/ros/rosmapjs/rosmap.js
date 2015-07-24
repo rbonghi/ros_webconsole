@@ -61,7 +61,7 @@ ROSMAP.Editor = function(options) {
   options = options || {};
   var client = options.client || null;
   var ros = options.ros;
-  var mapeditortopic = options.topic || '/map_editor';
+  var mapeditortopic = options.topic || 'dynamic_map_node/editor';
   var start_index = options.index || 0;
   this.rootObject = options.rootObject || new createjs.Container();
   // Draw information
@@ -79,7 +79,7 @@ ROSMAP.Editor = function(options) {
     header : {
     seq: 0,
     stamp : {secs : 0, nsecs : 100},
-    frame_id: ''
+    frame_id: 'map'
   },
   info : {
     map_load_time: {secs : 0, nsecs : 100},

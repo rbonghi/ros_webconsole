@@ -109,25 +109,7 @@
         };
 
         var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-
-        var pathListener = new ROSLIB.Topic({
-          ros: ros.ros,
-          name: '/move_base/DWAPlannerROS/global_plan',
-          messageType: 'nav_msgs/Path',
-          //throttle_rate: 100
-        });
-
-        var pathShape = new ROS2D.PathShape({
-          strokeColor: 'green'
-        });
-        viewer.scene.addChild(pathShape);
-
-        pathListener.subscribe(function(path) {
-          //console.log("Path!");
-          pathShape.setPath(path);
-          pathShape.scaleX = 1.0 / viewer.scene.scaleX;
-          pathShape.scaleY = 1.0 / viewer.scene.scaleY;
-        });
+        
       };
 
       $.getJSON( "config.json" )

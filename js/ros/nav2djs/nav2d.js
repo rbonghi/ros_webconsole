@@ -256,6 +256,28 @@ NAV2D.Navigator = function(options) {
     });
   }
 
+  var pathListener = new ROSLIB.Topic({
+    ros: ros,
+    name: '/move_base/DWAPlannerROS/global_plan',
+    messageType: 'nav_msgs/Path',
+    //throttle_rate: 100
+  });
+
+  var pathShape = new ROS2D.PathShape({
+    strokeColor: 'green'
+  });
+  this.rootObject.addChild(pathShape);
+
+  pathListener.subscribe(function(path) {
+    //console.log("Path!");
+    pathShape.setPath(path);
+    pathShape.rotation = robotMarker.rotation;
+    pathShape.x = robotMarker.x;
+    pathShape.y = robotMarker.y;
+    pathShape.scaleX = 1.0 / stage.scaleX;
+    pathShape.scaleY = 1.0 / stage.scaleY;
+  });
+
   if (withOrientation === false){
     // setup a double click listener (no orientation)
     this.rootObject.addEventListener('dblclick', function(event) {

@@ -1,5 +1,5 @@
 {
   "server": "ubuntu.local",
-  "fixed_frame": "/base_link",
+  "fixed_frame": "/map",
   "path_mesh": "ubuntu.local"
 }

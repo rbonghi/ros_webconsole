@@ -27,106 +27,122 @@
   <script src="js/ros/three/three.js"></script>
   <!-- ColladaLoader2 loads collada models of the robot -->
   <script src="js/ros/STLLoader/STLLoader.min.js"></script>
+  <!-- ColladaLoader loads collada models of the robot -->
+	<script src="js/ros/ColladaLoader/ColladaLoader.js"></script>
   <!-- Ros3djs provides 3D scene support, including mapping and more -->
   <script src="js/ros/ros3djs/ros3d.js"></script>
   <!-- NAV2D -->
   <script src="js/ros/nav2djs/nav2d.js"></script>
   <!-- ROS MAP  - Editor for maps -->
   <script src="js/ros/rosmapjs/rosmap.js"></script>
-
   <script src="js/console/rosconsole.js"></script>
 
   <script>
     $(document).ready(function() {
 
-      var name_page = "ROS Web console";
-      var connection = "ubuntu.local";
-
-      var ros = new ROSCONSOLE.controller({
-        addr: connection,
-        fixed_frame: '/map'
-      });
-
-      var windowController = new ROSCONSOLE.WindowController(name_page);
-
       var heightHeader = $(this).find('[data-role="header"]').height();
       var widthPage = $(window).width() - 16 * 2;
-      var heightPage = $(window).height() - heightHeader - 16 * 2 - 10;
+      var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
 
-      // Create the scene manager and view port for the 3D world.
-      var viewer3D = new ROS3D.Viewer({
-        divID: 'threed-map',
-        width: widthPage,
-        height: heightPage,
-        antialias: true
-          //background: '#EEEEEE'
-      });
-      var map3D = new ROSCONSOLE.ROS3Dmap({
-        ros: ros.ros,
-        tfClient: ros.tfClient,
-        viewer: viewer3D,
-        width: widthPage,
-        height: heightPage,
-        path: connection
-      });
-      
-      var square = Math.min(widthPage, heightPage);
-      var viewer = new ROS2D.Viewer({
-        divID: 'nav',
-        width: square,
-        height: square,
-        background: '#99FFCC'
-      });
 
-      // Setup the nav client.
-      var nav = new NAV2D.OccupancyGridClientNav({
-        ros: ros.ros,
-        tfClient: ros.tfClient,
-        continuous: true,
-        robot_pose: '/base_link',
-        rootObject: viewer.scene,
-        withOrientation: true,
-        viewer: viewer
-          //serverName: '/pr2_move_base'
-      });
+      var runControl = function(json) {
 
-      var map_editor = new ROSMAP.Editor({
-        ros: ros.ros,
-        client: nav.client,
-        index: nav.map_index,
-        rootObject: viewer.scene,
-      });
+        var name_page = "ROS Web console";
+        var connection = json.server;
 
-      $("#nav").css("width", square+20);
-      $("#nav-menu").css("width", widthPage-square-20);
+        var ros = new ROSCONSOLE.controller({
+          addr: connection,
+          fixed_frame: json.fixed_frame
+        });
 
-      window.onresize = function(event) {
-        var heightHeader = $(this).find('[data-role="header"]').height();
-        var widthPage = $(window).width() - 16 * 2;
-        var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-        square = Math.min(widthPage, heightPage);
-        //viewer.resize(square, square);
-        viewer3D.resize(widthPage, heightPage);
+        var windowController = new ROSCONSOLE.WindowController(name_page);
+        /*
+        // Create the scene manager and view port for the 3D world.
+        var viewer3D = new ROS3D.Viewer({
+          divID: 'threed-map',
+          width: widthPage,
+          height: heightPage,
+          antialias: true
+            //background: '#EEEEEE'
+        });
+        var map3D = new ROSCONSOLE.ROS3Dmap({
+          ros: ros.ros,
+          tfClient: ros.tfClient,
+          viewer: viewer3D,
+          width: widthPage,
+          height: heightPage,
+          path: json.path_mesh
+        });
+*/
+        var square = Math.min(widthPage, heightPage);
+        var viewer = new ROS2D.Viewer({
+          divID: 'nav',
+          width: square,
+          height: square,
+          background: '#99FFCC'
+        });
+
+        // Setup the nav client.
+        var nav = new NAV2D.OccupancyGridClientNav({
+          ros: ros.ros,
+          tfClient: ros.tfClient,
+          continuous: true,
+          robot_pose: '/base_link',
+          rootObject: viewer.scene,
+          withOrientation: true,
+          viewer: viewer,
+          //image: 'images/dude.png'
+            //serverName: '/pr2_move_base'
+        });
+
+        var map_editor = new ROSMAP.Editor({
+          ros: ros.ros,
+          client: nav.client,
+          index: nav.map_index,
+          rootObject: viewer.scene,
+        });
+
         $("#nav").css("width", square+20);
         $("#nav-menu").css("width", widthPage-square-20);
+
+        window.onresize = function(event) {
+          var heightHeader = $(this).find('[data-role="header"]').height();
+          var widthPage = $(window).width() - 16 * 2;
+          var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
+          square = Math.min(widthPage, heightPage);
+          //viewer.resize(square, square);
+          viewer3D.resize(widthPage, heightPage);
+          $("#nav").css("width", square+20);
+          $("#nav-menu").css("width", widthPage-square-20);
+        };
+
+        var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
+
+        map2DCont.addController({
+          radio_name: 'editor',
+          name: 'Map editor',
+          func_run: function(e){
+            $('#editor').slideDown();
+            map_editor.enable(true);
+          },
+          func_stop: function(e){
+            $('#editor').slideUp();
+            map_editor.enable(false);
+          }
+        });
+        // Initialize map editor controller
+        ROSCONSOLE.initEditor(map_editor, '#nav-button-controllers');
       };
 
-      var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-
-      map2DCont.addController({
-        radio_name: 'editor',
-        name: 'Map editor',
-        func_run: function(e){
-          $('#editor').slideDown();
-          map_editor.enable(true);
-        },
-        func_stop: function(e){
-          $('#editor').slideUp();
-          map_editor.enable(false);
-        }
+      $.getJSON( "config.json" )
+      .done(function( json ) {
+        console.log( "JSON Data: " + json.server );
+        runControl(json);
+      })
+      .fail(function( jqxhr, textStatus, error ) {
+        var err = textStatus + ", " + error;
+        console.log( "Request Failed: " + err );
       });
-      // Initialize map editor controller
-      ROSCONSOLE.initEditor(map_editor, '#nav-button-controllers');
 
     });
   </script>
@@ -173,7 +189,7 @@
                             </fieldset>
                         </form>
                         <div id="nav-button-controllers">
-                          
+
                         </div>
                     </div>
                 </div>

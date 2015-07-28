@@ -204,8 +204,8 @@ NAV2D.Navigator = function(options) {
 
   // marker for the robot
   var robotMarker = null;
-  if (use_image && ROS2D.hasOwnProperty('ImageNavigator')) {
-    robotMarker = new ROS2D.ImageNavigator({
+  if (use_image && ROS2D.hasOwnProperty('NavigationImage')) {
+    robotMarker = new ROS2D.NavigationImage({
       size: 2.5,
       image: use_image,
       pulse: true
@@ -255,6 +255,35 @@ NAV2D.Navigator = function(options) {
       updateRobotPosition(pose.position,pose.orientation);
     });
   }
+
+  var pathListener = new ROSLIB.Topic({
+    ros: ros,
+    name: '/move_base/DWAPlannerROS/global_plan',
+    messageType: 'nav_msgs/Path',
+    //throttle_rate: 100
+  });
+
+  var odomtf = {x: 0, y: 0, rotation: 0};
+  tfClient.subscribe('odom', function(tf) {
+    odomtf.x = tf.translation.x;
+    odomtf.y = tf.translation.y;
+    odomtf.rotation = stage.rosQuaternionToGlobalTheta(tf.rotation);
+  });
+
+  var pathShape = new ROS2D.PathShape({
+    strokeColor: 'green'
+  });
+  this.rootObject.addChild(pathShape);
+
+  pathListener.subscribe(function(path) {
+    //console.log("Path!");
+    pathShape.setPath(path);
+    pathShape.rotation = odomtf.rotation;
+    pathShape.x = odomtf.x;
+    pathShape.y = -odomtf.y;
+    pathShape.scaleX = 1.0 / stage.scaleX;
+    pathShape.scaleY = 1.0 / stage.scaleY;
+  });
 
   if (withOrientation === false){
     // setup a double click listener (no orientation)

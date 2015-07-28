@@ -263,6 +263,13 @@ NAV2D.Navigator = function(options) {
     //throttle_rate: 100
   });
 
+  var odomtf = {x: 0, y: 0, rotation: 0};
+  tfClient.subscribe('odom', function(tf) {
+    odomtf.x = tf.translation.x;
+    odomtf.y = tf.translation.y;
+    odomtf.rotation = stage.rosQuaternionToGlobalTheta(tf.rotation);
+  });
+
   var pathShape = new ROS2D.PathShape({
     strokeColor: 'green'
   });
@@ -271,9 +278,9 @@ NAV2D.Navigator = function(options) {
   pathListener.subscribe(function(path) {
     //console.log("Path!");
     pathShape.setPath(path);
-    pathShape.rotation = robotMarker.rotation;
-    pathShape.x = robotMarker.x;
-    pathShape.y = robotMarker.y;
+    pathShape.rotation = odomtf.rotation;
+    pathShape.x = odomtf.x;
+    pathShape.y = -odomtf.y;
     pathShape.scaleX = 1.0 / stage.scaleX;
     pathShape.scaleY = 1.0 / stage.scaleY;
   });

@@ -55,7 +55,7 @@
         });
 
         var windowController = new ROSCONSOLE.WindowController(name_page);
-
+        /*
         // Create the scene manager and view port for the 3D world.
         var viewer3D = new ROS3D.Viewer({
           divID: 'threed-map',
@@ -72,7 +72,7 @@
           height: heightPage,
           path: json.path_mesh
         });
-
+*/
         var square = Math.min(widthPage, heightPage);
         var viewer = new ROS2D.Viewer({
           divID: 'nav',
@@ -86,7 +86,7 @@
           ros: ros.ros,
           tfClient: ros.tfClient,
           continuous: true,
-          robot_pose: '/odom',
+          robot_pose: '/base_link',
           rootObject: viewer.scene,
           withOrientation: true,
           viewer: viewer,
@@ -109,7 +109,7 @@
         };
 
         var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-        
+
       };
 
       $.getJSON( "config.json" )

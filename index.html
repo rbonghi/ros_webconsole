@@ -84,8 +84,8 @@
         var square = Math.min(widthPage, heightPage);
         var viewer = new ROS2D.Viewer({
           divID: 'nav',
-          width: square,
-          height: square,
+          width: widthPage,
+          height: heightPage,
           background: '#99FFCC'
         });
 
@@ -109,36 +109,21 @@
           rootObject: viewer.scene,
         });
 
-        $("#nav").css("width", square+20);
-        $("#nav-menu").css("width", widthPage-square-20);
+        $("#nav").css("width", widthPage - square / 2 - 16);
+        $("#nav-menu").css("width", square / 2);
 
         window.onresize = function(event) {
           var heightHeader = $(this).find('[data-role="header"]').height();
           var widthPage = $(window).width() - 16 * 2;
           var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
           square = Math.min(widthPage, heightPage);
-          //viewer.resize(square, square);
+          viewer.resize(widthPage, heightPage);
           viewer3D.resize(widthPage, heightPage);
-          $("#nav").css("width", square+20);
-          $("#nav-menu").css("width", widthPage-square-20);
+          $("#nav").css("width", square / 2 - 16);
+          $("#nav-menu").css("width", square / 2);
         };
 
         var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-
-        map2DCont.addController({
-          radio_name: 'editor',
-          name: 'Map editor',
-          func_run: function(e){
-            $('#editor').slideDown();
-            map_editor.enable(true);
-          },
-          func_stop: function(e){
-            $('#editor').slideUp();
-            map_editor.enable(false);
-          }
-        });
-        // Initialize map editor controller
-        ROSCONSOLE.initEditor(map_editor, '#nav-button-controllers');
       };
 
       $.getJSON( "config.json" )

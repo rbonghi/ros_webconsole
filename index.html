@@ -46,17 +46,22 @@
 
 
       var runControl = function(json) {
-
-        var name_page = "ROS Web console";
-        var connection = json.server;
-
+        // Load default configuration
+        json = json || {};
+        // Load robot configuration parameters
+        json.robot = (('robot' in json) ? json.robot : {});
+        
+        // Initialize Console
+        var name_page = json.name_page || "ROS Web console";
+        var connection = json.server || 'localhost';
+        
         var ros = new ROSCONSOLE.controller({
           addr: connection,
-          fixed_frame: json.fixed_frame
+          fixed_frame: json.robot.fixed_frame,
         });
 
         var windowController = new ROSCONSOLE.WindowController(name_page);
-        /*
+        
         // Create the scene manager and view port for the 3D world.
         var viewer3D = new ROS3D.Viewer({
           divID: 'threed-map',
@@ -65,15 +70,17 @@
           antialias: true
             //background: '#EEEEEE'
         });
+        
         var map3D = new ROSCONSOLE.ROS3Dmap({
           ros: ros.ros,
           tfClient: ros.tfClient,
           viewer: viewer3D,
           width: widthPage,
           height: heightPage,
-          path: json.path_mesh
+          path: json.path_mesh || 'localhost',
+          param: json.robot.description || 'robot_description'
         });
-*/
+        
         var square = Math.min(widthPage, heightPage);
         var viewer = new ROS2D.Viewer({
           divID: 'nav',
@@ -136,14 +143,18 @@
 
       $.getJSON( "config.json" )
       .done(function( json ) {
-        console.log( "JSON Data: " + json.server );
+        console.log( "JSON Data loaded!\nConnected to server " + json.server +":80");
+        // Print configuration server
+        console.log(json);
+        // Load control
         runControl(json);
       })
       .fail(function( jqxhr, textStatus, error ) {
         var err = textStatus + ", " + error;
         console.log( "Request Failed: " + err );
+        // Load control
+        runControl();
       });
-
     });
   </script>
   <style>

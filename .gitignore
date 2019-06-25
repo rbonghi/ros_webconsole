@@ -1,1 +1,9 @@
+# Remove compile test
 TEST/
+node_modules
+# Do not save configuration
+config.json
+
+# Remove reference
+zed_wrapper
+minicar_description

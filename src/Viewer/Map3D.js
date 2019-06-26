@@ -61,17 +61,17 @@ ROSCONSOLE.ROS3Dmap = function(options) {
         rootObject: viewer3D.scene,
         topic: laser,
         tfClient: tfClient,
-        material: { size: 0.01, color: "#FF0000" },
+        material: { size: 0.01, color: '#FF0000' },
     });
 	
-	if(twistmaker) {
-	    // Setup the marker client.
-	    var imClient = new ROS3D.InteractiveMarkerClient({
-		    ros: ros,
-		    tfClient: tfClient,
-		    topic: '/twist_marker_server',
-		    camera: viewer3D.camera,
-		    rootObject: viewer3D.selectableObjects
-	    });
-	}
+    if(twistmaker) {
+        // Setup the marker client.
+        var imClient = new ROS3D.InteractiveMarkerClient({
+            ros: ros,
+            tfClient: tfClient,
+            topic: '/twist_marker_server',
+            camera: viewer3D.camera,
+            rootObject: viewer3D.selectableObjects
+        });
+    }
 };

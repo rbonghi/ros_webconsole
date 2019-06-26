@@ -220,17 +220,17 @@ ROSCONSOLE.Camera = function(options) {
     var divID = options.divID;
     var connection = options.connection;
     var port = options.port || 9999;
-    var topic = options.topic || "image_rect_color";
+    var topic = options.topic || 'image_rect_color';
     var size = options.size || 200;
     
-    var stream = "http://" + connection + ":" + port + "/stream?topic=" + topic;
+    var stream = 'http://' + connection + ':' + port + '/stream?topic=' + topic;
     
-    var camera_field = "<div id=\"camera\" class=\"ui-block-b\">" + 
-                           "<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>" + 
-                           "<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">" +
-                               "<img src=\"" +stream + "\" width=\"" + size + "\" height=\"" + size + "\">" + 
-                           "</div>" +
-                       "</div>";
+    var camera_field = '<div id=\"camera\" class=\"ui-block-b\">' + 
+                           '<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>' + 
+                           '<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">' +
+                               '<img src=\"' +stream + '\" width=\"' + size + '\" height=\"' + size + '\">' + 
+                           '</div>' +
+                       '</div>';
     // Add field
     $( divID ).append(camera_field).trigger('create');
 };

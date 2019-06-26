@@ -77,10 +77,10 @@ ROSCONSOLE.Camera = function(options) {
     
     var stream = 'http://' + connection + ':' + port + '/stream?topic=' + topic;
     
-    var camera_field = '<div id=\"camera\" class=\"ui-block-b\">' + 
-                           '<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>' + 
+    var camera_field = '<div id=\"camera\" class=\"ui-block-b\">' +
+                           '<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>' +
                            '<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">' +
-                               '<img src=\"' +stream + '\" width=\"' + size + '\" height=\"' + size + '\">' + 
+                               '<img src=\"' +stream + '\" width=\"' + size + '\" height=\"' + size + '\">' +
                            '</div>' +
                        '</div>';
     // Add field

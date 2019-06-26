@@ -215,17 +215,48 @@ ROSCONSOLE.RadioController.prototype.addController = function(options) {
 };
 
 
+ROSCONSOLE.Camera = function(options) {
+    options = options || {};
+    var divID = options.divID;
+    var connection = options.connection;
+    var port = options.port || 9999;
+    var topic = options.topic || "image_rect_color";
+    var size = options.size || 200;
+    
+    var stream = "http://" + connection + ":" + port + "/stream?topic=" + topic;
+    
+    var camera_field = "<div id=\"camera\" class=\"ui-block-b\">" + 
+                           "<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>" + 
+                           "<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">" +
+                               "<img src=\"" +stream + "\" width=\"" + size + "\" height=\"" + size + "\">" + 
+                           "</div>" +
+                       "</div>";
+    // Add field
+    $( divID ).append(camera_field).trigger('create');
+};
 
 
 ROSCONSOLE.ROS3Dmap = function(options) {
 	options = options || {};
 	var ros = options.ros;
+	var divID = options.divID;
 	var tfClient = options.tfClient;
-	var viewer3D = options.viewer;
 	var width = options.width || 200;
 	var height = options.height || 200;
 	var path = options.path || 'localhost';
-        var param = options.param || 'robot_description'
+    var param = options.param || 'robot_description';
+    var laser = options.laser || '/minicar/zed/scan';
+    var urdf_loader = options.urdf_loader || ROS3D.STL_LOADER; // Or ROS3D.COLLADA_LOADER
+    var twistmaker = options.twistmaker || false;
+
+    // Create the scene manager and view port for the 3D world.
+    var viewer3D = new ROS3D.Viewer({
+          divID: divID,
+          width: width,
+          height: height,
+          antialias: true,
+          background: '#EEEEEE'
+    });
 
 	// Add a grid.
 	viewer3D.addObject(new ROS3D.Grid({
@@ -233,33 +264,14 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		cellSize: 1.0
 	}));
 
-		/*
-		$("#ros-test").on("click", function(e) {
-			console.log("test");
-			tfClient = new ROSLIB.TFClient({
-				ros: ros,
-				angularThres: 0.01,
-				transThres: 0.01,
-				rate: 20.0,
-				fixedFrame: '/base_link'
-					//fixedFrame: fixed_frame
-					//fixedFrame: fixed_frame
-			});
-		});
-	*/
-	//tfClient.subscribe('base_link', function(tf) {
-	//	console.log(tf);
-	//});
-
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
 		ros: ros,
 		tfClient: tfClient,
 		path: 'http://' + path + '/',
 		rootObject: viewer3D.scene,
-		//loader: ROS3D.COLLADA_LOADER,
-		loader: ROS3D.STL_LOADER,
-                param: param
+		loader: urdf_loader,
+        param: param
 	});
 
 	// Setup the marker client.
@@ -269,16 +281,25 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		tfClient: tfClient,
 		continuous: true
 	});
-/*
-	// Setup the marker client.
-	var imClient = new ROS3D.InteractiveMarkerClient({
-		ros: ros,
-		tfClient: tfClient,
-		topic: '/twist_marker_server',
-		camera: viewer3D.camera,
-		rootObject: viewer3D.selectableObjects
-	});
-*/
+	
+    var laserScan = new ROS3D.LaserScan({
+        ros: ros,
+        rootObject: viewer3D.scene,
+        topic: laser,
+        tfClient: tfClient,
+        material: { size: 0.01, color: "#FF0000" },
+    });
+	
+	if(twistmaker) {
+	    // Setup the marker client.
+	    var imClient = new ROS3D.InteractiveMarkerClient({
+		    ros: ros,
+		    tfClient: tfClient,
+		    topic: '/twist_marker_server',
+		    camera: viewer3D.camera,
+		    rootObject: viewer3D.selectableObjects
+	    });
+	}
 };
 
 

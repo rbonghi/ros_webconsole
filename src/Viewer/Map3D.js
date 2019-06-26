@@ -9,6 +9,10 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 	var width = options.width || 200;
 	var height = options.height || 200;
 	var path = options.path || 'localhost';
+    var param = options.param || 'robot_description';
+    var laser = options.laser || '/minicar/zed/scan';
+    var urdf_loader = options.urdf_loader || ROS3D.STL_LOADER; // Or ROS3D.COLLADA_LOADER
+    var twistmaker = options.twistmaker || false;
 
 	// Add a grid.
 	viewer3D.addObject(new ROS3D.Grid({
@@ -40,7 +44,8 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		tfClient: tfClient,
 		path: 'http://' + path + '/',
 		rootObject: viewer3D.scene,
-		loader: ROS3D.STL_LOADER
+		loader: urdf_loader,
+        param: param
 	});
 
 	// Setup the marker client.
@@ -50,13 +55,23 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		tfClient: tfClient,
 		continuous: true
 	});
-
-	// Setup the marker client.
-	var imClient = new ROS3D.InteractiveMarkerClient({
-		ros: ros,
-		tfClient: tfClient,
-		topic: '/twist_marker_server',
-		camera: viewer3D.camera,
-		rootObject: viewer3D.selectableObjects
-	});
+	
+    var laserScan = new ROS3D.LaserScan({
+        ros: ros,
+        rootObject: viewer3D.scene,
+        topic: laser,
+        tfClient: tfClient,
+        material: { size: 0.01, color: "#FF0000" },
+    });
+	
+	if(twistmaker) {
+	    // Setup the marker client.
+	    var imClient = new ROS3D.InteractiveMarkerClient({
+		    ros: ros,
+		    tfClient: tfClient,
+		    topic: '/twist_marker_server',
+		    camera: viewer3D.camera,
+		    rootObject: viewer3D.selectableObjects
+	    });
+	}
 };

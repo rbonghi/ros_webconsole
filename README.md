@@ -1,12 +1,22 @@
-ROS web console [![Build Status](https://travis-ci.org/rbonghi/roswebconsole.svg)](https://travis-ci.org/rbonghi/roswebconsole)
+# ROS web console 
 =======
-System interface to control a robot under ROS with web page.
+[![Build Status](https://travis-ci.org/rbonghi/roswebconsole.svg)](https://travis-ci.org/rbonghi/roswebconsole)
 
-[![Video](https://i.ytimg.com/vi/fhCHS7ibFrw/mqdefault.jpg)](https://www.youtube.com/watch?v=fhCHS7ibFrw)
+A ROS WEB console to control remotely your robot. Based with robotwebtools.
 
 :loudspeaker: **See demo console in: http://rbonghi.github.io/roswebconsole/** :loudspeaker:
-#### OLD version
-**console in: http://rbonghi.github.io/roswebconsole/index_old.html**
+
+
+## Install
+
+This **ros web conosole** require the rosbridge suite and the TF2 republisher
+```
+$ sudo apt-get install ros-$ROSDISTRO-rosbridge-suite
+$ sudo apt-get install ros-$ROSDISTRO-tf2-web-republisher
+$ sudo apt-get install ros-$ROSDISTRO-interactive-marker-proxy 
+```
+In second step is require to install in your host a webserver
+
 
 #Dependencies
 This web console depends on:
@@ -22,12 +32,6 @@ This web console depends on:
 
 ###All files are stored in folder [js/ros](https://github.com/rbonghi/roswebconsole/tree/master/js/ros)
 
-##ROS Dependencies
-```
-$ sudo apt-get install ros-indigo-rosbridge-suite
-$ sudo apt-get install ros-indigo-tf2-web-republisher
-$ sudo apt-get install ros-indigo-interactive-marker-proxy 
-```
 
 #Installation
 * Follow the guide on [Install lighttpd and Codiad](http://raffaello.officinerobotiche.it/4ude/how-to-install-lighttpd-and-codiad/)

@@ -101,7 +101,7 @@
             camera = json.robot.camera;
             $("#threed-map").css("width", widthPage - square / 2 - 25);
             var camera_stream = new ROSCONSOLE.Camera({
-                divID: "#camera_box",
+                divID: "#camera-box",
                 connection: connection,
                 topic: camera.topic,
                 size: square / 2 - 30,
@@ -163,7 +163,7 @@
     <div data-role="content">
         <div class="ui-grid-a">
             <div id="threed-map" class="ui-block-a map3D"></div>
-            <div id="camera_box"/>
+            <div id="camera-box"class="ui-block-b"></div>
         </div>
     </div>
   </div>
@@ -183,9 +183,7 @@
                                 <label for="radio-map-goal">Set goal</label>
                             </fieldset>
                         </form>
-                        <div id="nav-button-controllers">
-
-                        </div>
+                        <div id="nav-button-controllers"></div>
                     </div>
                 </div>
             </div><!-- /grid-a -->

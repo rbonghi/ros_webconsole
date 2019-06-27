@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<script type="text/javascript" src="js/ros/three/three.js"></script>
+<script type="text/javascript" src="js/ros/eventemitter2/eventemitter2.js"></script>
+<script type="text/javascript" src="js/ros/roslibjs/roslib.js"></script>
+<script type="text/javascript" src="js/ros/ros3djs/ros3d.js"></script>
+
+<script type="text/javascript" type="text/javascript">
+  /**
+   * Setup all visualization elements when the page is loaded.
+   */
+  function init() {
+    // Connect to ROS.
+    var ros = new ROSLIB.Ros({
+      url : 'ws://10.158.18.29:9090'
+    });
+
+    // Create the main viewer.
+    var viewer = new ROS3D.Viewer({
+      divID : 'map',
+      width : 800,
+      height : 600,
+      antialias : true
+    });
+
+    // Setup the map client.
+    var gridClient = new ROS3D.OccupancyGridClient({
+      ros : ros,
+      rootObject : viewer.scene,
+      compression: 'jpg',
+      topic: '/map'
+    });
+  }
+</script>
+</head>
+
+<body onload="init()">
+  <h1>Simple Map Example</h1>
+  <div id="map"></div>
+</body>
+</html>

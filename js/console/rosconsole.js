@@ -44,6 +44,10 @@ ROSCONSOLE.controller = function(options) {
 
 	ros_console.on('error', function(e) {
 		$('[data-role="header"]').css('background-color', 'rgba(255,0,0,0.5)');
+		// Added a Codiad button
+	    var reconnect = '<a href="#" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all" target="_blank">No text</a>';
+	    
+	    //$('[data-role="header"]').append(reconnect).trigger('create');
 	});
 
 	ros_console.connect('ws://' + addr + ':' + port);
@@ -225,11 +229,9 @@ ROSCONSOLE.Camera = function(options) {
     
     var stream = 'http://' + connection + ':' + port + '/stream?topic=' + topic;
     
-    var camera_field = '<div id=\"camera\" class=\"ui-block-b\">' +
-                           '<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>' +
-                           '<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">' +
-                               '<img src=\"' +stream + '\" width=\"' + size + '\" height=\"' + size + '\">' +
-                           '</div>' +
+    var camera_field = '<h3 class=\"ui-bar ui-bar-a ui-corner-all\">Robot camera</h3>' +
+                       '<div id=\"camera-stream\" class=\"ui-body ui-body-a ui-corner-all\">' +
+                           '<img src=\"' +stream + '\" width=\"' + size + '\" height=\"' + size + '\">' +
                        '</div>';
     // Add field
     $( divID ).append(camera_field).trigger('create');
@@ -279,7 +281,8 @@ ROSCONSOLE.ROS3Dmap = function(options) {
 		ros: ros,
 		rootObject: viewer3D.scene,
 		tfClient: tfClient,
-		continuous: true
+		continuous: true,
+		compression: 'jpg'
 	});
 	
     var laserScan = new ROS3D.LaserScan({
@@ -335,8 +338,7 @@ ROSCONSOLE.WindowController = function(name_page) {
 	if (ROSCONSOLE.isMobile().any()) {
 		html_header += '<a href="#menu" class="ui-btn ui-icon-bars ui-btn-icon-notext ui-corner-all">No text</a>';
 	}
-	/// Added a Codiad button
-	html_header += '<a href="/Codiad" class="ui-btn ui-icon-edit ui-btn-right ui-btn-icon-notext ui-corner-all" target="_blank">No text</a>';
+    // Close menu block
 	html_header += '</div>';
 
 	$(html_header).prependTo('body').enhanceWithin();

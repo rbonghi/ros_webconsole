@@ -1,5 +1,6 @@
 # Remove compile test
 TEST/
+OLD
 node_modules
 # Do not save configuration
 config.json
@@ -7,3 +8,6 @@ config.json
 # Remove reference
 zed_wrapper
 minicar_description
+
+# Remove jquery
+jquery/

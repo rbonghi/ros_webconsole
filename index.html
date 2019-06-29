@@ -35,6 +35,7 @@
   
   <!-- Load page controller -->
   <script src="js/navbar.js"></script>
+  <script src="js/ros_controller.js"></script>
 
   <script>
     $(document).ready(function() {
@@ -47,50 +48,36 @@
         */
         var pages = ros_pages.find();
         // Build Navigation bar menu
-        ros_pages.controller(name, pages);
-        
-	    var ros_address = 'ws://jetson-nano.local:9090';
-        
-        // The Ros object is responsible for connecting to rosbridge.
-	    var ros_console = new ROSLIB.Ros();
-	    // Map connections page information
-	    ros_console.on('connection', function(e) {
-	        
-	    });
-	    ros_console.on('error', function(e) {
-	        
-	    });
-	    // Connect page
-	    //ros_console.connect('ws://' + addr + ':' + port);
-	    
-	    $( "#ros-server" ).bind( "change paste", function(event, ui) {
-	        var value = $(this).val();
-	        if(ros_console.isConnected) {
-	            ros_console.close();
-	        }
-	        console.log(ros_console.isConnected);
-	        //while(ros_console.isConnected);
-	        console.log(ros_console.isConnected);
-	        if(value) {
-	            ros_address = value;
-	            
-	        }
+        var cpages = new ros_pages.controller(name, pages);
+        // Initialize ros controller
+        var ros = new ros_controller.connection({
+            address: 'ws://localhost:9090',
+            on_connect: ros_pages.connect,
+            on_error: ros_pages.error,
         });
     });
   </script>
 </head>
 
 <body>
+<!-- Configuration page -->
 <div data-role="panel" id="configpanel" data-theme="a" data-display="overlay" data-position="left" data-swipe-close="false">
 <form>
      <label for="ros-server">ROS server:</label>
-     <input type="url" data-clear-btn="true" name="ros-server" id="ros-server" value="ws://" placeholder="ws://localhost:9090">
+     <input type="url" data-ajax="false" data-clear-btn="true" name="ros-server" id="ros-server" value="ws://" placeholder="ws://localhost:9090">
+     <button id="ros-connect-button" class="ui-btn ui-shadow">Connect</button>
 </form>
 </div>
   <!-- pages -->
-  <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation"><h1>3D map</h1></div>
-  <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location"><h1>2D map</h1></div>
-  <div data-role="page" id="Diagnostic" data-title="Diagnostic" data-icon="gear"><h1>Diagnostic</h1></div>
+  <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
+    <h1>3D map</h1>
+  </div>
+  <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
+    <h1>2D map</h1>
+  </div>
+  <div data-role="page" id="Diagnostic" data-title="Diagnostic" data-icon="gear">
+    <h1>Diagnostic</h1>
+  </div>
 </body>
 
 </html>

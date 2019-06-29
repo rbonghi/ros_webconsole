@@ -34,16 +34,6 @@ ros_pages.find = function() {
     return pages;
 }
 
-ros_pages.connect = function(e) {
-    console.log("Connect: " + e);
-    //$( '#ros-config' ).hide();
-}
-
-ros_pages.error = function(e) {
-    console.log("Error: " + e);
-    //$( '#ros-config' ).show();
-}
-
 ros_pages.controller = function(name, pages) {
     // Make pages
     // ros_pages.make(pages);
@@ -51,7 +41,6 @@ ros_pages.controller = function(name, pages) {
     ros_pages.header(name, pages);
     // Add footer
     ros_pages.footer();
-
     // Fix header
 	$('[data-role="header"], [data-role="footer"]').toolbar({
 		position: 'fixed',
@@ -78,6 +67,16 @@ ros_pages.controller = function(name, pages) {
 			}
 		});
 	});
+
+}
+
+ros_pages.connect = function(color) {
+    $('[data-role="header"]').css('background-color', color);
+}
+
+ros_pages.error = function(color) {
+    // Change color
+    $('[data-role="header"]').css('background-color', color);
 }
 
 ros_pages.isMobile = function() {
@@ -131,7 +130,7 @@ ros_pages.header = function(name, pages) {
     var header = '<div data-role="header" data-theme="a" data-position="fixed">' +
                  '<h1>' + name + '</h1>' + 
                  '<a href="#configpanel" id="ros-config" class="ui-btn ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>' +
-                 '<div data-role="navbar" id="menu">' + bar + '</div>' +
+                 '<div data-role="navbar" id="menu" data-iconpos="left">' + bar + '</div>' +
                  '</div>';
     // Append header
     $(header).prependTo('body').enhanceWithin();

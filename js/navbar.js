@@ -36,10 +36,12 @@ ros_pages.find = function() {
 
 ros_pages.connect = function(e) {
     console.log("Connect: " + e);
+    //$( '#ros-config' ).hide();
 }
 
-ros_pages.disconnect = function(e) {
-    console.log("Disconnect: " + e);
+ros_pages.error = function(e) {
+    console.log("Error: " + e);
+    //$( '#ros-config' ).show();
 }
 
 ros_pages.controller = function(name, pages) {
@@ -128,6 +130,7 @@ ros_pages.header = function(name, pages) {
     // Build header
     var header = '<div data-role="header" data-theme="a" data-position="fixed">' +
                  '<h1>' + name + '</h1>' + 
+                 '<a href="#configpanel" id="ros-config" class="ui-btn ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>' +
                  '<div data-role="navbar" id="menu">' + bar + '</div>' +
                  '</div>';
     // Append header

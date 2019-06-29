@@ -21,14 +21,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- jQuery Mobile online -->
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
   <!-- jQuery Mobile offline -->
   <!--<link href="jquery/jquery.mobile-1.4.5.min.css" rel="stylesheet" />
   <script src="jquery/jquery-2.1.0.js"></script>
   <script src="jquery/jquery.mobile-1.4.5.min.js"></script>-->
-  <!-- jQuery Mobile online -->
-  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-  <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+  <!-- ROS libs online -->
+  <script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.js"></script>
   
   <!-- Load page controller -->
   <script src="js/navbar.js"></script>
@@ -45,11 +48,45 @@
         var pages = ros_pages.find();
         // Build Navigation bar menu
         ros_pages.controller(name, pages);
+        
+	    var ros_address = 'ws://jetson-nano.local:9090';
+        
+        // The Ros object is responsible for connecting to rosbridge.
+	    var ros_console = new ROSLIB.Ros();
+	    // Map connections page information
+	    ros_console.on('connection', function(e) {
+	        
+	    });
+	    ros_console.on('error', function(e) {
+	        
+	    });
+	    // Connect page
+	    //ros_console.connect('ws://' + addr + ':' + port);
+	    
+	    $( "#ros-server" ).bind( "change paste", function(event, ui) {
+	        var value = $(this).val();
+	        if(ros_console.isConnected) {
+	            ros_console.close();
+	        }
+	        console.log(ros_console.isConnected);
+	        //while(ros_console.isConnected);
+	        console.log(ros_console.isConnected);
+	        if(value) {
+	            ros_address = value;
+	            
+	        }
+        });
     });
   </script>
 </head>
 
 <body>
+<div data-role="panel" id="configpanel" data-theme="a" data-display="overlay" data-position="left" data-swipe-close="false">
+<form>
+     <label for="ros-server">ROS server:</label>
+     <input type="url" data-clear-btn="true" name="ros-server" id="ros-server" value="ws://" placeholder="ws://localhost:9090">
+</form>
+</div>
   <!-- pages -->
   <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation"><h1>3D map</h1></div>
   <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location"><h1>2D map</h1></div>

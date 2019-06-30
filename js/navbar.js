@@ -50,20 +50,20 @@ ros_pages.controller = function(name, pages) {
 	$.mobile.resetActivePageHeight();
 	//-------------------------
 	// Update the contents of the toolbars
-	$('[data-role="navbar"] a:first').addClass('ui-btn-active');
 	$(document).on('pageshow', '[data-role="page"]', function() {
-		// Each of the four pages in this demo has a data-title attribute
-		// which value is equal to the text of the nav button
-		// For example, on first page: <div data-role="page" data-title="Info">
-		var current = $(this).jqmData('title');
-		// Change the heading
-		// Remove active class from nav buttons
-		$('[data-role="navbar"] a.ui-btn-active').removeClass('ui-btn-active');
+	    // Take current value
+		var current = '#' + $(this).attr('id');
+		var title = $(this).jqmData('title');
+		// Add title
+		//$('#header-title').text(name + " - " + title);
 		// Add active class to current nav button
 		$('[data-role="navbar"] a').each(function() {
-			if ($(this).text() === current) {
-				$(this).addClass('ui-btn-active');
+			if ($(this).attr('href') == current) {
+			    //console.log("Add active to: " + current);
+				$(current).addClass('ui-btn-active');
 				$('#navbar').trigger('page', current);
+			} else {
+			    $(current).removeClass('ui-btn-active');
 			}
 		});
 	});
@@ -103,6 +103,19 @@ ros_pages.isMobile = function() {
 	return isMobile;
 }
 
+ros_pages.header = function(name, pages) {
+    // Build navbar
+    var bar = ros_pages.navbar(pages);
+    // Build header
+    var header = '<div data-role="header" data-theme="a" data-position="fixed">' +
+                 '<h1 id="header-title">' + name + '</h1>' + 
+                 '<a href="#configpanel" id="ros-config" class="ui-btn ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>' +
+                 '<div data-role="navbar" id="menu" data-theme="a" data-iconpos="left">' + bar + '</div>' +
+                 '</div>';
+    // Append header
+    $(header).prependTo('body').enhanceWithin();
+}
+
 ros_pages.navbar = function(pages) {
     var bar = "";
     // Make menu
@@ -121,19 +134,6 @@ ros_pages.navbar = function(pages) {
         bar += '</ul>';
     }
     return bar;
-}
-
-ros_pages.header = function(name, pages) {
-    // Build navbar
-    var bar = ros_pages.navbar(pages);
-    // Build header
-    var header = '<div data-role="header" data-theme="a" data-position="fixed">' +
-                 '<h1>' + name + '</h1>' + 
-                 '<a href="#configpanel" id="ros-config" class="ui-btn ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>' +
-                 '<div data-role="navbar" id="menu" data-iconpos="left">' + bar + '</div>' +
-                 '</div>';
-    // Append header
-    $(header).prependTo('body').enhanceWithin();
 }
 
 ros_pages.footer = function() {

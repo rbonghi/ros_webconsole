@@ -69,9 +69,10 @@
             var ros = new ros_controller.connection(json.ros, { on_connect: ros_pages.connect, on_error: ros_pages.error });
             // Init3D map controller
             var map3D = new Viewer.Map3D({
+                ros: ros,
                 pages: cpages
-            });
-        }));
+            }); 
+    }));
   </script>
   <style>
     #threed-map canvas {
@@ -103,7 +104,6 @@
   <!-- pages -->
   <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
     <div role="main" class="ui-content">
-        <h1>3D map</h1>
         <div id="threed-map" class="map3D"></div>
     </div>
   </div>

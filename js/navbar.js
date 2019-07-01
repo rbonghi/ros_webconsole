@@ -35,16 +35,18 @@ ros_pages.find = function() {
 }
 
 ros_pages.controller = function(options) {
+    var that = this;
     options = options || {};
     var name = options.name || 'ROS Web console';
     var pages = options.pages || ros_pages.find();
     var footer = (('footer' in options) ? options.footer : true);
+    // Observer page update
+    that.observers = [];
     // Make pages
     // ros_pages.make(pages);
     // Make header
     ros_pages.header(name, pages);
     // Add footer
-    console.log(options);
     if(footer) {
         ros_pages.footer();
     }
@@ -74,8 +76,34 @@ ros_pages.controller = function(options) {
 			}
 		});
 	});
-
+	
+	$(document).on('pagecontainershow', function(event) {
+	    var pageId = $('body').pagecontainer('getActivePage').prop('id'); 
+	    for(var i = 0; i < that.observers.length; i++) {
+	        // Check if the page is correct
+	        var name = that.observers[i].name;
+	        if(pageId == name) {
+    	        //console.log("Trigger event for " + name + "func:" + that.observers[i].callback);
+    	        that.observers[i].callback();
+	        }
+	    }
+	});
+	
+    /** TODO control status navigation
+    // Bind to the navigate event
+    $( window ).on( "navigate", function( event, data ) {
+      console.log( data.state.info );
+      console.log( data.state.direction )
+      console.log( data.state.url )
+      console.log( data.state.hash )
+    });
+    */
 }
+
+ros_pages.controller.prototype.register = function(name, callback) {
+    // register a new callback
+    this.observers.push({'name': name, 'callback': callback});
+};
 
 ros_pages.connect = function(color) {
     $('[data-role="header"]').css('background-color', color);

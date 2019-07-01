@@ -32,10 +32,12 @@
   <!-- ROS libs online -->
   <script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.js"></script>
   <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/ros3djs/current/ros3d.js"></script>
   
   <!-- Load page controller -->
   <script src="js/navbar.js"></script>
   <script src="js/ros_controller.js"></script>
+  <script src="js/Viewer.js"></script>
 
   <script>
     function loadconfig(file, callback) {
@@ -56,16 +58,37 @@
         });
     }
     // Run the document only when de DOM is ready and the callback with the json file in loaded
-    $(document).ready(loadconfig("config.json", function(json) {
-            // Load robot configuration parameters
-            json.pages = (('pages' in json) ? json.pages : {});
+    // reference:
+    // https://demos.jquerymobile.com/1.2.1/docs/api/events.html
+    $(document).bind('pageinit', loadconfig("config.json", function(json) {
             // Build Navigation bar menu
+            json.pages = (('pages' in json) ? json.pages : {});
             var cpages = new ros_pages.controller(json.pages);
             // Initialize ros controller
             json.ros = (('ros' in json) ? json.ros : {});
             var ros = new ros_controller.connection(json.ros, { on_connect: ros_pages.connect, on_error: ros_pages.error });
+            // Init3D map controller
+            var map3D = new Viewer.Map3D({
+                pages: cpages
+            });
         }));
   </script>
+  <style>
+    #threed-map canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+
+    .map2D canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+
+    .border canvas {
+      border-radius: 14px;
+      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+    }
+  </style>
 </head>
 
 <body>
@@ -81,6 +104,7 @@
   <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
     <div role="main" class="ui-content">
         <h1>3D map</h1>
+        <div id="threed-map" class="map3D"></div>
     </div>
   </div>
   <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">

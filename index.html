@@ -38,24 +38,33 @@
   <script src="js/ros_controller.js"></script>
 
   <script>
-    $(document).ready(function() {
+    function loadconfig(file, callback) {
+        /**
         // Load pages
         var name = 'ROS Web console';
-        /* Optional to set new or add new pages
+        // Optional to set new or add new pages
         var pages = [{'id': '3Dmap', 'icon': 'navigation'},
                      {'id': '2Dmap', 'icon': 'location'},
                      {'id': 'Diagnostic', 'icon': 'gear'}];
         */
-        var pages = ros_pages.find();
-        // Build Navigation bar menu
-        var cpages = new ros_pages.controller(name, pages);
-        // Initialize ros controller
-        var ros = new ros_controller.connection({
-            address: 'ws://localhost:9090',
-            on_connect: ros_pages.connect,
-            on_error: ros_pages.error,
+        $.getJSON( file ).done(function( json ) {
+            console.log(file + ' loaded!');
+            callback(json);
+        }).fail(function( jqxhr, textStatus, error ) {
+            console.log(file + ' does not exist!');
+            callback({});
         });
-    });
+    }
+    // Run the document only when de DOM is ready and the callback with the json file in loaded
+    $(document).ready(loadconfig("config.json", function(json) {
+            // Load robot configuration parameters
+            json.pages = (('pages' in json) ? json.pages : {});
+            // Build Navigation bar menu
+            var cpages = new ros_pages.controller(json.pages);
+            // Initialize ros controller
+            json.ros = (('ros' in json) ? json.ros : {});
+            var ros = new ros_controller.connection(json.ros, { on_connect: ros_pages.connect, on_error: ros_pages.error });
+        }));
   </script>
 </head>
 

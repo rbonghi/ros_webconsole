@@ -20,13 +20,16 @@ var ros_controller = ros_controller || {
     REVISION: '0.0.1'
 };
 
-ros_controller.connection = function(options) {
+ros_controller.connection = function(ros, options) {
+    // Load ROS configuration
+    ros = ros || {};
+    var server = ros.server || '';
+    var show = ros.show || true;
+    // Load graphic options
     options = options || {};
     var field = options.field || '#ros-server';
     var button = options.button || '#ros-config';
     var connect = options.connect || "#ros-connect-button";
-    var address = options.address || '';
-    var show = options.show || true;
     var on_connect = options.on_connect;
     var on_error = options.on_error;
 
@@ -40,16 +43,16 @@ ros_controller.connection = function(options) {
         console.log('Hide configuration button');
     }
     // Find the name of the server if is already written
-    if(address == '') {
-        address = $( field ).val();
-        console.log('Load address from browser search bar: ' + address)
+    if(server == '') {
+        server = $( field ).val();
+        console.log('Load address from browser search bar: ' + server)
     } else {
-        $(field).val(address);
+        $(field).val(server);
         //$(field).prop("disabled", true);
         $(connect).addClass('ui-state-disabled');
     }
-    console.log("ROS WS connection:" + address);
-    ros_console.connect(address);
+    console.log("ROS WS connection:" + server);
+    ros_console.connect(server);
     // Map connections page information
     ros_console.on('connection', function(e) {
         console.log("Connect: " + e);
@@ -64,7 +67,7 @@ ros_controller.connection = function(options) {
         var value = $(this).val();
         // read the value only if not empty
         console.log("New value saved: " + value);
-        address = value
+        server = value
     });
     $( connect ).bind( "click", function(event, ui) {
         console.log("Clicked");
@@ -74,8 +77,8 @@ ros_controller.connection = function(options) {
             console.log("ROS WS disconnection");
         }
         // Connect to new server
-        console.log("ROS WS connection: " + address );
-        ros_console.connect(address);
+        console.log("ROS WS connection: " + server );
+        ros_console.connect(server);
     });
     // return the ros console websocket
     return ros_console;

@@ -34,13 +34,20 @@ ros_pages.find = function() {
     return pages;
 }
 
-ros_pages.controller = function(name, pages) {
+ros_pages.controller = function(options) {
+    options = options || {};
+    var name = options.name || 'ROS Web console';
+    var pages = options.pages || ros_pages.find();
+    var footer = (('footer' in options) ? options.footer : true);
     // Make pages
     // ros_pages.make(pages);
     // Make header
     ros_pages.header(name, pages);
     // Add footer
-    ros_pages.footer();
+    console.log(options);
+    if(footer) {
+        ros_pages.footer();
+    }
     // Fix header
 	$('[data-role="header"], [data-role="footer"]').toolbar({
 		position: 'fixed',

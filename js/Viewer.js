@@ -30,7 +30,9 @@ Viewer.pagesize = function() {
     /* content div has padding of 1em = 16px (32px top+bottom). This step
        can be skipped by subtracting 32px from content var directly. */
     var contentCurrent = $(".ui-content").outerHeight() - $(".ui-content").height();
-    return screen - header - footer - contentCurrent - 2;
+    var width = $(".ui-content").outerWidth() - 32;
+    var height = screen - header - footer - contentCurrent - 6;
+    return {'width': width, 'height': height};
 }
 
 Viewer.Map3D = function(options) {
@@ -43,9 +45,8 @@ Viewer.Map3D = function(options) {
     var frame = options.frame || '/map';
     // Page configuration
     var page = options.page || '3Dmap';
-    var divID = options.divID || 'threed-map';
-	var width = options.width || $(window).width() - 16;
-	var height = options.height || Viewer.pagesize();
+    var divID = options.divID || 'map-3D';
+    var size = Viewer.pagesize();
 		
 	// Create a TF client that subscribes to the fixed frame.
 	var tfClient = new ROSLIB.TFClient({
@@ -58,8 +59,8 @@ Viewer.Map3D = function(options) {
     // Create the main viewer.
     var viewer = new ROS3D.Viewer({
       divID : divID,
-      width : width,
-      height : height,
+      width : size.width,
+      height : size.height,
       antialias : true
     });
     // Setup the map client.
@@ -83,11 +84,17 @@ Viewer.Map3D = function(options) {
 		loader: ROS3D.STL_LOADER
 	});	
 	
+	$(window).bind('resize', function (event) {
+	    var size = Viewer.pagesize();
+	    viewer.resize(size.width, size.height);
+	});
 	
+	/**
     // register function
     options.pages.register(page, function() { 
         that.show();
     });
+    */
 };
 
 Viewer.Map3D.prototype.show = function() {

@@ -23,7 +23,7 @@ var ros_controller = ros_controller || {
 ros_controller.connection = function(ros, options) {
     // Load ROS configuration
     ros = ros || {};
-    var server = ros.server || '';
+    var server = ros.server || 'ws://localhost:9090';
     var show = ros.show || true;
     // Load graphic options
     options = options || {};
@@ -42,6 +42,7 @@ ros_controller.connection = function(ros, options) {
         $( button ).hide();
         console.log('Hide configuration button');
     }
+    /*
     // Find the name of the server if is already written
     if(server == '') {
         server = $( field ).val();
@@ -51,8 +52,10 @@ ros_controller.connection = function(ros, options) {
         //$(field).prop("disabled", true);
         $(connect).addClass('ui-state-disabled');
     }
-    console.log("ROS WS connection:" + server);
-    ros_console.connect(server);
+    */
+    //console.log("ROS WS connection:" + server);
+    //ros_console.connect(server);
+    /**
     // Map connections page information
     ros_console.on('connection', function(e) {
         console.log("Connect: " + e);
@@ -80,6 +83,7 @@ ros_controller.connection = function(ros, options) {
         console.log("ROS WS connection: " + server );
         ros_console.connect(server);
     });
+    */
     // return the ros console websocket
     return ros_console;
 }

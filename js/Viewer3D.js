@@ -20,41 +20,55 @@ var Viewer3D = Viewer3D || {
     REVISION: '0.0.1'
 };
 
-Viewer3D.Map3D = function(robot, options) {
+Viewer3D.Map3D = function(file, options) {
     var that = this;
-    robot = robot || {};
-    // URDF path
-    var rate = robot.rate || 20.0;
-    var frame = robot.frame || 'map';
-    var path = robot.path || 'http://localhost/';
-    
     options = options || {};
     // ROS controller
-    var ros = options.ros;
+    this.ros = options.ros;
     // Page configuration
-    var divID = options.divID || 'map-3D';
+    this.divID = options.divID || 'map-3D';
     // Load page size
-    var size = options.size;
+    this.size = options.size;
 		
+    // Json load and config
+    $.getJSON( file ).done(function( json ) {
+        // Load ROS configuration file
+        that.load(json);
+        // Make the 3D viewer
+        that.make();
+    }).fail(function( jqxhr, textStatus, error ) {
+        // Initialize empty json
+        that.load({});
+        // Make the 3D viewer
+        that.make();
+    });
+    
+	$(window).bind('resize', function (event) {
+	    var size = pages.size();
+	    that.viewer.resize(size.width, size.height);
+	});
+}
+
+Viewer3D.Map3D.prototype.make = function() {
 	// Create a TF client that subscribes to the fixed frame.
 	var tfClient = new ROSLIB.TFClient({
-		ros: ros,
+		ros: this.ros,
 		angularThres: 0.01,
 		transThres: 0.01,
-		rate: rate,
-		fixedFrame: frame
+		rate: this.robot.rate,
+		fixedFrame: this.robot.frame
 	});
     // Create the main viewer.
     var viewer = new ROS3D.Viewer({
-      divID : divID,
-      width : size.width,
-      height : size.height,
+      divID : this.divID,
+      width : this.size.width,
+      height : this.size.height,
       antialias : true,
       background: '#EEEEEE'
     });
     // Setup the map client.
     var gridClient = new ROS3D.OccupancyGridClient({
-      ros : ros,
+      ros : this.ros,
       rootObject : viewer.scene,
       tfClient: tfClient,
       continuous: true
@@ -64,18 +78,37 @@ Viewer3D.Map3D = function(robot, options) {
 		size: 20,
 		cellSize: 1.0
 	}));
+	/**
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
-		ros: ros,
-		tfClient: tfClient,
+		ros: this.ros,
+		tfClient: this.tfClient,
 		path: path,
 		rootObject: viewer.scene,
 		loader: ROS3D.STL_LOADER
-	});	
-	
-	$(window).bind('resize', function (event) {
-	    var size = pages.size();
-	    viewer.resize(size.width, size.height);
 	});
+	*/
 };
+
+Viewer3D.Map3D.prototype.load = function(json) {
+    this.robot = {};
+    if ('robot' in json) {
+        robot = json.robot;
+        // URDF path
+        this.robot.rate = robot.rate || 20.0;
+        this.robot.frame = robot.frame || 'map';
+        this.robot.path = robot.path || '';
+    } else if(localStorage.getItem('robot')) { // Check if exist in local storage
+        robot = JSON.parse(localStorage.getItem('robot'));
+        this.robot.rate = robot.rate || 20.0;
+        this.robot.frame = robot.frame || 'map';
+        this.robot.path = robot.path || '';
+    } else {
+        this.robot.rate = 20.0;
+        this.robot.frame = 'map';
+        this.robot.path = '';
+    }
+    // Save the local storage for this configuration
+    window.localStorage.setItem('robot', JSON.stringify(this.robot));
+}
 

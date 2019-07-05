@@ -60,24 +60,26 @@
     // reference:
     // https://demos.jquerymobile.com/1.2.1/docs/api/events.html
     $(document).on("pageinit", function() {});
+    // Update configuration only the page is selected
+    $(document).on( "pagebeforeshow", '#popup', function( event ) {
+        // Load json configuration
+        pages.configuration();
+    });
     // Single initialization maps
     $(document).ready(function () {
         // Configuration file
         config = "config.json";
-        // Load json configuration
-        pages.configuration(config);
         // Build Navigation bar menu
-        //json.pages = (('pages' in json) ? json.pages : {});
-        pages.controller({config: config});
+        pages.controller();
         var size = pages.size();
         // Initialize ros controller
         var ros = new ros_controller.connection(config);
         
         //json.robot = (('robot' in json) ? json.robot : {});
         // Init3D map controller
-        var map3D = new Viewer3D.Map3D({}, {ros: ros, size: size});
+        var map3D = new Viewer3D.Map3D(config, {ros: ros, size: size});
         // Init2D map controller
-        var map2D = new Viewer2D.Map2D({}, {ros: ros, size: size});
+        var map2D = new Viewer2D.Map2D(config, {ros: ros, size: size});
     });
   </script>
   <style>
@@ -99,6 +101,7 @@
             <input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
           </form><a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
         </div>
+        <a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
     </div>
     
     <div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false">
@@ -120,6 +123,21 @@
             <a href="#" class="ui-btn ui-corner-all ui-icon-navigation ui-btn-icon-notext">Icon only</a>
             <a href="#" class="ui-btn ui-corner-all ui-icon-location ui-btn-icon-notext">Icon only</a>
         </div>
+    </div>
+</div>
+<!-- Debug page -->
+<div data-role="page" id="debug">
+
+    <div data-role="header" data-theme="a" data-position-fixed="true">
+        <h1>Debug</h1>
+    </div>
+
+    <div role="main" data-theme="a" class="ui-content">
+        <p>Debug</p>
+    </div>
+    
+    <div data-role="footer" data-theme="a" data-position-fixed="true">
+        <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
     </div>
 </div>
 <!-- Configuration page -->

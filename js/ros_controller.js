@@ -27,7 +27,7 @@ ros_controller.connection = function(file, options) {
     var collapsible = options.collapsible || '#ros-server';
     var header = options.header || '#ros-server-status';
     var refresh = options.refresh || '#ros-server-refresh';
-    var ros_url = options.ros_url || '#ros-url';
+    this.ros_url = options.ros_url || '#ros-url';
     // Load colors header
     var color = {'default': $(header + ' a.ui-collapsible-heading-toggle').css('background-color'),
                      'red': 'rgba(255,0,0,0.5)',
@@ -57,23 +57,19 @@ ros_controller.connection = function(file, options) {
         ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
         
     }).fail(function( jqxhr, textStatus, error ) {
-        console.log('Fail load confing from json');
         // Initialize empty json
         that.load({});
-        // Save in local the configuration
-        localStorage.setItem('ros', JSON.stringify(this.ros));
     });
 
     // Connection server
-    $( ros_url ).bind( "change paste", function(event, ui) {
+    $( this.ros_url ).bind( "change paste", function(event, ui) {
         var value = $(this).val();
-        // Update only if not empty
-        if(value !== '') {
-            // read the value only if not empty
-            console.log("New value saved: " + value);
-            // update server name
-            that.ros.server = value;
-        }
+        // read the value only if not empty
+        console.log("New value saved: " + value);
+        // update server name
+        that.ros.server = value;
+        // Save the local storage for this configuration
+        window.localStorage.setItem('ros', JSON.stringify(that.ros));
     });
     
     $( refresh ).click(function() {
@@ -92,13 +88,21 @@ ros_controller.connection = function(file, options) {
 }
 
 ros_controller.connection.prototype.load = function(json) {
+    this.ros = {};
     if ('ros' in json) {
-        this.ros = {};
+        ros = json.ros;
+        this.ros.server = ros.server || '';
+        this.ros.port = ros.port || '9090';
+    } else if(localStorage.getItem('ros')) { // Check if exist in local storage
+        ros = JSON.parse(localStorage.getItem('ros'));
         this.ros.server = ros.server || '';
         this.ros.port = ros.port || '9090';
     } else {
-        this.ros = {};
         this.ros.server = '';
         this.ros.port = '9090';
     }
+    // Set text ros URL
+    $( this.ros_url ).val(this.ros.server);
+    // Save the local storage for this configuration
+    window.localStorage.setItem('ros', JSON.stringify(this.ros));
 }

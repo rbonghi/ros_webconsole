@@ -20,8 +20,9 @@ var pages = pages || {
     REVISION: '0.1.0'
 };
 
-pages.controller = function(name, pages) {
-    map_type = '#map-type';
+pages.controller = function(options) {
+    options = options || {};
+    map_type = options.map_type || '#map-type';
     // Initialization map
     $('#map-2D').hide();
     $('#map-3D').show();
@@ -47,15 +48,17 @@ pages.controller = function(name, pages) {
     });
 }
 
-pages.configuration = function(file) {
+pages.configuration = function() {
     var config_area = '#config-area';
-    $.getJSON( file ).done(function( json ) {
-        var config_text = JSON.stringify(json);
-        $(config_area).text(config_text);
-    }).fail(function( jqxhr, textStatus, error ) {
-        var config_text = JSON.stringify({});
-        $(config_area).text(config_text);
-    });
+    json = {}
+    for (var i = 0; i < localStorage.length; i++){
+        var key = localStorage.key(i);
+        json[key] = JSON.parse(localStorage.getItem(key));
+    }
+    // Export json in text file
+    var config_text = JSON.stringify(json, null, 4);
+    $(config_area).text(config_text);
+    console.log("Hello");
 }
 
 pages.size = function() {

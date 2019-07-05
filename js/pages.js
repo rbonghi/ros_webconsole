@@ -21,23 +21,24 @@ var pages = pages || {
 };
 
 pages.controller = function(name, pages) {
+    map_type = '#map-type';
     // Initialization map
     $('#map-2D').hide();
     $('#map-3D').show();
     // Controller map button
-    $('#map').click(function() {
-        console.log("Show map " + $('#map').text());
+    $(map_type).click(function() {
+        console.log("Show map " + $(map_type).text());
         // Switch to 2D or 3D mode
-        switch($('#map').text()) {
-            case '3D':
-                $('#map').text('2D');
+        switch($(map_type).text()) {
+            case '2D':
+                $(map_type).text('3D');
                 // Hide 3D map and show 2D map
                 $('#map-2D').hide();
                 $('#map-3D').show();
                 break;
-            case '2D':
+            case '3D':
                 // Change text in 3D
-                $('#map').text('3D');
+                $(map_type).text('2D');
                 // Hide 3D map and show 2D map
                 $('#map-3D').hide();
                 $('#map-2D').show();
@@ -46,12 +47,28 @@ pages.controller = function(name, pages) {
     });
 }
 
-pages.loadconfig = function(file, callback) {
+pages.configuration = function(file) {
+    var config_area = '#config-area';
     $.getJSON( file ).done(function( json ) {
-        console.log(file + ' loaded!');
-        callback(json);
+        var config_text = JSON.stringify(json);
+        $(config_area).text(config_text);
     }).fail(function( jqxhr, textStatus, error ) {
-        console.log(file + ' does not exist!');
-        callback({});
+        var config_text = JSON.stringify({});
+        $(config_area).text(config_text);
     });
+}
+
+pages.size = function() {
+    // Evaluate content size
+    // Reference:
+    // https://stackoverflow.com/questions/21552308/set-content-height-100-jquery-mobile
+	var screen = $.mobile.getScreenHeight();
+    var header = $(".ui-header").hasClass("ui-header-fixed") ? $(".ui-header").outerHeight()  - 1 : $(".ui-header").outerHeight();
+    var footer = $(".ui-footer").hasClass("ui-footer-fixed") ? $(".ui-footer").outerHeight() - 1 : $(".ui-footer").outerHeight();
+    /* content div has padding of 1em = 16px (32px top+bottom). This step
+       can be skipped by subtracting 32px from content var directly. */
+    var contentCurrent = $(".ui-content").outerHeight() - $(".ui-content").height();
+    var width = $(".ui-content").outerWidth() - 32;
+    var height = screen - header - footer - contentCurrent - 6;
+    return {'width': width, 'height': height};
 }

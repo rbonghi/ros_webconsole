@@ -20,70 +20,85 @@ var ros_controller = ros_controller || {
     REVISION: '0.0.1'
 };
 
-ros_controller.connection = function(ros, options) {
-    // Load ROS configuration
-    ros = ros || {};
-    var server = ros.server || 'ws://localhost:9090';
-    var show = ros.show || true;
+ros_controller.connection = function(file, options) {
+    var that = this;
     // Load graphic options
     options = options || {};
-    var field = options.field || '#ros-server';
-    var button = options.button || '#ros-config';
-    var connect = options.connect || "#ros-connect-button";
-    var on_connect = options.on_connect;
-    var on_error = options.on_error;
-
-    // Load default background color
-    var def_color = $('[data-role="header"]').css('background-color');
+    var collapsible = options.collapsible || '#ros-server';
+    var header = options.header || '#ros-server-status';
+    var refresh = options.refresh || '#ros-server-refresh';
+    var ros_url = options.ros_url || '#ros-url';
+    // Load colors header
+    var color = {'default': $(header + ' a.ui-collapsible-heading-toggle').css('background-color'),
+                     'red': 'rgba(255,0,0,0.5)',
+                     'green': 'rgba(0,255,10,0.5)'};
     // The Ros object is responsible for connecting to rosbridge.
-    var ros_console = new ROSLIB.Ros();
-
-    if(!show) {
-        $( button ).hide();
-        console.log('Hide configuration button');
-    }
-    /*
-    // Find the name of the server if is already written
-    if(server == '') {
-        server = $( field ).val();
-        console.log('Load address from browser search bar: ' + server)
-    } else {
-        $(field).val(server);
-        //$(field).prop("disabled", true);
-        $(connect).addClass('ui-state-disabled');
-    }
-    */
-    //console.log("ROS WS connection:" + server);
-    //ros_console.connect(server);
-    /**
+    var ros_console = new ROSLIB.Ros(); 
     // Map connections page information
     ros_console.on('connection', function(e) {
-        console.log("Connect: " + e);
-        on_connect(def_color);
+        $(header + ' a.ui-collapsible-heading-toggle').text('Connected');
+        $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.green);
     });
+    
     ros_console.on('error', function(e) {
-        console.log("Error: " + e);
-        on_error('rgba(255,0,0,0.5)');
+        console.log("error");
+        $(header + ' a.ui-collapsible-heading-toggle').text('Error');
+        $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.red);
     });
+    
+    // Json load and config
+    $.getJSON( file ).done(function( json ) {
+        // Load ROS configuration file
+        that.load(json);
+        // Set configuration
+        $(ros_url).text(that.ros.server);
+        $(ros_url).addClass('ui-state-disabled');
+        // Connect to server
+        ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+        
+    }).fail(function( jqxhr, textStatus, error ) {
+        console.log('Fail load confing from json');
+        // Initialize empty json
+        that.load({});
+        // Save in local the configuration
+        localStorage.setItem('ros', JSON.stringify(this.ros));
+    });
+
     // Connection server
-    $( field ).bind( "change paste", function(event, ui) {
+    $( ros_url ).bind( "change paste", function(event, ui) {
         var value = $(this).val();
-        // read the value only if not empty
-        console.log("New value saved: " + value);
-        server = value
+        // Update only if not empty
+        if(value !== '') {
+            // read the value only if not empty
+            console.log("New value saved: " + value);
+            // update server name
+            that.ros.server = value;
+        }
     });
-    $( connect ).bind( "click", function(event, ui) {
-        console.log("Clicked");
+    
+    $( refresh ).click(function() {
         // If the server is connected close the connection
         if(ros_console.isConnected) {
             ros_console.close();
-            console.log("ROS WS disconnection");
+            console.log("ROS Close");
         }
-        // Connect to new server
-        console.log("ROS WS connection: " + server );
-        ros_console.connect(server);
+        if(that.ros.server !== '') {
+            // Connect to new server
+            ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+        }
     });
-    */
     // return the ros console websocket
     return ros_console;
+}
+
+ros_controller.connection.prototype.load = function(json) {
+    if ('ros' in json) {
+        this.ros = {};
+        this.ros.server = ros.server || '';
+        this.ros.port = ros.port || '9090';
+    } else {
+        this.ros = {};
+        this.ros.server = '';
+        this.ros.port = '9090';
+    }
 }

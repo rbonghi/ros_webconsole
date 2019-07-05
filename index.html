@@ -30,32 +30,54 @@
   <script src="jquery/jquery-2.1.0.js"></script>
   <script src="jquery/jquery.mobile-1.4.5.min.js"></script>-->
   <!-- ROS libs online -->
-  <script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/EaselJS/current/easeljs.min.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/three.min.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/STLLoader.js"></script>
+  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/ColladaLoader.js"></script>
   <script type="text/javascript" src="https://static.robotwebtools.org/ros3djs/current/ros3d.js"></script>
-  
+  <!-- ROS libs offline -->
+  <!-- OFF LINE libraries
+  <script type="text/javascript" src="ros/eventemitter2/eventemitter2.js"></script>
+  <script type="text/javascript" src="ros/roslibjs/roslib.js"></script>
+  <script type="text/javascript" src="ros/easeljs/easeljs.js"></script>
+  <script type="text/javascript" src="ros/ros2djs/ros2d.js"></script>
+  <script type="text/javascript" src="ros/three/three.js"></script>
+  <script type="text/javascript" src="ros/STLLoader/STLLoader.min.js"></script>
+  <script type="text/javascript" src="ros/ColladaLoader/ColladaLoader.js"></script>
+  <script type="text/javascript" src="ros/ros3djs/ros3d.js"></script>-->
+  <script type="text/javascript" src="ros/nav2d.js"></script>
   <!-- Load page controller -->
   <script type="text/javascript" src="js/pages.js"></script>
   <script type="text/javascript" src="js/ros_controller.js"></script>
-  <script type="text/javascript" src="js/Viewer.js"></script>
+  <script type="text/javascript" src="js/Viewer3D.js"></script>
+  <script type="text/javascript" src="js/Viewer2D.js"></script>
 
   <script type="text/javascript">
     // Run the document only when de DOM is ready and the callback with the json file in loaded
     // reference:
     // https://demos.jquerymobile.com/1.2.1/docs/api/events.html
-    $(document).on("pageinit", function() {
-        pages.loadconfig("config.json", function(json) {
-            // Build Navigation bar menu
-            json.pages = (('pages' in json) ? json.pages : {});
-            pages.controller(json.pages);
-            // Initialize ros controller
-            json.ros = (('ros' in json) ? json.ros : {});
-            var ros = new ros_controller.connection(json.ros);
-            // Init3D map controller
-            var map3D = new Viewer.Map3D({
-                ros: ros
-            });
-        });
+    $(document).on("pageinit", function() {});
+    // Single initialization maps
+    $(document).ready(function () {
+        // Configuration file
+        config = "config.json";
+        // Load json configuration
+        pages.configuration(config);
+        // Build Navigation bar menu
+        //json.pages = (('pages' in json) ? json.pages : {});
+        pages.controller({config: config});
+        var size = pages.size();
+        // Initialize ros controller
+        var ros = new ros_controller.connection(config);
+        
+        //json.robot = (('robot' in json) ? json.robot : {});
+        // Init3D map controller
+        var map3D = new Viewer3D.Map3D({}, {ros: ros, size: size});
+        // Init2D map controller
+        var map2D = new Viewer2D.Map2D({}, {ros: ros, size: size});
     });
   </script>
   <style>
@@ -67,13 +89,16 @@
 </head>
 
 <body>
-<div data-role="page">
+<div data-role="page" id="map">
     <div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
-      <a href="#save" class="ui-btn ui-corner-all ui-icon-action ui-btn-icon-left">Save</a>
-      <div data-role="collapsible" data-iconpos="right" id="ros-server">
-        <h4>Status</h4>
-        <input type="url" data-clear-btn="true" name="ros-server" id="ros-url" data-mini="true" value="" placeholder="localhost">
-      </div>
+      <p><a href="#popup" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a><a href="#save" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></p>
+        <div data-role="collapsible" data-iconpos="right" id="ros-server">
+          <h3 id="ros-server-status">Status</h3>
+          <form>
+            <label for="ros-url" class="ui-hidden-accessible">ws://</label>
+            <input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
+          </form><a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
+        </div>
     </div>
     
     <div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false">
@@ -91,13 +116,30 @@
     
     <div data-role="footer" data-theme="a" data-position-fixed="true">
         <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-            <a href="#map" id="map" class="ui-btn ui-corner-all">2D</a>
+            <a href="#map" id="map-type" class="ui-btn ui-corner-all">3D</a>
             <a href="#" class="ui-btn ui-corner-all ui-icon-navigation ui-btn-icon-notext">Icon only</a>
             <a href="#" class="ui-btn ui-corner-all ui-icon-location ui-btn-icon-notext">Icon only</a>
         </div>
-        
     </div>
-    
-</body>
+</div>
+<!-- Configuration page -->
+<div data-role="page" id="popup">
 
+	<div data-role="header" data-theme="b">
+		<h1>Configuration</h1>
+	</div>
+
+	<div role="main" class="ui-content">
+		<form>
+            <label for="config-area" class="ui-hidden-accessible">Configuration:</label>
+            <textarea cols="40" rows="8" name="config-area" id="config-area"></textarea>
+        </form>
+	</div>
+
+	<div data-role="footer">
+	    <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
+	    <a href="#save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a>
+	</div>
+</div>
+</body>
 </html>

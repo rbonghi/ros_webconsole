@@ -91,16 +91,13 @@ ros_controller.connection.prototype.load = function(json) {
     this.ros = {};
     if ('ros' in json) {
         ros = json.ros;
-        this.ros.server = ros.server || '';
-        this.ros.port = ros.port || '9090';
     } else if(localStorage.getItem('ros')) { // Check if exist in local storage
         ros = JSON.parse(localStorage.getItem('ros'));
-        this.ros.server = ros.server || '';
-        this.ros.port = ros.port || '9090';
     } else {
-        this.ros.server = '';
-        this.ros.port = '9090';
+        ros = {}
     }
+    this.ros.server = ros.server || '';
+    this.ros.port = ros.port || '9090';
     // Set text ros URL
     $( this.ros_url ).val(this.ros.server);
     // Save the local storage for this configuration

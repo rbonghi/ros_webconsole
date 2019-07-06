@@ -36,11 +36,13 @@ Viewer3D.Map3D = function(file, options) {
     $.getJSON( file ).done(function( json ) {
         // Load ROS configuration file
         that.robot = ros_controller.robot(json);
+        that.loadConfig(json);
         // Make the 3D viewer
         that.make();
     }).fail(function( jqxhr, textStatus, error ) {
         // Initialize empty json
         that.robot = ros_controller.robot({});
+        that.loadConfig({});
         // Make the 3D viewer
         that.make();
     });
@@ -69,7 +71,7 @@ Viewer3D.Map3D.prototype.make = function() {
       width : this.size.width,
       height : this.size.height,
       antialias : true,
-      background: '#EEEEEE'
+      background: this.config.background
     });
     // Setup the map client.
     var gridClient = new ROS3D.OccupancyGridClient({
@@ -102,4 +104,18 @@ Viewer3D.Map3D.prototype.show = function(status) {
     } else {
         $('#' + this.divID).hide();
     }
+}
+
+Viewer3D.Map3D.prototype.loadConfig = function(json) {
+    if ('view3D' in json) {
+        config = json.view3D;
+    } else if(localStorage.getItem('view3D')) { // Check if exist in local storage
+        config = JSON.parse(localStorage.getItem('view3D'));
+    } else {
+        config = {};
+    }
+    this.config = {};
+    this.config.background = config.background || '#EEEEEE';
+    // Save the local storage for this configuration
+    window.localStorage.setItem('view3D', JSON.stringify(this.config));
 }

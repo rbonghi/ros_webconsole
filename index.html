@@ -21,6 +21,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Page css -->
+  <link rel="stylesheet" href="css/index.css" />
   <!-- jQuery Mobile online -->
   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -60,40 +62,33 @@
     // reference:
     // https://demos.jquerymobile.com/1.2.1/docs/api/events.html
     $(document).on("pageinit", function() {});
-    // Update configuration only the page is selected
-    $(document).on( "pagebeforeshow", '#popup', function( event ) {
-        // Load json configuration
-        pages.configuration();
-    });
+    
+    // Load Configuration controller
+    pages.configuration();
+    
     // Single initialization maps
     $(document).ready(function () {
         // Configuration file
         config = "config.json";
-        // Build Navigation bar menu
-        pages.controller();
+        // Load size page
         var size = pages.size();
         // Initialize ros controller
         var ros = new ros_controller.connection(config);
-        
-        //json.robot = (('robot' in json) ? json.robot : {});
         // Init3D map controller
         var map3D = new Viewer3D.Map3D(config, {ros: ros, size: size});
         // Init2D map controller
         var map2D = new Viewer2D.Map2D(config, {ros: ros, size: size});
+        
+        // Build Navigation bar menu
+        pages.controller();
     });
   </script>
-  <style>
-    .map canvas {
-      border-radius: 14px;
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-    }
-  </style>
 </head>
 
 <body>
 <div data-role="page" id="map">
     <div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
-      <p><a href="#popup" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a><a href="#save" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></p>
+      <p><a href="#config" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a><a href="#config-save" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></p>
         <div data-role="collapsible" data-iconpos="right" id="ros-server">
           <h3 id="ros-server-status">Status</h3>
           <form>
@@ -141,7 +136,7 @@
     </div>
 </div>
 <!-- Configuration page -->
-<div data-role="page" id="popup">
+<div data-role="page" id="config">
 
 	<div data-role="header" data-theme="b">
 		<h1>Configuration</h1>
@@ -156,7 +151,7 @@
 
 	<div data-role="footer">
 	    <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
-	    <a href="#save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a>
+	    <a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a>
 	</div>
 </div>
 </body>

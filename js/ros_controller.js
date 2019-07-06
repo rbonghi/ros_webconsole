@@ -106,3 +106,23 @@ ros_controller.connection.prototype.load = function(json) {
     // Save the local storage for this configuration
     window.localStorage.setItem('ros', JSON.stringify(this.ros));
 }
+
+ros_controller.robot = function(json) {
+    // Load robot configuration
+    if ('robot' in json) {
+        drobot = json.robot;
+    } else if(localStorage.getItem('robot')) { // Check if exist in local storage
+        drobot = JSON.parse(localStorage.getItem('robot'));
+    } else {
+        drobot = {};
+    }
+    robot = {};
+    robot.rate = drobot.rate || 20.0;
+    robot.frame = drobot.frame || 'map';
+    robot.base_link = robot.base_link || 'base_link';
+    robot.serverName = robot.serverName || '/move_base';
+    // Save the local storage for this configuration
+    window.localStorage.setItem('robot', JSON.stringify(robot));
+    // Return robot status
+    return robot
+}

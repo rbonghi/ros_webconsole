@@ -48,17 +48,43 @@ pages.controller = function(options) {
     });
 }
 
-pages.configuration = function() {
-    var config_area = '#config-area';
+pages.json = function() {
     json = {}
     for (var i = 0; i < localStorage.length; i++){
         var key = localStorage.key(i);
         json[key] = JSON.parse(localStorage.getItem(key));
     }
-    // Export json in text file
-    var config_text = JSON.stringify(json, null, 4);
-    $(config_area).text(config_text);
-    console.log("Hello");
+    return json;
+}
+
+pages.configuration = function(options) {
+    options = options || {};
+    var page = options.page || '#config';
+    var area = options.area || '#config-area';
+    var save = options.save || '#config-save';
+
+    // Update configuration only the page is selected
+    $(document).on( "pagebeforeshow", page, function( event ) {
+        // Load json configuration
+        json = pages.json();
+        // Export json in text file
+        var config_text = JSON.stringify(json, null, 4);
+        $(area).text(config_text);
+    });
+    
+    // Single initialization maps
+    $(document).ready(function () {
+        // Click button
+        $('a[href="' + save + '"]').click(function() {
+            $("<a />", {
+                "download": "config.json",
+                "href" : "data:application/json," + encodeURIComponent(JSON.stringify(pages.json()))
+            }).appendTo("body")
+            .click(function() {
+                $(this).remove()
+            })[0].click()
+        });
+    });
 }
 
 pages.size = function() {

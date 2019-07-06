@@ -20,60 +20,68 @@ var Viewer2D = Viewer2D || {
     REVISION: '0.0.1'
 };
 
-/**
-    2D Navigation controller
+/** 2D Navigation controller
 */
-Viewer2D.Map2D = function(robot, options) {
+Viewer2D.Map2D = function(file, options) {
     var that = this;
-    robot = robot || {};
-    // URDF path
-    var rate = robot.rate || 20.0;
-    var frame = robot.frame || 'map';
-    var base_link = robot.base_link || 'base_link';
-    var serverName = robot.serverName || '/move_base';
     // Options viewer
     options = options || {};
     // ROS controller
-    var ros = options.ros;
+    this.ros = options.ros;
     // Page configuration
-    var divID = options.divID || 'map-2D';
+    this.divID = options.divID || 'map-2D';
     // Check size page
-    var size = options.size;
+    this.size = options.size;
 	
+    // Json load and config
+    $.getJSON( file ).done(function( json ) {
+        // Load ROS configuration file
+        that.robot = ros_controller.robot(json);
+        // Make the 2D viewer
+        that.make();
+    }).fail(function( jqxhr, textStatus, error ) {
+        // Initialize empty json
+        that.robot = ros_controller.robot({});
+        // Make the 2D viewer
+        that.make();
+    });
+	
+	$(window).bind('resize', function (event) {
+	    if(that.viewer) {
+	        // Resize canvas
+	        var size = pages.size();
+	        that.viewer.scene.canvas.width = size.width;
+	        that.viewer.scene.canvas.height = size.height;
+	        that.viewer.scaleToDimensions(size.width, size.height);
+	    }
+	});
+};
+
+Viewer2D.Map2D.prototype.make = function() {
 	// Create a TF client that subscribes to the fixed frame.
 	var tfClient = new ROSLIB.TFClient({
-		ros: ros,
+		ros: this.ros,
 		angularThres: 0.01,
 		transThres: 0.01,
-		rate: rate,
-		fixedFrame: frame
+		rate: this.robot.rate,
+		fixedFrame: this.robot.frame
 	});
 	// 2D Viewer
-    var viewer = new ROS2D.Viewer({
-        divID: divID,
-        width: size.width,
-        height: size.height,
+    this.viewer = new ROS2D.Viewer({
+        divID: this.divID,
+        width: this.size.width,
+        height: this.size.height,
         background: '#EEEEEE'
     });
     // Setup the nav client.
     var nav = new NAV2D.OccupancyGridClientNav({
-        ros: ros,
+        ros: this.ros,
         tfClient: tfClient,
         continuous: true,
-        robot_pose: base_link,
-        rootObject: viewer.scene,
+        robot_pose: this.robot.base_link,
+        rootObject: this.viewer.scene,
         withOrientation: true,
-        viewer: viewer,
-        serverName: serverName
+        viewer: this.viewer,
+        serverName: this.robot.serverName
     });
-    
-	$(window).bind('resize', function (event) {
-	    var size = pages.size();
-	    // Resize canvas
-	    viewer.scene.canvas.width = size.width;
-	    viewer.scene.canvas.height = size.height;
-	    viewer.scaleToDimensions(size.width, size.height);
-	});
-	
-	
-};
+}

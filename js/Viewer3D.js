@@ -20,6 +20,8 @@ var Viewer3D = Viewer3D || {
     REVISION: '0.0.1'
 };
 
+/** 3D Navigation controller
+*/
 Viewer3D.Map3D = function(file, options) {
     var that = this;
     options = options || {};
@@ -33,19 +35,22 @@ Viewer3D.Map3D = function(file, options) {
     // Json load and config
     $.getJSON( file ).done(function( json ) {
         // Load ROS configuration file
-        that.load(json);
+        that.robot = ros_controller.robot(json);
         // Make the 3D viewer
         that.make();
     }).fail(function( jqxhr, textStatus, error ) {
         // Initialize empty json
-        that.load({});
+        that.robot = ros_controller.robot({});
         // Make the 3D viewer
         that.make();
     });
     
 	$(window).bind('resize', function (event) {
-	    var size = pages.size();
-	    that.viewer.resize(size.width, size.height);
+	    // Check if viewer is already loaded
+	    if(that.viewer) {
+	        var size = pages.size();
+	        that.viewer.resize(size.width, size.height);
+	    }
 	});
 }
 
@@ -89,26 +94,4 @@ Viewer3D.Map3D.prototype.make = function() {
 	});
 	*/
 };
-
-Viewer3D.Map3D.prototype.load = function(json) {
-    this.robot = {};
-    if ('robot' in json) {
-        robot = json.robot;
-        // URDF path
-        this.robot.rate = robot.rate || 20.0;
-        this.robot.frame = robot.frame || 'map';
-        this.robot.path = robot.path || '';
-    } else if(localStorage.getItem('robot')) { // Check if exist in local storage
-        robot = JSON.parse(localStorage.getItem('robot'));
-        this.robot.rate = robot.rate || 20.0;
-        this.robot.frame = robot.frame || 'map';
-        this.robot.path = robot.path || '';
-    } else {
-        this.robot.rate = 20.0;
-        this.robot.frame = 'map';
-        this.robot.path = '';
-    }
-    // Save the local storage for this configuration
-    window.localStorage.setItem('robot', JSON.stringify(this.robot));
-}
 

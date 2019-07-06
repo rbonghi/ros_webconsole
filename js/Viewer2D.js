@@ -85,3 +85,12 @@ Viewer2D.Map2D.prototype.make = function() {
         serverName: this.robot.serverName
     });
 }
+
+Viewer2D.Map2D.prototype.show = function(status) {
+    // Show or hide some parts
+    if(status) {
+        $('#' + this.divID).show();
+    } else {
+        $('#' + this.divID).hide();
+    }
+}

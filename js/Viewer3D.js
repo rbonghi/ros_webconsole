@@ -64,7 +64,7 @@ Viewer3D.Map3D.prototype.make = function() {
 		fixedFrame: this.robot.frame
 	});
     // Create the main viewer.
-    var viewer = new ROS3D.Viewer({
+    this.viewer = new ROS3D.Viewer({
       divID : this.divID,
       width : this.size.width,
       height : this.size.height,
@@ -74,12 +74,12 @@ Viewer3D.Map3D.prototype.make = function() {
     // Setup the map client.
     var gridClient = new ROS3D.OccupancyGridClient({
       ros : this.ros,
-      rootObject : viewer.scene,
+      rootObject : this.viewer.scene,
       tfClient: tfClient,
       continuous: true
     });
 	// Add a grid.
-	viewer.addObject(new ROS3D.Grid({
+	this.viewer.addObject(new ROS3D.Grid({
 		size: 20,
 		cellSize: 1.0
 	}));
@@ -95,3 +95,11 @@ Viewer3D.Map3D.prototype.make = function() {
 	*/
 };
 
+Viewer3D.Map3D.prototype.show = function(status) {
+    // Show or hide some parts
+    if(status) {
+        $('#' + this.divID).show();
+    } else {
+        $('#' + this.divID).hide();
+    }
+}

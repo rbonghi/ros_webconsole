@@ -80,7 +80,7 @@
         var map2D = new Viewer2D.Map2D(config, {ros: ros, size: size});
         
         // Build Navigation bar menu
-        pages.controller();
+        pages.controller(map2D, map3D);
     });
   </script>
 </head>
@@ -114,7 +114,7 @@
     
     <div data-role="footer" data-theme="a" data-position-fixed="true">
         <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-            <a href="#map" id="map-type" class="ui-btn ui-corner-all">3D</a>
+            <a href="#map" id="map-type" class="ui-btn ui-corner-all">2D</a>
             <a href="#" class="ui-btn ui-corner-all ui-icon-navigation ui-btn-icon-notext">Icon only</a>
             <a href="#" class="ui-btn ui-corner-all ui-icon-location ui-btn-icon-notext">Icon only</a>
         </div>

@@ -20,12 +20,15 @@ var pages = pages || {
     REVISION: '0.1.0'
 };
 
-pages.controller = function(options) {
+pages.controller = function(map2D, map3D, options) {
+    var that = this;
     options = options || {};
     map_type = options.map_type || '#map-type';
+    this.map2D = map2D;
+    this.map3D = map3D;
     // Initialization map
-    $('#map-2D').hide();
-    $('#map-3D').show();
+    map2D.show(false);
+    map3D.show(true);
     // Controller map button
     $(map_type).click(function() {
         console.log("Show map " + $(map_type).text());
@@ -34,15 +37,15 @@ pages.controller = function(options) {
             case '2D':
                 $(map_type).text('3D');
                 // Hide 3D map and show 2D map
-                $('#map-2D').hide();
-                $('#map-3D').show();
+                that.map2D.show(true);
+                that.map3D.show(false);
                 break;
             case '3D':
                 // Change text in 3D
                 $(map_type).text('2D');
                 // Hide 3D map and show 2D map
-                $('#map-3D').hide();
-                $('#map-2D').show();
+                that.map2D.show(false);
+                that.map3D.show(true);
                 break;
         }
     });

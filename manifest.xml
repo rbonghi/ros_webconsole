@@ -1,0 +1,15 @@
+<package>
+  <description brief="ros_webconsole">
+
+     ros_webconsole
+
+  </description>
+  <author>Raffaello Bonghi</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ros_webconsole</url>
+  <depend package="roswww"/>
+
+</package>
+
+

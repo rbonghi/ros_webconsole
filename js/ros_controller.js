@@ -33,14 +33,14 @@ ros_controller.connection = function(file, options) {
                      'red': 'rgba(255,0,0,0.5)',
                      'green': 'rgba(0,255,10,0.5)'};
     // The Ros object is responsible for connecting to rosbridge.
-    var ros_console = new ROSLIB.Ros(); 
+    this.ros_console = new ROSLIB.Ros(); 
     // Map connections page information
-    ros_console.on('connection', function(e) {
+    this.ros_console.on('connection', function(e) {
         $(header + ' a.ui-collapsible-heading-toggle').text('Connected');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.green);
     });
     
-    ros_console.on('error', function(e) {
+    this.ros_console.on('error', function(e) {
         console.log("error");
         $(header + ' a.ui-collapsible-heading-toggle').text('Error');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.red);
@@ -54,11 +54,15 @@ ros_controller.connection = function(file, options) {
         $(ros_url).text(that.ros.server);
         $(ros_url).addClass('ui-state-disabled');
         // Connect to server
-        ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+        that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
         
     }).fail(function( jqxhr, textStatus, error ) {
         // Initialize empty json
         that.load({});
+        if(that.ros.server !== '') {
+            // Connect to new server
+            that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+        }
     });
 
     // Connection server
@@ -73,18 +77,13 @@ ros_controller.connection = function(file, options) {
     });
     
     $( refresh ).click(function() {
-        // If the server is connected close the connection
-        if(ros_console.isConnected) {
-            ros_console.close();
-            console.log("ROS Close");
-        }
         if(that.ros.server !== '') {
             // Connect to new server
-            ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+            that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
         }
     });
     // return the ros console websocket
-    return ros_console;
+    return this.ros_console;
 }
 
 ros_controller.connection.prototype.load = function(json) {
@@ -113,6 +112,7 @@ ros_controller.robot = function(json) {
     } else {
         drobot = {};
     }
+    // Initialize robot configuration string
     robot = {};
     robot.rate = drobot.rate || 20.0;
     robot.frame = drobot.frame || 'map';

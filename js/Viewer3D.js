@@ -80,21 +80,20 @@ Viewer3D.Map3D.prototype.make = function() {
       tfClient: tfClient,
       continuous: true
     });
-	// Add a grid.
-	this.viewer.addObject(new ROS3D.Grid({
+    var grid = new ROS3D.Grid({
 		size: 20,
 		cellSize: 1.0
-	}));
-	/**
+	})
+	// Add a grid.
+	this.viewer.addObject(grid);
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
 		ros: this.ros,
-		tfClient: this.tfClient,
-		path: path,
-		rootObject: viewer.scene,
+		tfClient: tfClient,
+		path: 'http://localhost:8085/',
+		rootObject: this.viewer.scene,
 		loader: ROS3D.STL_LOADER
 	});
-	*/
 };
 
 Viewer3D.Map3D.prototype.show = function(status) {

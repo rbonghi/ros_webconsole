@@ -16,13 +16,29 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>
 -->
 <launch>
+    <!-- Port for the websocket bridge -->
+    <arg name="websocket_port" default="9090"/>
+
+    <!-- Port where site and other package resources will be served -->
+    <arg name="packages_port" default="8001"/>
+
+    <!--
+    Path within each installed ROS package to serve.
+    Recommended to use the package root,
+    so resources like meshes are properly served
+    -->
+    <arg name="packages_path" default="/"/>
+    
     <!-- ROSbridge server -->
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
-        <arg name="port" value="9090"/>
+        <arg name="port" value="$(arg websocket_port)"/>
     </include>
     
     <!-- ROSWWW server -->
-    <include file="$(find roswww)/launch/roswww.launch"/>
+    <include file="$(find roswww)/launch/roswww.launch">
+        <arg name="port" value="$(arg packages_port)" />
+        <arg name="webpath" value="$(arg packages_path)" />
+    </include>
     
     <!-- TF2 republisher -->
     <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" respawn="false" output="screen"/>

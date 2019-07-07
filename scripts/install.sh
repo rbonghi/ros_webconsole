@@ -17,23 +17,24 @@
 
 if ! [ -d jquery ] ; then
     # Download jquery mobile
-    wget -nc "https://jquerymobile.com/resources/download/jquery.mobile-1.4.5.zip"
+    curl "https://jquerymobile.com/resources/download/jquery.mobile-1.4.5.zip" -o jquery.mobile-1.4.5.zip
     # Unzip jquery folder
     unzip -q -o jquery.mobile-1.4.5.zip -d jquery
-    # Download jquery
-    wget -P jquery -nc "http://code.jquery.com/jquery-2.1.1.min.js"
+    # Download jQuery
+    curl "http://code.jquery.com/jquery-2.1.1.min.js" -o jquery/jquery-2.1.1.min.js
     # Remove jquery mobile zip file
     rm jquery.mobile-1.4.5.zip
 fi
 
 # Download ROS javascripts files
 mkdir -p js/ros
-wget -P js/ros -nc "https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/roslibjs/current/roslib.min.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/EaselJS/current/easeljs.min.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/threejs/current/three.min.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/threejs/current/STLLoader.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/threejs/current/ColladaLoader.js"
-wget -P js/ros -nc "https://static.robotwebtools.org/ros3djs/current/ros3d.js"
+# Download all ROSJS scripts
+curl "https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js" -o js/ros/eventemitter2.min.js
+curl "https://static.robotwebtools.org/roslibjs/current/roslib.min.js" -o js/ros/roslib.min.js
+curl "https://static.robotwebtools.org/EaselJS/current/easeljs.min.js" -o js/ros/easeljs.min.js
+curl "https://static.robotwebtools.org/ros2djs/current/ros2d.min.js" -o js/ros/ros2d.min.js
+curl "https://static.robotwebtools.org/threejs/current/three.min.js" -o js/ros/three.min.js
+curl "https://static.robotwebtools.org/threejs/current/STLLoader.js" -o js/ros/STLLoader.js
+curl "https://static.robotwebtools.org/threejs/current/ColladaLoader.js" -o js/ros/ColladaLoader.js
+curl "https://static.robotwebtools.org/ros3djs/current/ros3d.js" -o js/ros/ros3d.js
 

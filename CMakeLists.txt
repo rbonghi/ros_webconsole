@@ -19,10 +19,15 @@ project(ros_webconsole)
 
 find_package(catkin REQUIRED COMPONENTS roslaunch)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    roswww
+    rosbridge_server
+    tf2_web_republisher
+)
 
 roslaunch_add_file_check(launch)
 
-add_custom_command(TARGET doc
-    POST_BUILD COMMAND scripts/install.sh
-)
+# add_custom_command(TARGET doc
+#     POST_BUILD COMMAND scripts/install.sh
+# )

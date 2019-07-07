@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
  This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  Copyright (c) 2019 Raffaello Bonghi.
@@ -15,22 +16,20 @@
  You should have received a copy of the GNU Affero General Public License
  along with this program. If not, see <http://www.gnu.org/licenses/>
 -->
-<package>
-  <description brief="ros_webconsole">
-
-     ros_webconsole
-
-  </description>
+<package format="2">
+  <name>ros_webconsole</name>
+  <version>1.0.0</version>
+  <description>ros_webconsole A ROS WEB console to control remotely your robot. Based with robotwebtools.</description>
   <author>Raffaello Bonghi</author>
+  <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/ros_webconsole</url>
   
-  <depend package="catkin"/>
-  <depend package="roslaunch"/>
-  <depend package="roswww"/>
-  <depend package="rosbridge_server"/>
-  <depend package="tf2_web_republisher"/>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roslaunch</depend>
+  <exec_depend>roswww</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
+  <exec_depend>tf2_web_republisher</exec_depend>
 
 </package>
 

@@ -103,7 +103,7 @@ Viewer3D.Map3D.prototype.make = function() {
 	var urdfClient = new ROS3D.UrdfClient({
 		ros: this.ros.ros,
 		tfClient: tfClient,
-		path: 'http://' + this.ros.config.server + ':' + this.ros.config.meshport + '/',
+		path: this.ros.config.protocol + '//' + this.ros.config.server + ':' + this.ros.config.meshport + '/',
 		rootObject: this.viewer.scene,
 		loader: ROS3D.STL_LOADER
 	});

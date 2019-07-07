@@ -92,7 +92,9 @@ ros_controller.connection.prototype.load = function(json) {
     } else {
         ros = {}
     }
-    this.config.server = ros.server || '';
+    // Build location hostname
+    this.config.protocol = ros.protocol || location.protocol;
+    this.config.server = ros.server || window.location.hostname;
     this.config.wsport = ros.wsport || '9090';
     this.config.meshport = ros.meshport || '8001';
     // Set text ros URL

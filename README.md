@@ -1,57 +1,49 @@
-# ROS web console 
-=======
-[![Build Status](https://travis-ci.org/rbonghi/roswebconsole.svg)](https://travis-ci.org/rbonghi/roswebconsole)
+# ROS webconsole 
 
 A ROS WEB console to control remotely your robot. Based with robotwebtools.
 
-:loudspeaker: **See demo console in: http://rbonghi.github.io/roswebconsole/** :loudspeaker:
+:loudspeaker: **See demo console in: http://rbonghi.github.io/ros_webconsole/** :loudspeaker:
 
 
 ## Install
 
-This **ros web conosole** require the rosbridge suite and the TF2 republisher
+It depends on the following ROS packages:
+* roswww
+* rosbridge
+* tf2_web_publisher
+
+This web console depends on:
+* [jQuery](https://jquery.com/). Release 2.1.1
+* [jQuery Mobile](https://jquerymobile.com/). Release 1.4.5
+* [EventEmitter2](https://github.com/hij1nx/EventEmitter2)
+* [three.js](https://github.com/mrdoob/three.js/)
+* [ColladaLoader2](https://github.com/crobi/ColladaAnimationCompress)
+* [THREE.STLLoader](https://github.com/mrdoob/three.js/blob/master/examples/js/loaders/STLLoader.js)
+* [EaselJS](https://github.com/CreateJS/EaselJS/)
+* [roslibjs](https://github.com/RobotWebTools/roslibjs)
+* [ros2djs](https://github.com/RobotWebTools/ros2djs)
+* [ros3djs](https://github.com/RobotWebTools/ros3djs)
+
+Open a terminal and build the package:
 ```
-$ sudo apt-get install ros-$ROSDISTRO-rosbridge-suite
-$ sudo apt-get install ros-$ROSDISTRO-tf2-web-republisher
-$ sudo apt-get install ros-$ROSDISTRO-interactive-marker-proxy 
+cd ~/catkin_ws/src
+git clone https://github.com/rbonghi/ros_webconsole.git
+cd ../
+catkin_make
+source ./devel/setup.bash
 ```
 In second step is require to install in your host a webserver
 
+## Run the program
 
-#Dependencies
-This web console depends on:
-- [EventEmitter2](https://github.com/hij1nx/EventEmitter2). The current supported version is 0.4.14.
-- [three.js](https://github.com/mrdoob/three.js/). The current supported version is r61.
-- ~~[ColladaLoader2](https://github.com/crobi/ColladaAnimationCompress). The current supported version is 0.0.1.~~
-- ~~[THREE.ColladaLoader](https://github.com/mrdoob/three.js/blob/master/examples/js/loaders/ColladaLoader.js). The current supported version is r61.~~
-- [THREE.STLLoader](https://github.com/mrdoob/three.js/blob/master/examples/js/loaders/STLLoader.js). The current supported version is r61.
-- [EaselJS](https://github.com/CreateJS/EaselJS/). The current supported version is 0.7.1.
-- [roslibjs](https://github.com/RobotWebTools/roslibjs). The current supported version is 0.14.0.
-- [ros2djs](https://github.com/RobotWebTools/ros2djs). The current supported version is 0.6.0.
-- [ros3djs](https://github.com/RobotWebTools/ros3djs). The current supported version is 0.15.0.
-
-###All files are stored in folder [js/ros](https://github.com/rbonghi/roswebconsole/tree/master/js/ros)
-
-
-#Installation
-* Follow the guide on [Install lighttpd and Codiad](http://raffaello.officinerobotiche.it/4ude/how-to-install-lighttpd-and-codiad/)
-* Clone this project and change owner:
+1. Launch your robotics project with URDF and controllers
+2. Run from your terminal
 ```
-cd /var/www/
-git clone https://github.com/rbonghi/roswebconsole.git/
-sudo chown -R www-data:www-data roswebconsole/ 
+roslaunch ros_webconsole ros_webconsole.launch
 ```
-* Now you can update your lighttpd server configuration in `/etc/lighttpd/lighttpd.conf` with this commands:
-	* Change root:
-	```
-	server.document-root        = "/var/www/roswebconsole"
-	```
-	* Add alias
-	```
-	alias.url = ( "/Codiad" => "/var/www/Codiad" )
-	alias.url += ( "/ROBOT_description" => "/home/USER/catkin_ws/src/ROBOT_description" )
-	```
-	An example for my robot [4UDE](http://raffaello.officinerobotiche.it/4ude/):
-	```
-	alias.url += ( "/dude_description" => "/home/USER/catkin_ws/src/ros_dude/dude_description" )
-	```
+3. Open your browser in:
+[http://localhost:8001/ros_webconsole](http://localhost:8001/ros_webconsole)
+
+## Configuration
+
+From the web interface you can export the configuration file and save on the `config\config.json` every load the page will be loaded with your selected configuration

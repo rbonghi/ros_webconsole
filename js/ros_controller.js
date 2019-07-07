@@ -113,7 +113,7 @@ ros_controller.robot = function(json) {
     // Initialize robot configuration string
     robot = {};
     robot.rate = drobot.rate || 10.0;
-    robot.frame = drobot.frame || 'map';
+    robot.frame = drobot.frame || 'base_link';
     robot.base_link = robot.base_link || 'base_link';
     robot.serverName = robot.serverName || '/move_base';
     // Save the local storage for this configuration

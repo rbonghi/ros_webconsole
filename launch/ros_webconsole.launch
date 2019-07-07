@@ -35,6 +35,8 @@
     </include>
     
     <!-- ROSWWW server -->
+    <!-- When the server start the webpage will be available in:
+         http://<address>:8001/ros_webconsole -->
     <include file="$(find roswww)/launch/roswww.launch">
         <arg name="port" value="$(arg packages_port)" />
         <arg name="webpath" value="$(arg packages_path)" />

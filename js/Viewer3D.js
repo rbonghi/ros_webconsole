@@ -57,9 +57,16 @@ Viewer3D.Map3D = function(file, options) {
 }
 
 Viewer3D.Map3D.prototype.make = function() {
+    var that = this;
+    // Initialize sessionv view3D informations
+    this.sview3D = {}
+    // Check if exists a session storage
+    if(sessionStorage.getItem('view3D')) {
+        this.sview3D = JSON.parse(sessionStorage.getItem('view3D'));
+    }
 	// Create a TF client that subscribes to the fixed frame.
 	var tfClient = new ROSLIB.TFClient({
-		ros: this.ros,
+		ros: this.ros.ros,
 		angularThres: 0.01,
 		transThres: 0.01,
 		rate: this.robot.rate,
@@ -71,11 +78,17 @@ Viewer3D.Map3D.prototype.make = function() {
       width : this.size.width,
       height : this.size.height,
       antialias : true,
-      background: this.config.background
+      background: this.config.background,
+      cameraPose: this.sview3D.cameraPose || {x:3.0, y:3.0, z:3.0}
+    });
+    // Save camera position information in session storage
+    this.viewer.cameraControls.addEventListener('change', function(o){
+        that.sview3D.cameraPose = that.viewer.camera.position;
+        window.sessionStorage.setItem('view3D', JSON.stringify(that.sview3D));
     });
     // Setup the map client.
     var gridClient = new ROS3D.OccupancyGridClient({
-      ros : this.ros,
+      ros : this.ros.ros,
       rootObject : this.viewer.scene,
       tfClient: tfClient,
       continuous: true
@@ -88,9 +101,9 @@ Viewer3D.Map3D.prototype.make = function() {
 	this.viewer.addObject(grid);
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
-		ros: this.ros,
+		ros: this.ros.ros,
 		tfClient: tfClient,
-		path: 'http://localhost:8085/',
+		path: 'http://' + this.ros.config.server + ':' + this.ros.config.meshport + '/',
 		rootObject: this.viewer.scene,
 		loader: ROS3D.STL_LOADER
 	});

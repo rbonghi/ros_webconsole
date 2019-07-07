@@ -68,15 +68,15 @@
     // Single initialization maps
     $(document).ready(function () {
         // Configuration file
-        config = "config.json";
+        file = "config.json";
         // Load size page
         var size = pages.size();
         // Initialize ros controller
-        var ros = new ros_controller.connection(config);
+        var ros = new ros_controller.connection(file);
         // Init3D map controller
-        var map3D = new Viewer3D.Map3D(config, {ros: ros, size: size});
+        var map3D = new Viewer3D.Map3D(file, {ros: ros, size: size});
         // Init2D map controller
-        var map2D = new Viewer2D.Map2D(config, {ros: ros, size: size});
+        var map2D = new Viewer2D.Map2D(file, {ros: ros, size: size});
         
         // Build Navigation bar menu
         pages.controller(map2D, map3D);
@@ -87,11 +87,17 @@
 <body>
 <div data-role="page" id="map">
     <div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
-      <p><a href="#config" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a><a href="#config-save" class="ui-btn ui-shadow ui-btn-inline ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></p>
         <div data-role="collapsible" data-iconpos="right" id="ros-server">
           <h3 id="ros-server-status">Status</h3><form><label for="ros-url" class="ui-hidden-accessible">ws://</label><input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost"></form><a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
         </div>
-        <a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
+      <fieldset class="ui-grid-a">
+        <div class="ui-block-a"><a href="#config" class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a></div>
+        <div class="ui-block-b"><a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></div>
+      </fieldset><a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
+        <div data-role="collapsible">
+            <h4>Viewer</h4>
+            <p>I'm the collapsible content. By default I'm closed, but you can click the header to open me.</p>
+        </div>
     </div>
     
     <div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false">

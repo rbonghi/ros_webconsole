@@ -60,7 +60,7 @@ Viewer2D.Map2D = function(file, options) {
 Viewer2D.Map2D.prototype.make = function() {
 	// Create a TF client that subscribes to the fixed frame.
 	var tfClient = new ROSLIB.TFClient({
-		ros: this.ros,
+		ros: this.ros.ros,
 		angularThres: 0.01,
 		transThres: 0.01,
 		rate: this.robot.rate,
@@ -75,7 +75,7 @@ Viewer2D.Map2D.prototype.make = function() {
     });
     // Setup the nav client.
     var nav = new NAV2D.OccupancyGridClientNav({
-        ros: this.ros,
+        ros: this.ros.ros,
         tfClient: tfClient,
         continuous: true,
         robot_pose: this.robot.base_link,

@@ -33,14 +33,14 @@ ros_controller.connection = function(file, options) {
                      'red': 'rgba(255,0,0,0.5)',
                      'green': 'rgba(0,255,10,0.5)'};
     // The Ros object is responsible for connecting to rosbridge.
-    this.ros_console = new ROSLIB.Ros(); 
+    this.ros = new ROSLIB.Ros(); 
     // Map connections page information
-    this.ros_console.on('connection', function(e) {
+    this.ros.on('connection', function(e) {
         $(header + ' a.ui-collapsible-heading-toggle').text('Connected');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.green);
     });
     
-    this.ros_console.on('error', function(e) {
+    this.ros.on('error', function(e) {
         console.log("error");
         $(header + ' a.ui-collapsible-heading-toggle').text('Error');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.red);
@@ -51,43 +51,40 @@ ros_controller.connection = function(file, options) {
         // Load ROS configuration file
         that.load(json);
         // Set configuration
-        $(ros_url).text(that.ros.server);
+        $(ros_url).text(that.config.server);
         $(ros_url).addClass('ui-state-disabled');
         // Connect to server
-        that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+        that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
         
     }).fail(function( jqxhr, textStatus, error ) {
         // Initialize empty json
         that.load({});
-        if(that.ros.server !== '') {
+        if(that.config.server !== '') {
             // Connect to new server
-            that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+            that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
         }
     });
-
     // Connection server
     $( this.ros_url ).bind( "change paste", function(event, ui) {
         var value = $(this).val();
         // read the value only if not empty
         console.log("New value saved: " + value);
         // update server name
-        that.ros.server = value;
+        that.config.server = value;
         // Save the local storage for this configuration
-        window.localStorage.setItem('ros', JSON.stringify(that.ros));
+        window.localStorage.setItem('ros', JSON.stringify(that.config));
     });
     
     $( refresh ).click(function() {
-        if(that.ros.server !== '') {
+        if(that.config.server !== '') {
             // Connect to new server
-            that.ros_console.connect('ws://' + that.ros.server + ':' + that.ros.port);
+            that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
         }
     });
-    // return the ros console websocket
-    return this.ros_console;
 }
 
 ros_controller.connection.prototype.load = function(json) {
-    this.ros = {};
+    this.config = {};
     if ('ros' in json) {
         ros = json.ros;
     } else if(localStorage.getItem('ros')) { // Check if exist in local storage
@@ -95,12 +92,13 @@ ros_controller.connection.prototype.load = function(json) {
     } else {
         ros = {}
     }
-    this.ros.server = ros.server || '';
-    this.ros.port = ros.port || '9090';
+    this.config.server = ros.server || '';
+    this.config.wsport = ros.wsport || '9090';
+    this.config.meshport = ros.meshport || '8001';
     // Set text ros URL
-    $( this.ros_url ).val(this.ros.server);
+    $( this.ros_url ).val(this.config.server);
     // Save the local storage for this configuration
-    window.localStorage.setItem('ros', JSON.stringify(this.ros));
+    window.localStorage.setItem('ros', JSON.stringify(this.config));
 }
 
 ros_controller.robot = function(json) {
@@ -114,7 +112,7 @@ ros_controller.robot = function(json) {
     }
     // Initialize robot configuration string
     robot = {};
-    robot.rate = drobot.rate || 20.0;
+    robot.rate = drobot.rate || 10.0;
     robot.frame = drobot.frame || 'map';
     robot.base_link = robot.base_link || 'base_link';
     robot.serverName = robot.serverName || '/move_base';

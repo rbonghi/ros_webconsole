@@ -86,19 +86,34 @@
 
 <body>
 <div data-role="page" id="map">
-    <div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
-        <div data-role="collapsible" data-iconpos="right" id="ros-server">
-          <h3 id="ros-server-status">Status</h3><form><label for="ros-url" class="ui-hidden-accessible">ws://</label><input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost"></form><a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
-        </div>
-      <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a href="#config" class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a></div>
-        <div class="ui-block-b"><a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></div>
-      </fieldset><a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
-        <div data-role="collapsible">
-            <h4>Viewer</h4>
-            <p>I'm the collapsible content. By default I'm closed, but you can click the header to open me.</p>
-        </div>
-    </div>
+	<div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
+		<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer</h3>
+		<div class="ui-body ui-body-a ui-corner-all" id="view3D">
+			<div class="ui-field-contain">
+				<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
+			</div>
+			<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Search view..." data-inset="true" id="view3D-element">
+				<li><a href="#grid">Grid</a></li>
+				<li><a href="#urdf">URDF</a></li>
+				<li><a href="#laser">Laser</a></li>
+				<li><a href="#pount-cloud">Point Cloud</a></li>
+			</ul>
+			<div data-role="collapsibleset" data-content-theme="a" data-iconpos="right" id="view3D-list"></div>
+		</div>
+		<div data-role="collapsible" data-iconpos="right" id="ros-server">
+			<h3 id="ros-server-status">Status</h3>
+			<form>
+				<label for="ros-url" class="ui-hidden-accessible">ws://</label>
+				<input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
+			</form>
+			<a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
+		</div>
+		<fieldset class="ui-grid-a">
+			<div class="ui-block-a"><a href="#config" class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a></div>
+			<div class="ui-block-b"><a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></div>
+		</fieldset>
+		<a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
+	</div>
     
     <div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false">
     </div>

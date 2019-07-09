@@ -47,7 +47,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                        },
                                  'remove': function(viewer, obj) { viewer.scene.remove(obj) }
                                 },
-                       'urdf': {'name': 'URDF',
+                       'urdf': {'name': 'Robot Description',
                                 'config': {'param': 'robot_description'},
                                 'add': function(viewer, ros, tfClient, config) {
 	                                        // Add the URDF model of the robot.
@@ -70,7 +70,31 @@ Viewer3D.Map3D = function(ros, size, options) {
                                                }
                                            }
                                 },
-                       'map': {'name': 'Map'},
+                       'map': {'name': 'Map',
+                               'config': {'topic': '/map', 'continuous': false},
+                               'add': function (viewer, ros, tfClient, config) {
+                                            var gridClient = new ROS3D.OccupancyGridClient({
+                                              ros : ros.ros,
+                                              rootObject : viewer.scene,
+                                              tfClient: tfClient,
+                                              continuous: config.continuous,
+                                              topic: config.topic
+                                            });
+                                            return gridClient;
+                                      },
+                               'remove': function(viewer, obj) {
+                                            // Unsubscribe topic map
+                                            if(obj.continous) {
+                                                obj.rosTopic.unsubscribe();
+                                            }
+                                            if(obj.sceneNode) {
+                                                // Unsubscribe from TF
+                                                obj.sceneNode.unsubscribeTf();
+                                                // Remove frome scene
+                                                viewer.scene.remove(obj.sceneNode);
+                                            }
+                                       },
+                               },    
                        'laser': {'name': 'Laser'},
                        'point-cloud': {'name': 'Point Cloud'},
                        };
@@ -131,7 +155,7 @@ Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
     // Extract default config
     var config = this.components[name].config;
     // Define new object
-    obj = {'name': nextId + ' ' + text,
+    obj = {'name': text,
            'type': name,
            'id': name + nextId,
            'config': config,
@@ -258,24 +282,6 @@ Viewer3D.Map3D.prototype.make = function() {
         //Add in list
         this.addCollapsible(obj, i);
     }
-    /*
-    // Setup the map client.
-    var gridClient = new ROS3D.OccupancyGridClient({
-      ros : this.ros.ros,
-      rootObject : this.viewer.scene,
-      tfClient: this.tfClient,
-      continuous: true
-    });
-	// Add the URDF model of the robot.
-	var urdfClient = new ROS3D.UrdfClient({
-		ros: this.ros.ros,
-		tfClient: this.tfClient,
-		path: this.ros.config.protocol + '//' + this.ros.config.server + ':' + this.ros.config.meshport + '/',
-		rootObject: this.viewer.scene,
-		loader: ROS3D.STL_LOADER,
-		param: 'minicar/robot_description'
-	});
-	*/
 };
 
 Viewer3D.Map3D.prototype.show = function(status) {

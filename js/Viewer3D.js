@@ -34,9 +34,40 @@ Viewer3D.Map3D = function(ros, size, options) {
     this.view3D = options.view3D || 'view3D-list';
     this.view3Delement = options.view3D || '#view3D-element';
     this.view3Dframe = options.view3Dframe || '#view3D-frame';
-    
-    this.components = {'grid': {'name': 'Grid'},
-                       'urdf': {'name': 'URDF'},
+    // The list of object in scene
+    this.objects = [];
+    // List of all compoments availables
+    this.components = {'grid': {'name': 'Grid', 
+                                'config': {'size': 20, 'cellSize': 1.0},
+                                'add': function(viewer, ros, tfClient, config) {
+                                           var grid = new ROS3D.Grid(config);
+	                                       // Add a grid.
+	                                       viewer.addObject(grid);
+	                                       return grid;
+                                       },
+                                 'remove': function(viewer, obj) { viewer.scene.remove(obj) }
+                                },
+                       'urdf': {'name': 'URDF',
+                                'config': {'param': 'robot_description'},
+                                'add': function(viewer, ros, tfClient, config) {
+	                                        // Add the URDF model of the robot.
+	                                        var urdfClient = new ROS3D.UrdfClient({
+		                                        ros: ros.ros,
+		                                        tfClient: tfClient,
+		                                        path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
+		                                        rootObject: viewer.scene,
+		                                        loader: ROS3D.STL_LOADER,
+		                                        param: config.param
+	                                        });
+	                                        return urdfClient;
+                                       },
+                                 'remove': function(viewer, obj) { 
+                                               // Unsubscribe
+                                               obj.urdf.unsubscribeTf();
+                                               // Remove object from view
+                                               viewer.scene.remove(obj.urdf)
+                                           }
+                                },
                        'map': {'name': 'Map'},
                        'laser': {'name': 'Laser'},
                        'point-cloud': {'name': 'Point Cloud'},
@@ -68,19 +99,13 @@ Viewer3D.Map3D = function(ros, size, options) {
     
     // Control element
     $(this.view3Delement).children('li').bind('touchstart mousedown', function(e) {
-        var name = $(this).text();
-        var href = $(this).children('a').attr('href').split('#')[1];
+        var name = $(this).children('a').attr('href').split('#')[1];
         var nextId = that.config.objects.length;
-        // Define object
-        obj = {'name': nextId + ' ' + name,
-               'type': name,
-               'id': href + nextId};
-        // Update configuration
-        that.config.objects.push(obj);
-        // Save the local storage for this configuration
-        window.localStorage.setItem('view3D', JSON.stringify(that.config));
+        var text = $(this).text();
+        // Add object in list
+        obj = that.addObject(name, nextId, text);
         // Add in list
-        that.addList(obj, nextId);
+        that.addCollapsible(obj, nextId);
     });
 
     // Initialize empty json
@@ -100,7 +125,40 @@ Viewer3D.Map3D = function(ros, size, options) {
 	});
 }
 
-Viewer3D.Map3D.prototype.addList = function(obj, idx) {
+Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
+    // Extract default config
+    var config = this.components[name].config;
+    // Define new object
+    obj = {'name': nextId + ' ' + text,
+           'type': name,
+           'id': name + nextId,
+           'config': config,
+           };
+    // Extract function and default configuration
+    add_func = this.components[name].add;
+    objview = add_func(this.viewer, this.ros, this.tfClient, config); // Add component and save object status
+    this.objects.push(objview);
+    // Update configuration
+    this.config.objects.push(obj);
+    // Save the local storage for this configuration
+    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    return obj;
+}
+
+Viewer3D.Map3D.prototype.removeObject = function(obj) {
+    var comp = this.components[obj.type];
+    // Extract index from object
+    var idx = this.config.objects.indexOf(obj);
+    comp.remove(this.viewer, this.objects[idx]);
+    // remove selected element in list
+    this.config.objects.splice(idx, 1);
+    // remove selected element in list
+    this.objects.splice(idx, 1);
+    // Save the local storage for this configuration
+    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+}
+
+Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
     var that = this;
     // Extract name
     var name = obj.name;
@@ -110,16 +168,19 @@ Viewer3D.Map3D.prototype.addList = function(obj, idx) {
                     '<h3>' + name + "</h3>" +
                     '<p>I am the collapsible content in a set so this feels like an accordion.</p>' +
                   '</div>';
+    for(var key in obj.config) {
+        var value = obj.config[key];
+        var type = typeof value;
+        console.log(key + " " + value + " " + type);
+    }
     // Add content collapsible
     $( '#' + this.view3D ).append( content );
     // Add remove button
     $('#' + this.view3D + '-' + id).append(function() {
         // Add remove function
         return $('<a href="#remove" class="ui-btn ui-shadow ui-corner-all ui-icon-minus ui-btn-icon-left">Remove</a>').click(function() {
-            // remove selected element in list
-            that.config.objects.splice(idx, 1);
-            // Save the local storage for this configuration
-            window.localStorage.setItem('view3D', JSON.stringify(that.config));
+            // Remove object from list
+            that.removeObject(obj);
             // Remove collapsible
             $('#' + that.view3D + '-' + id).remove();
             // Refresh collapsible
@@ -164,9 +225,14 @@ Viewer3D.Map3D.prototype.make = function() {
     // Populate object list
     for(var i = 0; i < this.config.objects.length; i++) {
         var obj = this.config.objects[i];
+        // Extract function and default configuration
+        add_func = this.components[obj.type].add;
+        objview = add_func(this.viewer, this.ros, this.tfClient, obj.config); // Add component and save object status
+        this.objects.push(objview);
         //Add in list
-        this.addList(obj, i);
+        this.addCollapsible(obj, i);
     }
+    /*
     // Setup the map client.
     var gridClient = new ROS3D.OccupancyGridClient({
       ros : this.ros.ros,
@@ -174,12 +240,6 @@ Viewer3D.Map3D.prototype.make = function() {
       tfClient: this.tfClient,
       continuous: true
     });
-    var grid = new ROS3D.Grid({
-		size: 20,
-		cellSize: 1.0
-	})
-	// Add a grid.
-	this.viewer.addObject(grid);
 	// Add the URDF model of the robot.
 	var urdfClient = new ROS3D.UrdfClient({
 		ros: this.ros.ros,
@@ -189,6 +249,7 @@ Viewer3D.Map3D.prototype.make = function() {
 		loader: ROS3D.STL_LOADER,
 		param: 'minicar/robot_description'
 	});
+	*/
 };
 
 Viewer3D.Map3D.prototype.show = function(status) {

@@ -31,8 +31,6 @@ Viewer2D.Map2D = function(ros, size, options) {
     // Page configuration
     options = options || {};
     this.divID = options.divID || 'map-2D';
-
-	
     // Initialize empty json
     this.robot = ros_controller.robot();
     // Make the 2D viewer

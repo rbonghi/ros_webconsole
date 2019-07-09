@@ -65,7 +65,7 @@ ros_controller.connection = function(file, options) {
         }
     });
     // Connection server
-    $( this.ros_url ).bind( "change paste", function(event, ui) {
+    $( this.ros_url ).bind("change paste", function(event, ui) {
         var value = $(this).val();
         // read the value only if not empty
         console.log("New value saved: " + value);
@@ -73,6 +73,9 @@ ros_controller.connection = function(file, options) {
         that.config.server = value;
         // Save the local storage for this configuration
         window.localStorage.setItem('ros', JSON.stringify(that.config));
+        // Prevent default => No write form in browser url
+        event.preventDefault();
+        return false;
     });
     
     $( refresh ).click(function() {

@@ -30,11 +30,27 @@ Viewer3D.Map3D = function(file, options) {
     // Page configuration
     this.divID = options.divID || 'map-3D';
     this.view3D = options.view3D || 'view3D-list';
+    this.view3Delement = options.view3D || '#view3D-element';
     this.view3Dframe = options.view3Dframe || '#view3D-frame';
     // Load page size
     this.size = options.size;
     
-    $( this.view3Dframe ).bind( "change paste", function(event, ui) {
+    this.components = {'grid': {'name': 'Grid'},
+                       'urdf': {'name': 'URDF'},
+                       'map': {'name': 'Map'},
+                       'laser': {'name': 'Laser'},
+                       'point-cloud': {'name': 'Point Cloud'},
+                       };
+    // Build components list
+    for(var key in this.components) {
+        // Extract component information
+        var component = this.components[key];
+        var content = '<li><a href="#' + key + '">' + component['name'] + '</a></li>';
+        $(this.view3Delement).append(content);
+    }
+    $(this.view3Delement).listview( "refresh" );
+    
+    $( this.view3Dframe ).bind("change paste", function(event, ui) {
         var value = $(this).val();
         if(that.tfClient) {
             console.log("New frame " + value);
@@ -45,10 +61,13 @@ Viewer3D.Map3D = function(file, options) {
             // Save the local storage for this configuration
             window.localStorage.setItem('view3D', JSON.stringify(that.config));
         }
+        // Prevent default => No write form in browser url
+        event.preventDefault();
+        return false;
     });
     
     // Control element
-    $('#view3D-element').children('li').bind('touchstart mousedown', function(e) {
+    $(this.view3Delement).children('li').bind('touchstart mousedown', function(e) {
         var name = $(this).text();
         var href = $(this).children('a').attr('href').split('#')[1];
         var nextId = that.config.objects.length;

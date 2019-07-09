@@ -77,7 +77,6 @@
         var map3D = new Viewer3D.Map3D(file, {ros: ros, size: size});
         // Init2D map controller
         var map2D = new Viewer2D.Map2D(file, {ros: ros, size: size});
-        
         // Build Navigation bar menu
         pages.controller(map2D, map3D);
     });
@@ -92,20 +91,12 @@
 			<div class="ui-field-contain">
 				<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
 			</div>
-			<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Search view..." data-inset="true" id="view3D-element">
-				<li><a href="#grid">Grid</a></li>
-				<li><a href="#urdf">URDF</a></li>
-				<li><a href="#laser">Laser</a></li>
-				<li><a href="#pount-cloud">Point Cloud</a></li>
-			</ul>
+			<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Add view..." data-inset="true" id="view3D-element"></ul>
 			<div data-role="collapsibleset" data-content-theme="a" data-iconpos="right" id="view3D-list"></div>
 		</div>
 		<div data-role="collapsible" data-iconpos="right" id="ros-server">
 			<h3 id="ros-server-status">Status</h3>
-			<form>
-				<label for="ros-url" class="ui-hidden-accessible">ws://</label>
-				<input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
-			</form>
+			<label for="ros-url" class="ui-hidden-accessible">ws://</label><input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
 			<a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
 		</div>
 		<fieldset class="ui-grid-a">
@@ -161,7 +152,7 @@
 	<div role="main" class="ui-content">
 		<form>
             <label for="config-area" class="ui-hidden-accessible">Configuration:</label>
-            <textarea cols="40" rows="8" name="config-area" id="config-area"></textarea>
+            <textarea cols="40" rows="8" name="config-area" id="config-area" data-autogrow="false"></textarea>
         </form>
 	</div>
 

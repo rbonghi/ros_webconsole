@@ -22,18 +22,18 @@ var Viewer3D = Viewer3D || {
 
 /** 3D Navigation controller
 */
-Viewer3D.Map3D = function(file, options) {
+Viewer3D.Map3D = function(ros, size, options) {
     var that = this;
-    options = options || {};
     // ROS controller
-    this.ros = options.ros;
+    this.ros = ros;
+    // Load page size
+    this.size = size;
     // Page configuration
+    options = options || {};
     this.divID = options.divID || 'map-3D';
     this.view3D = options.view3D || 'view3D-list';
     this.view3Delement = options.view3D || '#view3D-element';
     this.view3Dframe = options.view3Dframe || '#view3D-frame';
-    // Load page size
-    this.size = options.size;
     
     this.components = {'grid': {'name': 'Grid'},
                        'urdf': {'name': 'URDF'},
@@ -83,20 +83,13 @@ Viewer3D.Map3D = function(file, options) {
         that.addList(obj, nextId);
     });
 
-    // Json load and config
-    $.getJSON( file ).done(function( json ) {
-        // Load ROS configuration file
-        that.robot = ros_controller.robot(json);
-        that.loadConfig(json);
-        // Make the 3D viewer
-        that.make();
-    }).fail(function( jqxhr, textStatus, error ) {
-        // Initialize empty json
-        that.robot = ros_controller.robot({});
-        that.loadConfig({});
-        // Make the 3D viewer
-        that.make();
-    });
+    // Initialize empty json
+    this.robot = ros_controller.robot();
+    this.config = Viewer3D.loadConfig();
+    // Set text ros URL
+    $( this.view3Dframe ).val(this.config.frame);
+    // Make the 3D viewer
+    this.make();
     
 	$(window).bind('resize', function (event) {
 	    // Check if viewer is already loaded
@@ -207,21 +200,17 @@ Viewer3D.Map3D.prototype.show = function(status) {
     }
 }
 
-Viewer3D.Map3D.prototype.loadConfig = function(json) {
-    if ('view3D' in json) {
-        config = json.view3D;
-    } else if(localStorage.getItem('view3D')) { // Check if exist in local storage
-        config = JSON.parse(localStorage.getItem('view3D'));
-    } else {
-        config = {};
+Viewer3D.loadConfig = function(json) {
+    lconf = {};
+    if(localStorage.getItem('view3D')) { // Check if exist in local storage
+        lconf = JSON.parse(localStorage.getItem('view3D'));
     }
-    this.config = {};
-    this.config.background = config.background || '#EEEEEE';
-    this.config.rate = config.rate || 10.0;
-    this.config.frame = config.frame || 'base_link';
-    this.config.objects = config.objects || [];
-    // Set text ros URL
-    $( this.view3Dframe ).val(this.config.frame);
+    config = {};
+    config.background = lconf.background || '#EEEEEE';
+    config.rate = lconf.rate || 10.0;
+    config.frame = lconf.frame || 'base_link';
+    config.objects = lconf.objects || [];
     // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    window.localStorage.setItem('view3D', JSON.stringify(config));
+    return config
 }

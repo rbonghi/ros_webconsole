@@ -20,7 +20,7 @@ var ros_controller = ros_controller || {
     REVISION: '0.0.1'
 };
 
-ros_controller.connection = function(file, options) {
+ros_controller.connection = function(options) {
     var that = this;
     // Load graphic options
     options = options || {};
@@ -45,25 +45,17 @@ ros_controller.connection = function(file, options) {
         $(header + ' a.ui-collapsible-heading-toggle').text('Error');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.red);
     });
-    
-    // Json load and config
-    $.getJSON( file ).done(function( json ) {
-        // Load ROS configuration file
-        that.load(json);
-        // Set configuration
-        $(ros_url).text(that.config.server);
-        $(ros_url).addClass('ui-state-disabled');
-        // Connect to server
+    // Load configuration from localStorage
+    this.config = ros_controller.load();
+    // Set text ros URL
+    $( this.ros_url ).val(this.config.server);
+    // Disable url connection
+    //$(this.ros_url).addClass('ui-state-disabled');
+    // If not empty connect
+    if(that.config.server !== '') {
+        // Connect to new server
         that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
-        
-    }).fail(function( jqxhr, textStatus, error ) {
-        // Initialize empty json
-        that.load({});
-        if(that.config.server !== '') {
-            // Connect to new server
-            that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
-        }
-    });
+    }
     // Connection server
     $( this.ros_url ).bind("change paste", function(event, ui) {
         var value = $(this).val();
@@ -86,34 +78,27 @@ ros_controller.connection = function(file, options) {
     });
 }
 
-ros_controller.connection.prototype.load = function(json) {
-    this.config = {};
-    if ('ros' in json) {
-        ros = json.ros;
-    } else if(localStorage.getItem('ros')) { // Check if exist in local storage
+ros_controller.load = function() {
+    ros = {}
+    if(localStorage.getItem('ros')) { // Check if exist in local storage
         ros = JSON.parse(localStorage.getItem('ros'));
-    } else {
-        ros = {}
     }
+    config = {};
     // Build location hostname
-    this.config.protocol = ros.protocol || location.protocol;
-    this.config.server = ros.server || window.location.hostname;
-    this.config.wsport = ros.wsport || '9090';
-    this.config.meshport = ros.meshport || '8001';
-    // Set text ros URL
-    $( this.ros_url ).val(this.config.server);
+    config.protocol = ros.protocol || location.protocol;
+    config.server = ros.server || window.location.hostname;
+    config.wsport = ros.wsport || '9090';
+    config.meshport = ros.meshport || '8001';
     // Save the local storage for this configuration
-    window.localStorage.setItem('ros', JSON.stringify(this.config));
+    window.localStorage.setItem('ros', JSON.stringify(config));
+    return config
 }
 
-ros_controller.robot = function(json) {
+ros_controller.robot = function() {
+    drobot = {};
     // Load robot configuration
-    if ('robot' in json) {
-        drobot = json.robot;
-    } else if(localStorage.getItem('robot')) { // Check if exist in local storage
+    if(localStorage.getItem('robot')) { // Check if exist in local storage
         drobot = JSON.parse(localStorage.getItem('robot'));
-    } else {
-        drobot = {};
     }
     // Initialize robot configuration string
     robot = {};

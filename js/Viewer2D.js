@@ -22,29 +22,21 @@ var Viewer2D = Viewer2D || {
 
 /** 2D Navigation controller
 */
-Viewer2D.Map2D = function(file, options) {
+Viewer2D.Map2D = function(ros, size, options) {
     var that = this;
-    // Options viewer
-    options = options || {};
     // ROS controller
-    this.ros = options.ros;
-    // Page configuration
-    this.divID = options.divID || 'map-2D';
+    this.ros = ros;
     // Check size page
-    this.size = options.size;
+    this.size = size;
+    // Page configuration
+    options = options || {};
+    this.divID = options.divID || 'map-2D';
+
 	
-    // Json load and config
-    $.getJSON( file ).done(function( json ) {
-        // Load ROS configuration file
-        that.robot = ros_controller.robot(json);
-        // Make the 2D viewer
-        that.make();
-    }).fail(function( jqxhr, textStatus, error ) {
-        // Initialize empty json
-        that.robot = ros_controller.robot({});
-        // Make the 2D viewer
-        that.make();
-    });
+    // Initialize empty json
+    this.robot = ros_controller.robot();
+    // Make the 2D viewer
+    this.make();
 	
 	$(window).bind('resize', function (event) {
 	    if(that.viewer) {

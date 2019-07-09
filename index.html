@@ -67,16 +67,14 @@
     
     // Single initialization maps
     $(document).ready(function () {
-        // Configuration file
-        file = "config.json";
         // Load size page
         var size = pages.size();
         // Initialize ros controller
-        var ros = new ros_controller.connection(file);
+        var ros = new ros_controller.connection();
         // Init3D map controller
-        var map3D = new Viewer3D.Map3D(file, {ros: ros, size: size});
+        var map3D = new Viewer3D.Map3D(ros, size);
         // Init2D map controller
-        var map2D = new Viewer2D.Map2D(file, {ros: ros, size: size});
+        var map2D = new Viewer2D.Map2D(ros, size);
         // Build Navigation bar menu
         pages.controller(map2D, map3D);
     });

@@ -61,11 +61,13 @@ Viewer3D.Map3D = function(ros, size, options) {
 	                                        });
 	                                        return urdfClient;
                                        },
-                                 'remove': function(viewer, obj) { 
-                                               // Unsubscribe
-                                               obj.urdf.unsubscribeTf();
-                                               // Remove object from view
-                                               viewer.scene.remove(obj.urdf)
+                                 'remove': function(viewer, obj) {
+                                               if (obj.urdf) {
+                                                   // Unsubscribe
+                                                   obj.urdf.unsubscribeTf();
+                                                   // Remove object from view
+                                                   viewer.scene.remove(obj.urdf);
+                                               }
                                            }
                                 },
                        'map': {'name': 'Map'},
@@ -163,18 +165,42 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
     // Extract name
     var name = obj.name;
     var id = obj.id;
+    var collid = this.view3D + '-' + id;
     // Make Collapsible
-    var content = '<div data-role="collapsible" id="' + this.view3D + '-' + id + '">' + 
+    var content = '<div data-role="collapsible" id="' + collid + '">' + 
                     '<h3>' + name + "</h3>" +
-                    '<p>I am the collapsible content in a set so this feels like an accordion.</p>' +
                   '</div>';
-    for(var key in obj.config) {
-        var value = obj.config[key];
-        var type = typeof value;
-        console.log(key + " " + value + " " + type);
-    }
     // Add content collapsible
     $( '#' + this.view3D ).append( content );
+    // Add options group
+    for(var key in obj.config) {
+        var value = obj.config[key];
+        // Make text input for label
+        $('#' + collid).append(function() {
+            var th = that;
+            var labname = key;
+            var labid = collid + '-' + key;
+            var label = ''
+            // Add text label for type
+            switch(typeof value) {
+                case 'number':
+                        label = '<label for="' + labid + '">' + key + '</label>' +
+                            '<input type="number" data-mini="true" name="' + labid + '" pattern="[0-9]*" id="' + labid + '" value="' + value + '">';
+                        break;
+                case 'string':
+                default:
+                    label = '<label for="' + labid + '">' + key + '</label>' +
+                             '<input type="text" data-mini="true" name="' + labid + '" id="' + labid + '" value="' + value + '">';
+                    break;
+            }
+            // Bind change event and append
+            return $( label ).bind("change paste", function(event, ui) {
+                        var val = $(this).val();
+                        console.log("New value for " + labname + ":" + val );
+                        console.log(that.config.objects);
+                    });
+        }).trigger("create");
+    }
     // Add remove button
     $('#' + this.view3D + '-' + id).append(function() {
         // Add remove function

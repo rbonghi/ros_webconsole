@@ -29,10 +29,10 @@ Open a terminal and build the package:
 cd ~/catkin_ws/src
 git clone https://github.com/rbonghi/ros_webconsole.git
 cd ../
+rosdep install --from-paths src --ignore-src -r -y
 catkin_make
 source ./devel/setup.bash
 ```
-In second step is require to install in your host a webserver
 
 ## Run the program
 

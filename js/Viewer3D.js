@@ -38,10 +38,20 @@ Viewer3D.Map3D = function(ros, size, options) {
     this.objects = [];
     // List of all compoments availables
     this.components = {'grid': {'name': 'Grid', 
-                                'config': {'size': 20, 'cellSize': 1.0},
+                                'config': {'num_cells': 10, 'cellSize': 1.0},
+                                'type': {'num_cells': 'number', 'cellSize': 'number'},
                                 'add': function(viewer, ros, tfClient, config) {
                                            var grid = new ROS3D.Grid(config);
 	                                       // Add a grid.
+	                                       viewer.addObject(grid);
+	                                       return grid;
+                                       },
+                                 'update': function(viewer, obj, config) {
+                                           // Remove old grid
+                                           viewer.scene.remove(obj);
+                                           // Make a new grid with new configuration
+                                           var grid = new ROS3D.Grid(config);
+                                           // Add in view
 	                                       viewer.addObject(grid);
 	                                       return grid;
                                        },
@@ -49,6 +59,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                 },
                        'urdf': {'name': 'Robot Description',
                                 'config': {'param': 'robot_description'},
+                                'type': {'param': 'string'},
                                 'add': function(viewer, ros, tfClient, config) {
 	                                        // Add the URDF model of the robot.
 	                                        var urdfClient = new ROS3D.UrdfClient({
@@ -61,6 +72,24 @@ Viewer3D.Map3D = function(ros, size, options) {
 	                                        });
 	                                        return urdfClient;
                                        },
+                                 'update': function(viewer, obj, config) {
+                                           if (obj.urdf) {
+                                               // Unsubscribe
+                                               obj.urdf.unsubscribeTf();
+                                               // Remove object from view
+                                               viewer.scene.remove(obj.urdf);
+                                           }
+                                            // Add the URDF model of the robot.
+                                            var urdfClient = new ROS3D.UrdfClient({
+	                                            ros: obj.ros,
+	                                            tfClient: obj.tfClient,
+	                                            path: obj.path,
+	                                            rootObject: viewer.scene,
+	                                            loader: ROS3D.STL_LOADER,
+	                                            param: config.param
+                                            });
+                                            return urdfClient;
+                                        },
                                  'remove': function(viewer, obj) {
                                                if (obj.urdf) {
                                                    // Unsubscribe
@@ -72,6 +101,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                 },
                        'map': {'name': 'Map',
                                'config': {'topic': '/map', 'continuous': false},
+                               'type': {'topic': 'string', 'continuous': 'boolean'},
                                'add': function (viewer, ros, tfClient, config) {
                                             var gridClient = new ROS3D.OccupancyGridClient({
                                               ros : ros.ros,
@@ -82,6 +112,16 @@ Viewer3D.Map3D = function(ros, size, options) {
                                             });
                                             return gridClient;
                                       },
+                               'update': function(viewer, obj, config) {
+                                            if(obj.topicName != config.topic) {
+                                                obj.rosTopic.unsubscribe();
+                                                obj.topicName = config.topic;
+                                                obj.subscribe();
+                                            }
+                                            // Update continous
+                                            obj.continuous = config.continuous;
+                                            return obj;
+                                        },
                                'remove': function(viewer, obj) {
                                             // Unsubscribe topic map
                                             if(obj.continous) {
@@ -95,7 +135,51 @@ Viewer3D.Map3D = function(ros, size, options) {
                                             }
                                        },
                                },    
-                       'laser': {'name': 'Laser'},
+                       'laser': {'name': 'Laser',
+                                 'config': {'topic': '/scan'},
+                                 'type': {'topic': 'string'},
+                                 'add': function (viewer, ros, tfClient, config) {
+                                            var laserScan = ROS3D.LaserScan({
+                                                ros: ros.ros,
+                                                rootObject: viewer.scene,
+                                                topic: config.topic,
+                                                tfClient: tfClient,
+                                                material: { size: 0.01, color: '#FF0000' },
+                                            });
+                                            return laserScan;
+                                         },
+                                 'update': function(viewer, obj, config) {
+                                                if(obj.topicName != config.topic) {
+                                                    obj.rosTopic.unsubscribe();
+                                                    obj.topicName = config.topic;
+                                                    obj.subscribe();
+                                                }
+                                           },
+                                 'remove': function(viewer, obj) {
+                                               // Unsubscribe topic map
+                                               obj.rosTopic.unsubscribe();
+                                           },
+                               },
+                       'twist-maker': {'name': 'Twist Maker',
+                                       'config': {'topic': '/twist_marker_server'},
+                                       'type': {'topic': 'string'},
+                                       },
+                                       'add': function (viewer, ros, tfClient, config) {
+                                                // Setup the marker client.
+                                                var imClient = new ROS3D.InteractiveMarkerClient({
+                                                    ros: ros.ros,
+                                                    tfClient: tfClient,
+                                                    topic: config.topic,
+                                                    camera: viewer.camera,
+                                                    rootObject: viewer.selectableObjects
+                                                });
+                                                return imClient;
+                                              },
+                                       'update': function(viewer, obj, config) {
+                                                    return obj;
+                                                 },
+                                       'remove': function(viewer, obj) {
+                                                 },
                        'point-cloud': {'name': 'Point Cloud'},
                        };
     // Build components list
@@ -201,6 +285,7 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
         var value = obj.config[key];
         // Make text input for label
         $('#' + collid).append(function() {
+            var thisObj = obj;
             var th = that;
             var labname = key;
             var labid = collid + '-' + key;
@@ -210,7 +295,14 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
                 case 'number':
                         label = '<label for="' + labid + '">' + key + '</label>' +
                             '<input type="number" data-mini="true" name="' + labid + '" pattern="[0-9]*" id="' + labid + '" value="' + value + '">';
-                        break;
+                    break;
+                case 'boolean':
+                        label = '<label for="' + labid + '">' + key + '</label>' +
+                                '<select name="' + labid + '" id="' + labid + '" data-role="flipswitch" data-mini="true">' +
+                                    '<option value="false" ' + (!value ? 'selected=""' : '') + '>Off</option>' +
+                                    '<option value="true" ' + (value ? 'selected=""' : '') + '>On</option>' + 
+                                '</select>';
+                    break;
                 case 'string':
                 default:
                     label = '<label for="' + labid + '">' + key + '</label>' +
@@ -219,9 +311,26 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
             }
             // Bind change event and append
             return $( label ).bind("change paste", function(event, ui) {
-                        var val = $(this).val();
-                        console.log("New value for " + labname + ":" + val );
-                        console.log(that.config.objects);
+                        var idx = that.config.objects.indexOf(thisObj);
+                        var type = that.components[thisObj.type].type[labname]
+                        // Extract new value number
+                        var val = $(this).val();
+                        switch(type) {
+                            case 'number':
+                                val = Number(val);
+                                break;
+                            case 'boolean':
+                                val = (val == 'true');
+                                break;
+                        }
+                        console.log("New value for " + labname + ":" + val + " " + typeof val);
+                        // Save value
+                        that.config.objects[idx].config[labname] = val;
+                        // Update object in view
+                        var update = that.components[thisObj.type].update;
+                        that.objects[idx] = update(that.viewer, that.objects[idx], that.config.objects[idx].config)
+                        // Save the local storage for this configuration
+                        window.localStorage.setItem('view3D', JSON.stringify(that.config));
                     });
         }).trigger("create");
     }

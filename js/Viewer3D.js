@@ -113,13 +113,14 @@ Viewer3D.Map3D = function(ros, size, options) {
                                             return gridClient;
                                       },
                                'update': function(viewer, obj, config) {
+                                            // Update continous
+                                            obj.continuous = config.continuous;
+                                            // Update status topic
                                             if(obj.topicName != config.topic) {
                                                 obj.rosTopic.unsubscribe();
                                                 obj.topicName = config.topic;
                                                 obj.subscribe();
                                             }
-                                            // Update continous
-                                            obj.continuous = config.continuous;
                                             return obj;
                                         },
                                'remove': function(viewer, obj) {
@@ -180,6 +181,72 @@ Viewer3D.Map3D = function(ros, size, options) {
                                        'remove': function(viewer, obj) {
                                                  },
                                        },
+                       'odom': {'name': 'Odomery',
+                                       'config': {'topic': '/odom', 'length': 1.0, 'keep': 1},
+                                       'type': {'topic': 'string', 'length': 'number', 'keep': 'number'},
+                                       'add': function (viewer, ros, tfClient, config) {
+                                                // Setup the marker client.
+                                                var odometry = new ROS3D.Odometry({
+                                                    ros: ros.ros,
+                                                    tfClient: tfClient,
+                                                    topic: config.topic,
+                                                    rootObject: viewer.scene,
+                                                    length: config.length,
+                                                    keep: config.keep
+                                                });
+                                                return odometry;
+                                              },
+                                       'update': function(viewer, obj, config) {
+                                                    obj.length = config.length;
+                                                    obj.keep = config.keep;
+                                                    if(obj.topicName != config.topic) {
+                                                        obj.rosTopic.unsubscribe();
+                                                        obj.topicName = config.topic;
+                                                        obj.subscribe();
+                                                    }
+                                                    return obj;
+                                                 },
+                                       'remove': function(viewer, obj) {
+                                                    // Unsubscribe topic
+                                                    obj.rosTopic.unsubscribe();
+                                                    // Remove all components
+                                                    for(var i= 0; i < obj.sns.length; i++) {
+                                                        // Remove frome scene
+                                                        viewer.scene.remove(obj.sns[i]);
+                                                    }
+                                                 },
+                                       },
+                       'path': {'name': 'Path',
+                                       'config': {'topic': '/path'},
+                                       'type': {'topic': 'string'},
+                                       'add': function (viewer, ros, tfClient, config) {
+                                                // Setup the marker client.
+                                                var path = new ROS3D.Path({
+                                                    ros: ros.ros,
+                                                    tfClient: tfClient,
+                                                    topic: config.topic,
+                                                    rootObject: viewer.scene,
+                                                });
+                                                return path;
+                                              },
+                                       'update': function(viewer, obj, config) {
+                                                    if(obj.topicName != config.topic) {
+                                                        obj.rosTopic.unsubscribe();
+                                                        obj.topicName = config.topic;
+                                                        obj.subscribe();
+                                                    }
+                                                    return obj;
+                                                 },
+                                       'remove': function(viewer, obj) {
+                                                    // Unsubscribe topic
+                                                    obj.rosTopic.unsubscribe();
+                                                    // Remove all components
+                                                    if(obj.sn!==null){
+                                                        obj.sn.unsubscribeTf();
+                                                        obj.rootObject.remove(obj.sn);
+                                                    }
+                                                 },
+                                       }, 
                        'point-cloud': {'name': 'Point Cloud'},
                        };
     // Build components list

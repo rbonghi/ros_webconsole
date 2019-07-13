@@ -76,6 +76,7 @@ function loadcenter(callback) {
 				    'test': function() {return true } },
 			        ];
     if(!window.jQuery) {
+        console.log('load offline scripts')
         // Load all scripts
         for(let s of scripts) {
 	        // Load scripts

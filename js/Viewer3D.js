@@ -163,7 +163,6 @@ Viewer3D.Map3D = function(ros, size, options) {
                        'twist-maker': {'name': 'Twist Maker',
                                        'config': {'topic': '/twist_marker_server'},
                                        'type': {'topic': 'string'},
-                                       },
                                        'add': function (viewer, ros, tfClient, config) {
                                                 // Setup the marker client.
                                                 var imClient = new ROS3D.InteractiveMarkerClient({
@@ -180,6 +179,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                                  },
                                        'remove': function(viewer, obj) {
                                                  },
+                                       },
                        'point-cloud': {'name': 'Point Cloud'},
                        };
     // Build components list

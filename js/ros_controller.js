@@ -85,8 +85,12 @@ ros_controller.load = function() {
     }
     config = {};
     // Build location hostname
+    server = window.location.hostname;
+    if(server.includes('github.io')) {
+        server = '';
+    }
     config.protocol = ros.protocol || location.protocol;
-    config.server = ros.server || window.location.hostname;
+    config.server = ros.server || server;
     config.wsport = ros.wsport || '9090';
     config.meshport = ros.meshport || '8001';
     // Save the local storage for this configuration

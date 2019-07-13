@@ -23,23 +23,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Page css -->
   <link rel="stylesheet" href="css/index.css" />
-  <!-- jQuery Mobile online -->
-  <!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script type="text/javascript" src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
   <!-- jQuery Mobile offline -->
   <link href="jquery/jquery.mobile-1.4.5.min.css" rel="stylesheet" />
   <script src="jquery/jquery-2.1.1.min.js"></script>
   <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
-  <!-- ROS libs online -->
-  <!--<script type="text/javascript" src="https://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/EaselJS/current/easeljs.min.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/three.min.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/STLLoader.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/ColladaLoader.js"></script>
-  <script type="text/javascript" src="https://static.robotwebtools.org/ros3djs/current/ros3d.js"></script>-->
   <!-- ROS libs offline -->
   <script type="text/javascript" src="js/ros/eventemitter2.min.js"></script>
   <script type="text/javascript" src="js/ros/roslib.min.js"></script>
@@ -51,33 +38,36 @@
   <script type="text/javascript" src="js/ros/ros3d.js"></script>
   <!-- Load page controller -->
   <script type="text/javascript" src="js/nav2d.js"></script>
+  <script type="text/javascript" src="js/loadcenter.js"></script>
   <script type="text/javascript" src="js/pages.js"></script>
   <script type="text/javascript" src="js/ros_controller.js"></script>
   <script type="text/javascript" src="js/Viewer3D.js"></script>
   <script type="text/javascript" src="js/Viewer2D.js"></script>
 
   <script type="text/javascript">
-    // Run the document only when de DOM is ready and the callback with the json file in loaded
-    // reference:
-    // https://demos.jquerymobile.com/1.2.1/docs/api/events.html
-    $(document).on("pageinit", function() {});
-    
-    // Load Configuration controller
-    pages.configuration();
-    
-    // Single initialization maps
-    $(document).ready(function () {
-        // Load size page
-        var size = pages.size();
-        // Initialize ros controller
-        var ros = new ros_controller.connection();
-        // Init3D map controller
-        var map3D = new Viewer3D.Map3D(ros, size);
-        // Init2D map controller
-        var map2D = new Viewer2D.Map2D(ros, size);
-        // Build Navigation bar menu
-        pages.controller(map2D, map3D);
-    });
+		// Load all scripts and css
+		loadcenter(function() {
+			// Run the document only when de DOM is ready and the callback with the json file in loaded
+			// reference:
+			// https://demos.jquerymobile.com/1.2.1/docs/api/events.html
+			$(document).on("pageinit", function() {});
+			
+			// Load Configuration controller
+			pages.configuration();
+			// Single initialization maps
+			$(document).ready(function () {
+				// Load size page
+				var size = pages.size();
+				// Initialize ros controller
+				var ros = new ros_controller.connection();
+				// Init3D map controller
+				var map3D = new Viewer3D.Map3D(ros, size);
+				// Init2D map controller
+				var map2D = new Viewer2D.Map2D(ros, size);
+				// Build Navigation bar menu
+				pages.controller(map2D, map3D);
+			});
+		})
   </script>
 </head>
 
@@ -86,7 +76,6 @@
 	<div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
 		<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer</h3>
 		<div class="ui-body ui-body-a ui-corner-all" id="view3D">
-			<label for="flip-checkbox-1">Lock</label><input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
 			<div class="ui-field-contain">
 				<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
 			</div>

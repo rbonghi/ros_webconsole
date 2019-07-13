@@ -46,7 +46,7 @@ Viewer3D.Map3D = function(ros, size, options) {
 	                                       viewer.addObject(grid);
 	                                       return grid;
                                        },
-                                 'update': function(viewer, obj, config) {
+                                 'update': function(viewer, ros, tfClient, obj, config) {
                                            // Remove old grid
                                            viewer.scene.remove(obj);
                                            // Make a new grid with new configuration
@@ -72,8 +72,9 @@ Viewer3D.Map3D = function(ros, size, options) {
 	                                        });
 	                                        return urdfClient;
                                        },
-                                 'update': function(viewer, obj, config) {
+                                 'update': function(viewer, ros, tfClient, obj, config) {
                                            if (obj.urdf) {
+                                               console.log("aaa")
                                                // Unsubscribe
                                                obj.urdf.unsubscribeTf();
                                                // Remove object from view
@@ -81,9 +82,9 @@ Viewer3D.Map3D = function(ros, size, options) {
                                            }
                                             // Add the URDF model of the robot.
                                             var urdfClient = new ROS3D.UrdfClient({
-	                                            ros: obj.ros,
-	                                            tfClient: obj.tfClient,
-	                                            path: obj.path,
+	                                            ros: ros.ros,
+	                                            tfClient: tfClient,
+	                                            path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
 	                                            rootObject: viewer.scene,
 	                                            loader: ROS3D.STL_LOADER,
 	                                            param: config.param
@@ -112,7 +113,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                             });
                                             return gridClient;
                                       },
-                               'update': function(viewer, obj, config) {
+                               'update': function(viewer, ros, tfClient, obj, config) {
                                             // Update continous
                                             obj.continuous = config.continuous;
                                             // Update status topic
@@ -149,7 +150,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                             });
                                             return laserScan;
                                          },
-                                 'update': function(viewer, obj, config) {
+                                 'update': function(viewer, ros, tfClient, obj, config) {
                                                 if(obj.topicName != config.topic) {
                                                     obj.rosTopic.unsubscribe();
                                                     obj.topicName = config.topic;
@@ -175,7 +176,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                                 });
                                                 return imClient;
                                               },
-                                       'update': function(viewer, obj, config) {
+                                       'update': function(viewer, ros, tfClient, obj, config) {
                                                     return obj;
                                                  },
                                        'remove': function(viewer, obj) {
@@ -196,7 +197,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                                 });
                                                 return odometry;
                                               },
-                                       'update': function(viewer, obj, config) {
+                                       'update': function(viewer, ros, tfClient, obj, config) {
                                                     obj.length = config.length;
                                                     obj.keep = config.keep;
                                                     if(obj.topicName != config.topic) {
@@ -229,7 +230,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                                                 });
                                                 return path;
                                               },
-                                       'update': function(viewer, obj, config) {
+                                       'update': function(viewer, ros, tfClient, obj, config) {
                                                     if(obj.topicName != config.topic) {
                                                         obj.rosTopic.unsubscribe();
                                                         obj.topicName = config.topic;
@@ -395,7 +396,7 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
                         that.config.objects[idx].config[labname] = val;
                         // Update object in view
                         var update = that.components[thisObj.type].update;
-                        that.objects[idx] = update(that.viewer, that.objects[idx], that.config.objects[idx].config)
+                        that.objects[idx] = update(that.viewer, that.ros, that.tfClient, that.objects[idx], that.config.objects[idx].config)
                         // Save the local storage for this configuration
                         window.localStorage.setItem('view3D', JSON.stringify(that.config));
                     });

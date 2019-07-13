@@ -1,0 +1,47 @@
+<!--
+ This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
+ Copyright (c) 2019 Raffaello Bonghi.
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ 
+ You should have received a copy of the GNU Affero General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>
+-->
+<launch>
+    <!-- Port for the websocket bridge -->
+    <arg name="websocket_port" default="9090"/>
+
+    <!-- Port where site and other package resources will be served -->
+    <arg name="packages_port" default="8001"/>
+
+    <!--
+    Path within each installed ROS package to serve.
+    Recommended to use the package root,
+    so resources like meshes are properly served
+    -->
+    <arg name="packages_path" default="/"/>
+    
+    <!-- ROSbridge server -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+        <arg name="port" value="$(arg websocket_port)"/>
+    </include>
+    
+    <!-- ROSWWW server -->
+    <!-- When the server start the webpage will be available in:
+         http://<address>:8001/ros_webconsole -->
+    <include file="$(find roswww)/launch/roswww.launch">
+        <arg name="port" value="$(arg packages_port)" />
+        <arg name="webpath" value="$(arg packages_path)" />
+    </include>
+    
+    <!-- TF2 republisher -->
+    <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" respawn="false" output="screen"/>
+</launch>

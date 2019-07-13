@@ -1,194 +1,155 @@
 <!DOCTYPE html>
+<!--
+ This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
+ Copyright (c) 2019 Raffaello Bonghi.
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ 
+ You should have received a copy of the GNU Affero General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
 <html>
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- CSS -->
-  <link href="css/jquery.mobile-1.4.2.min.css" rel="stylesheet">
+  <!-- Page css -->
+  <link rel="stylesheet" href="css/index.css" />
+  <!-- jQuery Mobile offline -->
+  <link href="jquery/jquery.mobile-1.4.5.min.css" rel="stylesheet" />
+  <script src="jquery/jquery-2.1.1.min.js"></script>
+  <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+  <!-- ROS libs offline -->
+  <script type="text/javascript" src="js/ros/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="js/ros/roslib.min.js"></script>
+  <script type="text/javascript" src="js/ros/easeljs.min.js"></script>
+  <script type="text/javascript" src="js/ros/ros2d.min.js"></script>
+  <script type="text/javascript" src="js/ros/three.min.js"></script>
+  <script type="text/javascript" src="js/ros/STLLoader.js"></script>
+  <script type="text/javascript" src="js/ros/ColladaLoader.js"></script>
+  <script type="text/javascript" src="js/ros/ros3d.js"></script>
+  <!-- Load page controller -->
+  <script type="text/javascript" src="js/nav2d.js"></script>
+  <script type="text/javascript" src="js/loadcenter.js"></script>
+  <script type="text/javascript" src="js/pages.js"></script>
+  <script type="text/javascript" src="js/ros_controller.js"></script>
+  <script type="text/javascript" src="js/Viewer3D.js"></script>
+  <script type="text/javascript" src="js/Viewer2D.js"></script>
 
-  <!-- jQuery -->
-  <script src="js/jquery/jquery-2.1.0.js"></script>
-  <script src="js/jquery/jquery.mobile-1.4.2.min.js"></script>
-
-  <!-- ROSLIBJS -->
-  <!-- EventEmitter2 is the sole dependency of roslibjs -->
-  <script src="js/ros/eventemitter2/eventemitter2.js"></script>
-  <!-- Roslibjs handles core ROS functionality in the browser -->
-  <script src="js/ros/roslibjs/roslib.js"></script>
-  <!-- ROS2DJS -->
-  <!-- EaselJS is a dependency of ros2djs -->
-  <script src="js/ros/easeljs/easeljs.js"></script>
-  <!-- Ros2djs provides 2D scene support, including mapping and more -->
-  <script src="js/ros/ros2djs/ros2d.js"></script>
-
-  <!-- ROS3DJS -->
-  <!-- Three.js is the WebGL rendering library -->
-  <script src="js/ros/three/three.js"></script>
-  <!-- ColladaLoader2 loads collada models of the robot -->
-  <script src="js/ros/STLLoader/STLLoader.min.js"></script>
-  <!-- ColladaLoader loads collada models of the robot -->
-	<script src="js/ros/ColladaLoader/ColladaLoader.js"></script>
-  <!-- Ros3djs provides 3D scene support, including mapping and more -->
-  <script src="js/ros/ros3djs/ros3d.js"></script>
-  <!-- NAV2D -->
-  <script src="js/ros/nav2djs/nav2d.js"></script>
-  <!-- ROS console -->
-  <script src="js/console/rosconsole.js"></script>
-
-  <script>
-    $(document).ready(function() {
-
-      var heightHeader = $(this).find('[data-role="header"]').height();
-      var widthPage = $(window).width() - 16 * 2;
-      var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-
-
-      var runControl = function(json) {
-        // Load default configuration
-        json = json || {};
-        // Load robot configuration parameters
-        json.robot = (('robot' in json) ? json.robot : {});
-        
-        // Initialize Console
-        var name_page = json.name_page || "ROS Web console";
-        var connection = json.server || 'localhost';
-        
-        var ros = new ROSCONSOLE.controller({
-          addr: connection,
-          fixed_frame: json.robot.fixed_frame,
-        });
-
-        var windowController = new ROSCONSOLE.WindowController(name_page);
-        
-        var map3D = new ROSCONSOLE.ROS3Dmap({
-          ros: ros.ros,
-          tfClient: ros.tfClient,
-          divID: 'threed-map',
-          width: widthPage,
-          height: heightPage,
-          path: json.path_mesh || 'localhost',
-          param: json.robot.description || 'robot_description'
-        });
-        
-        var square = Math.min(widthPage, heightPage);
-        var viewer = new ROS2D.Viewer({
-          divID: 'nav',
-          width: widthPage,
-          height: heightPage,
-          background: '#99FFCC'
-        });
-
-        // Setup the nav client.
-        var nav = new NAV2D.OccupancyGridClientNav({
-          ros: ros.ros,
-          tfClient: ros.tfClient,
-          continuous: true,
-          robot_pose: '/base_link',
-          rootObject: viewer.scene,
-          withOrientation: true,
-          viewer: viewer,
-          //image: 'images/dude.png'
-            //serverName: '/pr2_move_base'
-        });
-
-        $("#nav").css("width", widthPage - square / 2 - 16);
-        $("#nav-menu").css("width", square / 2);
-
-        // Load camera
-        if('camera' in json.robot) {
-            console.log("Load camera");
-            camera = json.robot.camera;
-            $("#threed-map").css("width", widthPage - square / 2 - 25);
-            var camera_stream = new ROSCONSOLE.Camera({
-                divID: "#camera-box",
-                connection: connection,
-                topic: camera.topic,
-                size: square / 2 - 30,
-            });
-        }
-
-        window.onresize = function(event) {
-          var heightHeader = $(this).find('[data-role="header"]').height();
-          var widthPage = $(window).width() - 16 * 2;
-          var heightPage = $(window).height() - heightHeader - 16 * 2 - 110;
-          square = Math.min(widthPage, heightPage);
-          viewer.resize(widthPage, heightPage);
-          viewer3D.resize(widthPage, heightPage);
-          $("#nav").css("width", square / 2 - 16);
-          $("#nav-menu").css("width", square / 2);
-        };
-
-        var map2DCont = new ROSCONSOLE.RadioController('#nav-controller', nav);
-      };
-
-      $.getJSON( "config.json" )
-      .done(function( json ) {
-        console.log( "JSON Data loaded!\nConnected to server " + json.server +":80");
-        // Print configuration server
-        console.log(json);
-        // Load control
-        runControl(json);
-      })
-      .fail(function( jqxhr, textStatus, error ) {
-        var err = textStatus + ", " + error;
-        console.log( "Request Failed: " + err );
-        // Load control
-        runControl();
-      });
-    });
+  <script type="text/javascript">
+		// Load all scripts and css
+		loadcenter(function() {
+			// Run the document only when de DOM is ready and the callback with the json file in loaded
+			// reference:
+			// https://demos.jquerymobile.com/1.2.1/docs/api/events.html
+			$(document).on("pageinit", function() {});
+			
+			// Load Configuration controller
+			pages.configuration();
+			// Single initialization maps
+			$(document).ready(function () {
+				// Load size page
+				var size = pages.size();
+				// Initialize ros controller
+				var ros = new ros_controller.connection();
+				// Init3D map controller
+				var map3D = new Viewer3D.Map3D(ros, size);
+				// Init2D map controller
+				var map2D = new Viewer2D.Map2D(ros, size);
+				// Build Navigation bar menu
+				pages.controller(map2D, map3D);
+			});
+		})
   </script>
-  <style>
-    #threed-map canvas {
-      border-radius: 14px;
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-    }
-
-    .map2D canvas {
-      border-radius: 14px;
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-    }
-
-    .border canvas {
-      border-radius: 14px;
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(204, 204, 204, .5) 0px 1px 8px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px;
-    }
-  </style>
 </head>
 
 <body>
-  <!-- pages -->
-  <!-- 3D map -->
-  <div data-role="page" id="3Dmap" data-title="3D map" data-icon="navigation">
-    <div data-role="content">
-        <div class="ui-grid-a">
-            <div id="threed-map" class="ui-block-a map3D"></div>
-            <div id="camera-box"class="ui-block-b"></div>
+<div data-role="page" id="map">
+	<div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
+		<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer</h3>
+		<div class="ui-body ui-body-a ui-corner-all" id="view3D">
+			<div class="ui-field-contain">
+				<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
+			</div>
+			<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Add view..." data-inset="true" id="view3D-element"></ul>
+			<div data-role="collapsibleset" data-content-theme="a" data-iconpos="right" id="view3D-list"></div>
+		</div>
+		<div data-role="collapsible" data-iconpos="right" id="ros-server">
+			<h3 id="ros-server-status">Status</h3>
+			<label for="ros-url" class="ui-hidden-accessible">ws://</label><input type="text" data-clear-btn="true" name="ros-url" id="ros-url" data-mini="true" value="" placeholder="localhost">
+			<a href="#ros-server-refresh" id="ros-server-refresh" class="ui-btn ui-shadow ui-corner-all ui-icon-recycle ui-btn-icon-left">Refresh</a>
+		</div>
+		<fieldset class="ui-grid-a">
+			<div class="ui-block-a"><a href="#config" class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-left" data-rel="dialog" data-transition="pop">Edit</a></div>
+			<div class="ui-block-b"><a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a></div>
+		</fieldset>
+		<a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
+	</div>
+	
+	<div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false"></div>
+	
+	<div data-role="header" data-theme="a" data-position-fixed="true">
+		<a href="#panel-config" class="ui-btn ui-btn-left ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>
+		<a href="#panel-drive" class="ui-btn ui-btn-right ui-icon-star ui-btn-icon-notext ui-corner-all">Drive</a>
+	</div>
+	
+	<div role="main" data-theme="a" class="ui-content">
+		<div id="map-3D" class="map"></div>
+		<div id="map-2D" class="map"></div>
+	</div>
+    
+	<div data-role="footer" data-theme="a" data-position-fixed="true">
+		<div data-role="controlgroup" data-type="horizontal" data-mini="true">
+			<a href="#map" id="map-type" class="ui-btn ui-corner-all">2D</a>
+			<a href="#" class="ui-btn ui-corner-all ui-icon-navigation ui-btn-icon-notext">Icon only</a>
+			<a href="#" class="ui-btn ui-corner-all ui-icon-location ui-btn-icon-notext">Icon only</a>
+		</div>
+	</div>
+</div>
+<!-- Debug page -->
+<div data-role="page" id="debug">
+
+    <div data-role="header" data-theme="a" data-position-fixed="true">
+        <h1>Debug</h1>
+    </div>
+
+    <div role="main" data-theme="a" class="ui-content">
+        <div class="ui-grid-b ui-responsive">
+            <div class="ui-block-a"><div class="ui-body ui-body-d" id="debug-nodes">Nodes</div></div>
+            <div class="ui-block-b"><div class="ui-body ui-body-d">Topics</div></div>
         </div>
     </div>
-  </div>
-  <!-- 2D map -->
-  <div data-role="page" id="2Dmap" data-title="2D map" data-icon="location">
-    <div data-role="content">
-            <div class="ui-grid-a">
-                <div id="nav" class="ui-block-a map2D"></div>
-                <div id="nav-menu" class="ui-block-b">
-                    <h3 class="ui-bar ui-bar-a ui-corner-all">Map controller</h3>
-                    <div class="ui-body ui-body-a ui-corner-all">
-                      <form id="nav-controller">
-                            <fieldset data-role="controlgroup">
-                                <input type="radio" name="radio-choice-v-2" id="radio-map-zoom" value="on" checked="checked">
-                                <label for="radio-map-zoom">Zoom</label>
-                                <input type="radio" name="radio-choice-v-2" id="radio-map-goal" value="off">
-                                <label for="radio-map-goal">Set goal</label>
-                            </fieldset>
-                        </form>
-                        <div id="nav-button-controllers"></div>
-                    </div>
-                </div>
-            </div><!-- /grid-a -->
+    
+    <div data-role="footer" data-theme="a" data-position-fixed="true">
+        <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
     </div>
-  </div>
-</body>
+</div>
+<!-- Configuration page -->
+<div data-role="page" id="config">
 
+	<div data-role="header" data-theme="b">
+		<h1>Configuration</h1>
+	</div>
+
+	<div role="main" class="ui-content">
+		<form>
+            <label for="config-area" class="ui-hidden-accessible">Configuration:</label>
+            <textarea cols="40" rows="8" name="config-area" id="config-area" data-autogrow="false"></textarea>
+        </form>
+	</div>
+
+	<div data-role="footer">
+	    <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
+	    <a href="#config-save" class="ui-btn ui-shadow ui-corner-all ui-icon-action ui-btn-icon-left">Export</a>
+	</div>
+</div>
+</body>
 </html>

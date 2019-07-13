@@ -1,9 +1,11 @@
-# Remove compile test
-TEST/
-node_modules
 # Do not save configuration
 config.json
 
 # Remove reference
 zed_wrapper
 minicar_description
+
+# Remove jquery and ros scripts folders
+jquery.mobile-1.4.5.zip
+jquery/
+js/ros/

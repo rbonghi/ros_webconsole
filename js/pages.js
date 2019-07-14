@@ -51,6 +51,38 @@ pages.controller = function(map2D, map3D, options) {
     });
 }
 
+pages.loadJson = function(file) {
+    $.getJSON( file, function( data ) {
+        for(let key in data) {
+            // Load same key from localstorage
+            datalocal = localStorage.getItem(key);
+            dataconfig = JSON.stringify(data[key]);
+            if(datalocal != dataconfig) {
+                console.log('Load from json: ' + key);
+                window.localStorage.setItem(key, dataconfig);
+                // Generate event for each new configuration add
+                var event = new Event(key + 'build');
+                window.dispatchEvent(event);
+            }
+        }
+    });
+}
+
+pages.loadConfig = function(name, dconf) {
+    lconf = {};
+    if(localStorage.getItem(name)) { // Check if exist in local storage
+        lconf = JSON.parse(localStorage.getItem(name));
+    }
+    // Build configuration
+    config = {};
+    for(let key in dconf) {
+        config[key] = lconf[key] || dconf[key];
+    }
+    // Save the local storage for this configuration
+    window.localStorage.setItem(name, JSON.stringify(config));
+    return config
+}
+
 pages.json = function() {
     json = {}
     for (var i = 0; i < localStorage.length; i++){

@@ -37,218 +37,14 @@ Viewer3D.Map3D = function(ros, size, options) {
     // The list of object in scene
     this.objects = [];
     // List of all compoments availables
-    this.components = {'grid': {'name': 'Grid', 
-                                'config': {'num_cells': 10, 'cellSize': 1.0},
-                                'type': {'num_cells': 'number', 'cellSize': 'number'},
-                                'add': function(viewer, ros, tfClient, config) {
-                                           var grid = new ROS3D.Grid(config);
-	                                       // Add a grid.
-	                                       viewer.addObject(grid);
-	                                       return grid;
-                                       },
-                                 'update': function(viewer, ros, tfClient, obj, config) {
-                                           // Remove old grid
-                                           viewer.scene.remove(obj);
-                                           // Make a new grid with new configuration
-                                           var grid = new ROS3D.Grid(config);
-                                           // Add in view
-	                                       viewer.addObject(grid);
-	                                       return grid;
-                                       },
-                                 'remove': function(viewer, obj) { viewer.scene.remove(obj) }
-                                },
-                       'urdf': {'name': 'Robot Description',
-                                'config': {'param': 'robot_description'},
-                                'type': {'param': 'string'},
-                                'add': function(viewer, ros, tfClient, config) {
-	                                        // Add the URDF model of the robot.
-	                                        var urdfClient = new ROS3D.UrdfClient({
-		                                        ros: ros.ros,
-		                                        tfClient: tfClient,
-		                                        path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
-		                                        rootObject: viewer.scene,
-		                                        loader: ROS3D.STL_LOADER,
-		                                        param: config.param
-	                                        });
-	                                        return urdfClient;
-                                       },
-                                 'update': function(viewer, ros, tfClient, obj, config) {
-                                           if (obj.urdf) {
-                                               console.log("aaa")
-                                               // Unsubscribe
-                                               obj.urdf.unsubscribeTf();
-                                               // Remove object from view
-                                               viewer.scene.remove(obj.urdf);
-                                           }
-                                            // Add the URDF model of the robot.
-                                            var urdfClient = new ROS3D.UrdfClient({
-	                                            ros: ros.ros,
-	                                            tfClient: tfClient,
-	                                            path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
-	                                            rootObject: viewer.scene,
-	                                            loader: ROS3D.STL_LOADER,
-	                                            param: config.param
-                                            });
-                                            return urdfClient;
-                                        },
-                                 'remove': function(viewer, obj) {
-                                               if (obj.urdf) {
-                                                   // Unsubscribe
-                                                   obj.urdf.unsubscribeTf();
-                                                   // Remove object from view
-                                                   viewer.scene.remove(obj.urdf);
-                                               }
-                                           }
-                                },
-                       'map': {'name': 'Map',
-                               'config': {'topic': '/map', 'continuous': false},
-                               'type': {'topic': 'string', 'continuous': 'boolean'},
-                               'add': function (viewer, ros, tfClient, config) {
-                                            var gridClient = new ROS3D.OccupancyGridClient({
-                                              ros : ros.ros,
-                                              rootObject : viewer.scene,
-                                              tfClient: tfClient,
-                                              continuous: config.continuous,
-                                              topic: config.topic
-                                            });
-                                            return gridClient;
-                                      },
-                               'update': function(viewer, ros, tfClient, obj, config) {
-                                            // Update continous
-                                            obj.continuous = config.continuous;
-                                            // Update status topic
-                                            if(obj.topicName != config.topic) {
-                                                obj.rosTopic.unsubscribe();
-                                                obj.topicName = config.topic;
-                                                obj.subscribe();
-                                            }
-                                            return obj;
-                                        },
-                               'remove': function(viewer, obj) {
-                                            // Unsubscribe topic map
-                                            if(obj.continous) {
-                                                obj.rosTopic.unsubscribe();
-                                            }
-                                            if(obj.sceneNode) {
-                                                // Unsubscribe from TF
-                                                obj.sceneNode.unsubscribeTf();
-                                                // Remove frome scene
-                                                viewer.scene.remove(obj.sceneNode);
-                                            }
-                                       },
-                               },    
-                       'laser': {'name': 'Laser',
-                                 'config': {'topic': '/scan'},
-                                 'type': {'topic': 'string'},
-                                 'add': function (viewer, ros, tfClient, config) {
-                                            var laserScan = ROS3D.LaserScan({
-                                                ros: ros.ros,
-                                                rootObject: viewer.scene,
-                                                topic: config.topic,
-                                                tfClient: tfClient,
-                                                material: { size: 0.01, color: '#FF0000' },
-                                            });
-                                            return laserScan;
-                                         },
-                                 'update': function(viewer, ros, tfClient, obj, config) {
-                                                if(obj.topicName != config.topic) {
-                                                    obj.rosTopic.unsubscribe();
-                                                    obj.topicName = config.topic;
-                                                    obj.subscribe();
-                                                }
-                                           },
-                                 'remove': function(viewer, obj) {
-                                               // Unsubscribe topic map
-                                               obj.rosTopic.unsubscribe();
-                                           },
-                               },
-                       'twist-maker': {'name': 'Twist Maker',
-                                       'config': {'topic': '/twist_marker_server'},
-                                       'type': {'topic': 'string'},
-                                       'add': function (viewer, ros, tfClient, config) {
-                                                // Setup the marker client.
-                                                var imClient = new ROS3D.InteractiveMarkerClient({
-                                                    ros: ros.ros,
-                                                    tfClient: tfClient,
-                                                    topic: config.topic,
-                                                    camera: viewer.camera,
-                                                    rootObject: viewer.selectableObjects
-                                                });
-                                                return imClient;
-                                              },
-                                       'update': function(viewer, ros, tfClient, obj, config) {
-                                                    return obj;
-                                                 },
-                                       'remove': function(viewer, obj) {
-                                                 },
-                                       },
-                       'odom': {'name': 'Odomery',
-                                       'config': {'topic': '/odom', 'length': 1.0, 'keep': 1},
-                                       'type': {'topic': 'string', 'length': 'number', 'keep': 'number'},
-                                       'add': function (viewer, ros, tfClient, config) {
-                                                // Setup the marker client.
-                                                var odometry = new ROS3D.Odometry({
-                                                    ros: ros.ros,
-                                                    tfClient: tfClient,
-                                                    topic: config.topic,
-                                                    rootObject: viewer.scene,
-                                                    length: config.length,
-                                                    keep: config.keep
-                                                });
-                                                return odometry;
-                                              },
-                                       'update': function(viewer, ros, tfClient, obj, config) {
-                                                    obj.length = config.length;
-                                                    obj.keep = config.keep;
-                                                    if(obj.topicName != config.topic) {
-                                                        obj.rosTopic.unsubscribe();
-                                                        obj.topicName = config.topic;
-                                                        obj.subscribe();
-                                                    }
-                                                    return obj;
-                                                 },
-                                       'remove': function(viewer, obj) {
-                                                    // Unsubscribe topic
-                                                    obj.rosTopic.unsubscribe();
-                                                    // Remove all components
-                                                    for(var i= 0; i < obj.sns.length; i++) {
-                                                        // Remove frome scene
-                                                        viewer.scene.remove(obj.sns[i]);
-                                                    }
-                                                 },
-                                       },
-                       'path': {'name': 'Path',
-                                       'config': {'topic': '/path'},
-                                       'type': {'topic': 'string'},
-                                       'add': function (viewer, ros, tfClient, config) {
-                                                // Setup the marker client.
-                                                var path = new ROS3D.Path({
-                                                    ros: ros.ros,
-                                                    tfClient: tfClient,
-                                                    topic: config.topic,
-                                                    rootObject: viewer.scene,
-                                                });
-                                                return path;
-                                              },
-                                       'update': function(viewer, ros, tfClient, obj, config) {
-                                                    if(obj.topicName != config.topic) {
-                                                        obj.rosTopic.unsubscribe();
-                                                        obj.topicName = config.topic;
-                                                        obj.subscribe();
-                                                    }
-                                                    return obj;
-                                                 },
-                                       'remove': function(viewer, obj) {
-                                                    // Unsubscribe topic
-                                                    obj.rosTopic.unsubscribe();
-                                                    // Remove all components
-                                                    if(obj.sn!==null){
-                                                        obj.sn.unsubscribeTf();
-                                                        obj.rootObject.remove(obj.sn);
-                                                    }
-                                                 },
-                                       }, 
-                       'point-cloud': {'name': 'Point Cloud'},
+    this.components = {'grid': Viewer3D.grid,
+                       'urdf': Viewer3D.urdf,
+                       'map': Viewer3D.map,    
+                       'laser': Viewer3D.laser,
+                       'twist-maker': Viewer3D.twist_maker,
+                       'odom': Viewer3D.odometry,
+                       'path': Viewer3D.path, 
+                       'point-cloud': Viewer3D.point_cloud,
                        };
     // Build components list
     for(var key in this.components) {
@@ -258,6 +54,22 @@ Viewer3D.Map3D = function(ros, size, options) {
         $(this.view3Delement).append(content);
     }
     $(this.view3Delement).listview( "refresh" );
+    
+    // Check update
+    window.addEventListener('view3D' + 'build', function(e) {
+	    lconf = JSON.parse(localStorage.getItem('view3D'));
+	        if(that.config.frame != lconf.frame) {
+	            // Update config
+	            that.config.frame = lconf.frame;
+                // Set text ros URL
+                $( that.view3Dframe ).val(that.config.frame);
+                // Update tfClient
+                that.tfClient.fixedFrame = lconf.frame;
+	        }
+	        if(that.config.objects != lconf.objects) {
+        	    console.log('update view3D');
+	        }
+    }, false);
     
     $( this.view3Dframe ).bind("change paste", function(event, ui) {
         var value = $(this).val();
@@ -288,7 +100,7 @@ Viewer3D.Map3D = function(ros, size, options) {
 
     // Initialize empty json
     this.robot = ros_controller.robot();
-    this.config = Viewer3D.loadConfig();
+    this.config = pages.loadConfig('view3D', {background: '#EEEEEE', rate: 10.0, frame: 'base_link', objects: []} );
     // Set text ros URL
     $( this.view3Dframe ).val(this.config.frame);
     // Make the 3D viewer
@@ -302,6 +114,8 @@ Viewer3D.Map3D = function(ros, size, options) {
 	    }
 	});
 }
+
+
 
 Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
     // Extract default config
@@ -470,17 +284,243 @@ Viewer3D.Map3D.prototype.show = function(status) {
     }
 }
 
-Viewer3D.loadConfig = function(json) {
-    lconf = {};
-    if(localStorage.getItem('view3D')) { // Check if exist in local storage
-        lconf = JSON.parse(localStorage.getItem('view3D'));
-    }
-    config = {};
-    config.background = lconf.background || '#EEEEEE';
-    config.rate = lconf.rate || 10.0;
-    config.frame = lconf.frame || 'base_link';
-    config.objects = lconf.objects || [];
-    // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(config));
-    return config
+/** Components list */
+
+Viewer3D.grid = {
+    name: 'Grid', 
+    config: {'num_cells': 10, 'cellSize': 1.0},
+    type: {'num_cells': 'number', 'cellSize': 'number'},
+    add: function(viewer, ros, tfClient, config) {
+               var grid = new ROS3D.Grid(config);
+               // Add a grid.
+               viewer.addObject(grid);
+               return grid;
+         },
+    update: function(viewer, ros, tfClient, obj, config) {
+               // Remove old grid
+               viewer.scene.remove(obj);
+               // Make a new grid with new configuration
+               var grid = new ROS3D.Grid(config);
+               // Add in view
+               viewer.addObject(grid);
+               return grid;
+           },
+     remove: function(viewer, obj) { viewer.scene.remove(obj) }
+}
+
+Viewer3D.urdf = {
+    name: 'Robot Description',
+    config: {'param': 'robot_description'},
+    type: {'param': 'string'},
+    add: function(viewer, ros, tfClient, config) {
+                // Add the URDF model of the robot.
+                var urdfClient = new ROS3D.UrdfClient({
+                    ros: ros.ros,
+                    tfClient: tfClient,
+                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
+                    rootObject: viewer.scene,
+                    loader: ROS3D.STL_LOADER,
+                    param: config.param
+                });
+                return urdfClient;
+           },
+    update: function(viewer, ros, tfClient, obj, config) {
+               if (obj.urdf) {
+                   console.log("aaa")
+                   // Unsubscribe
+                   obj.urdf.unsubscribeTf();
+                   // Remove object from view
+                   viewer.scene.remove(obj.urdf);
+               }
+                // Add the URDF model of the robot.
+                var urdfClient = new ROS3D.UrdfClient({
+                    ros: ros.ros,
+                    tfClient: tfClient,
+                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
+                    rootObject: viewer.scene,
+                    loader: ROS3D.STL_LOADER,
+                    param: config.param
+                });
+                return urdfClient;
+            },
+    remove: function(viewer, obj) {
+                   if (obj.urdf) {
+                       // Unsubscribe
+                       obj.urdf.unsubscribeTf();
+                       // Remove object from view
+                       viewer.scene.remove(obj.urdf);
+                   }
+            }
+}
+
+Viewer3D.map = {
+    name: 'Map',
+    config: {'topic': '/map', 'continuous': false},
+    type: {'topic': 'string', 'continuous': 'boolean'},
+    add: function (viewer, ros, tfClient, config) {
+                var gridClient = new ROS3D.OccupancyGridClient({
+                  ros : ros.ros,
+                  rootObject : viewer.scene,
+                  tfClient: tfClient,
+                  continuous: config.continuous,
+                  topic: config.topic
+                });
+                return gridClient;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+                // Update continous
+                obj.continuous = config.continuous;
+                // Update status topic
+                if(obj.topicName != config.topic) {
+                    obj.rosTopic.unsubscribe();
+                    obj.topicName = config.topic;
+                    obj.subscribe();
+                }
+                return obj;
+            },
+    remove: function(viewer, obj) {
+                // Unsubscribe topic map
+                if(obj.continous) {
+                    obj.rosTopic.unsubscribe();
+                }
+                if(obj.sceneNode) {
+                    // Unsubscribe from TF
+                    obj.sceneNode.unsubscribeTf();
+                    // Remove frome scene
+                    viewer.scene.remove(obj.sceneNode);
+                }
+           },
+}
+
+Viewer3D.laser = {
+    name: 'Laser',
+    config: {'topic': '/scan'},
+    type: {'topic': 'string'},
+    add: function (viewer, ros, tfClient, config) {
+            var laserScan = ROS3D.LaserScan({
+                ros: ros.ros,
+                rootObject: viewer.scene,
+                topic: config.topic,
+                tfClient: tfClient,
+                material: { size: 0.01, color: '#FF0000' },
+            });
+            return laserScan;
+         },
+    update: function(viewer, ros, tfClient, obj, config) {
+                if(obj.topicName != config.topic) {
+                    obj.rosTopic.unsubscribe();
+                    obj.topicName = config.topic;
+                    obj.subscribe();
+                }
+           },
+    remove: function(viewer, obj) {
+               // Unsubscribe topic map
+               obj.rosTopic.unsubscribe();
+           },
+}
+
+Viewer3D.twist_maker = {
+    name: 'Twist Maker',
+    config: {'topic': '/twist_marker_server'},
+    type: {'topic': 'string'},
+    add: function (viewer, ros, tfClient, config) {
+            // Setup the marker client.
+            var imClient = new ROS3D.InteractiveMarkerClient({
+                ros: ros.ros,
+                tfClient: tfClient,
+                topic: config.topic,
+                camera: viewer.camera,
+                rootObject: viewer.selectableObjects
+            });
+            return imClient;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+                return obj;
+            },
+    remove: function(viewer, obj) {
+            },
+}
+
+Viewer3D.odometry = {
+    name: 'Odomery',
+    config: {'topic': '/odom', 'length': 1.0, 'keep': 1},
+    type: {'topic': 'string', 'length': 'number', 'keep': 'number'},
+    add: function (viewer, ros, tfClient, config) {
+            // Setup the marker client.
+            var odometry = new ROS3D.Odometry({
+                ros: ros.ros,
+                tfClient: tfClient,
+                topic: config.topic,
+                rootObject: viewer.scene,
+                length: config.length,
+                keep: config.keep
+            });
+            return odometry;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+                obj.length = config.length;
+                obj.keep = config.keep;
+                if(obj.topicName != config.topic) {
+                    obj.rosTopic.unsubscribe();
+                    obj.topicName = config.topic;
+                    obj.subscribe();
+                }
+                return obj;
+             },
+    remove: function(viewer, obj) {
+                // Unsubscribe topic
+                obj.rosTopic.unsubscribe();
+                // Remove all components
+                for(var i= 0; i < obj.sns.length; i++) {
+                    // Remove frome scene
+                    viewer.scene.remove(obj.sns[i]);
+                }
+             },
+}
+
+Viewer3D.path = {
+    name: 'Path',
+    config: {'topic': '/path'},
+    type: {'topic': 'string'},
+    add: function (viewer, ros, tfClient, config) {
+            // Setup the marker client.
+            var path = new ROS3D.Path({
+                ros: ros.ros,
+                tfClient: tfClient,
+                topic: config.topic,
+                rootObject: viewer.scene,
+            });
+            return path;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+                if(obj.topicName != config.topic) {
+                    obj.rosTopic.unsubscribe();
+                    obj.topicName = config.topic;
+                    obj.subscribe();
+                }
+                return obj;
+             },
+    remove: function(viewer, obj) {
+                // Unsubscribe topic
+                obj.rosTopic.unsubscribe();
+                // Remove all components
+                if(obj.sn!==null){
+                    obj.sn.unsubscribeTf();
+                    obj.rootObject.remove(obj.sn);
+                }
+             },
+}
+
+Viewer3D.point_cloud = {
+    name: 'Point Cloud',
+    config: {'topic': '/point_cloud'},
+    type: {'topic': 'string'},
+    add: function (viewer, ros, tfClient, config) {
+            return null;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+                return obj;
+            },
+    remove: function(viewer, obj) {
+            },
 }

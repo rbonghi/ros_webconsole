@@ -22,7 +22,7 @@
   <description>ros_webconsole A ROS WEB console to control remotely your robot. Based with robotwebtools.</description>
   <author>Raffaello Bonghi</author>
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
-  <license>BSD</license>
+  <license>AGPL-3.0</license>
   <url>http://ros.org/wiki/ros_webconsole</url>
   
   <buildtool_depend>catkin</buildtool_depend>

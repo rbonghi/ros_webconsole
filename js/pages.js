@@ -26,11 +26,8 @@ pages.controller = function(map2D, map3D, options) {
     map_type = options.map_type || '#map-type';
     this.map2D = map2D;
     this.map3D = map3D;
-    // Initialization map
-    map2D.show(false);
-    map3D.show(true);
-    // Controller map button
-    $(map_type).click(function() {
+    
+    function update_status() {
         console.log("Show map " + $(map_type).text());
         // Switch to 2D or 3D mode
         switch($(map_type).text()) {
@@ -48,6 +45,24 @@ pages.controller = function(map2D, map3D, options) {
                 that.map3D.show(true);
                 break;
         }
+    }
+    // Initialize map informations
+    var mapShow = {type: '3D'}
+    // Check if exists a session storage
+    if(sessionStorage.getItem('mapShow')) {
+        mapShow = JSON.parse(sessionStorage.getItem('mapShow'));
+    }
+    $(map_type).text(mapShow.type);
+    // Initialization map
+    update_status();
+    // Controller map button
+    $(map_type).click(function() {
+        // Read new status
+        var mapShow = {type: $(map_type).text()}
+        //Update status
+        update_status();
+        // Update session storage
+        window.sessionStorage.setItem('mapShow', JSON.stringify(mapShow));
     });
 }
 

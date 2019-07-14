@@ -75,13 +75,21 @@
 <body>
 <div data-role="page" id="map">
 	<div data-role="panel" id="panel-config" data-theme="a" data-display="push" data-position="left" data-swipe-close="false">
-		<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer</h3>
-		<div class="ui-body ui-body-a ui-corner-all" id="view3D">
-			<div class="ui-field-contain">
-				<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
+		<div id="view3D-menu">
+			<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer 3D</h3>
+			<div class="ui-body ui-body-a ui-corner-all">
+				<div class="ui-field-contain">
+					<label for="view3D-frame">Frame:</label><input data-mini="true"type="search" name="frame" id="view3D-frame" value="">
+				</div>
+				<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Add view..." data-inset="true" id="view3D-element"></ul>
+				<div data-role="collapsibleset" data-content-theme="a" data-iconpos="right" id="view3D-list"></div>
 			</div>
-			<ul data-role="listview" data-filter="true" data-filter-reveal="true" data-filter-placeholder="Add view..." data-inset="true" id="view3D-element"></ul>
-			<div data-role="collapsibleset" data-content-theme="a" data-iconpos="right" id="view3D-list"></div>
+		</div>
+		<div id="view2D-menu">
+			<h3 class="ui-bar ui-bar-a ui-corner-all">Viewer 2D</h3>
+			<div class="ui-body ui-body-a ui-corner-all">
+				<label for="view2D-frame">Map:</label><input data-mini="true"type="search" name="frame" id="view2D-frame" value="">
+			</div>
 		</div>
 		<div data-role="collapsible" data-iconpos="right" id="ros-server">
 			<h3 id="ros-server-status">Status</h3>
@@ -103,8 +111,8 @@
 	</div>
 	
 	<div role="main" data-theme="a" class="ui-content">
-		<div id="map-3D" class="map"></div>
-		<div id="map-2D" class="map"></div>
+		<div id="view3D" class="map"></div>
+		<div id="view2D" class="map"></div>
 	</div>
     
 	<div data-role="footer" data-theme="a" data-position-fixed="true">

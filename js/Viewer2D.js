@@ -30,7 +30,8 @@ Viewer2D.Map2D = function(ros, size, options) {
     this.size = size;
     // Page configuration
     options = options || {};
-    this.divID = options.divID || 'map-2D';
+    this.divID = options.divID || 'view2D';
+    this.divMenu = options.divMenu || 'view2D-menu';
     // Initialize empty json
     this.robot = ros_controller.robot();
     // Make the 2D viewer
@@ -80,7 +81,9 @@ Viewer2D.Map2D.prototype.show = function(status) {
     // Show or hide some parts
     if(status) {
         $('#' + this.divID).show();
+        $('#' + this.divMenu).show();
     } else {
         $('#' + this.divID).hide();
+        $('#' + this.divMenu).hide();
     }
 }

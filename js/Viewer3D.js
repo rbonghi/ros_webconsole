@@ -30,7 +30,8 @@ Viewer3D.Map3D = function(ros, size, options) {
     this.size = size;
     // Page configuration
     options = options || {};
-    this.divID = options.divID || 'map-3D';
+    this.divID = options.divID || 'view3D';
+    this.divMenu = options.divMenu || 'view3D-menu';
     this.view3D = options.view3D || 'view3D-list';
     this.view3Delement = options.view3D || '#view3D-element';
     this.view3Dframe = options.view3Dframe || '#view3D-frame';
@@ -95,17 +96,23 @@ Viewer3D.Map3D = function(ros, size, options) {
         // Add object in list
         obj = that.addObject(name, nextId, text);
         // Add in list
-        that.addCollapsible(obj, nextId);
+        that.addCollapsible(obj);
     });
 
+    // Initialize sessionv view3D informations
+    var sview3D = { 'cameraPose': {x:3.0, y:3.0, z:3.0} }
+    // Check if exists a session storage
+    if(sessionStorage.getItem('view3D')) {
+        sview3D = JSON.parse(sessionStorage.getItem('view3D'));
+    }
     // Initialize empty json
-    this.robot = ros_controller.robot();
-    this.config = pages.loadConfig('view3D', {background: '#EEEEEE', rate: 10.0, frame: 'base_link', objects: []} );
+    this.config = pages.loadConfig('view3D', {background: '#EEEEEE', antialias : true, rate: 10.0, frame: 'base_link', objects: []} );
     // Set text ros URL
     $( this.view3Dframe ).val(this.config.frame);
     // Make the 3D viewer
-    this.make();
+    this.make(sview3D);
     
+    // Bind resize event
 	$(window).bind('resize', function (event) {
 	    // Check if viewer is already loaded
 	    if(that.viewer) {
@@ -115,7 +122,16 @@ Viewer3D.Map3D = function(ros, size, options) {
 	});
 }
 
-
+Viewer3D.Map3D.prototype.updateObject = function(obj, config) {
+    var idx = this.config.objects.indexOf(obj);
+    // Update configuration
+    this.config.objects[idx].config = config;
+    // Update object in view
+    var update = this.components[obj.type].update;
+    this.objects[idx] = update(this.viewer, this.ros, this.tfClient, this.objects[idx], config)
+    // Save the local storage for this configuration
+    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+}
 
 Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
     // Extract default config
@@ -126,10 +142,8 @@ Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
            'id': name + nextId,
            'config': config,
            };
-    // Extract function and default configuration
-    add_func = this.components[name].add;
-    objview = add_func(this.viewer, this.ros, this.tfClient, config); // Add component and save object status
-    this.objects.push(objview);
+    // Add object in scene
+    this.addObjInScene(obj);
     // Update configuration
     this.config.objects.push(obj);
     // Save the local storage for this configuration
@@ -138,19 +152,78 @@ Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
 }
 
 Viewer3D.Map3D.prototype.removeObject = function(obj) {
+    // Remove object from scene
+    this.RemoveObjInScene(obj);
+    // remove selected element in list
+    this.config.objects.splice(idx, 1);
+    // Save the local storage for this configuration
+    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+}
+
+Viewer3D.Map3D.prototype.addObjInScene = function(obj) {
+    // Extract function and default configuration
+    add_func = this.components[obj.type].add;
+    // Add component and save object status
+    objview = add_func(this.viewer, this.ros, this.tfClient, obj.config);
+    this.objects.push(objview);
+}
+
+Viewer3D.Map3D.prototype.RemoveObjInScene = function(obj) {
     var comp = this.components[obj.type];
     // Extract index from object
     var idx = this.config.objects.indexOf(obj);
     comp.remove(this.viewer, this.objects[idx]);
     // remove selected element in list
-    this.config.objects.splice(idx, 1);
-    // remove selected element in list
     this.objects.splice(idx, 1);
-    // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(this.config));
 }
 
-Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
+
+Viewer3D.Map3D.prototype.make = function(sview3D) {
+    var that = this;
+	// Create a TF client that subscribes to the fixed frame.
+	this.tfClient = new ROSLIB.TFClient({
+		ros: this.ros.ros,
+		angularThres: 0.01,
+		transThres: 0.01,
+		rate: this.config.rate,
+		fixedFrame: this.config.frame
+	});
+    // Create the main viewer.
+    this.viewer = new ROS3D.Viewer({
+      divID : this.divID,
+      width : this.size.width,
+      height : this.size.height,
+      antialias : this.config.antialias,
+      background: this.config.background,
+      cameraPose: sview3D.cameraPose
+    });
+    // Save camera position information in session storage
+    this.viewer.cameraControls.addEventListener('change', function(o){
+        sview3D.cameraPose = that.viewer.camera.position;
+        window.sessionStorage.setItem('view3D', JSON.stringify(sview3D));
+    });
+    // Populate object list
+    for(var i = 0; i < this.config.objects.length; i++) {
+        var obj = this.config.objects[i];
+        // Add Object in scene
+        this.addObjInScene(obj);
+        //Add in list
+        this.addCollapsible(obj);
+    }
+}
+
+Viewer3D.Map3D.prototype.show = function(status) {
+    // Show or hide some parts
+    if(status) {
+        $('#' + this.divID).show();
+        $('#' + this.divMenu).show();
+    } else {
+        $('#' + this.divID).hide();
+        $('#' + this.divMenu).hide();
+    }
+}
+
+Viewer3D.Map3D.prototype.addCollapsible = function(obj) {
     var that = this;
     // Extract name
     var name = obj.name;
@@ -171,49 +244,28 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
             var th = that;
             var labname = key;
             var labid = collid + '-' + key;
-            var label = ''
             // Add text label for type
-            switch(typeof value) {
-                case 'number':
-                        label = '<label for="' + labid + '">' + key + '</label>' +
-                            '<input type="number" data-mini="true" name="' + labid + '" pattern="[0-9]*" id="' + labid + '" value="' + value + '">';
-                    break;
-                case 'boolean':
-                        label = '<label for="' + labid + '">' + key + '</label>' +
-                                '<select name="' + labid + '" id="' + labid + '" data-role="flipswitch" data-mini="true">' +
-                                    '<option value="false" ' + (!value ? 'selected=""' : '') + '>Off</option>' +
-                                    '<option value="true" ' + (value ? 'selected=""' : '') + '>On</option>' + 
-                                '</select>';
-                    break;
-                case 'string':
-                default:
-                    label = '<label for="' + labid + '">' + key + '</label>' +
-                             '<input type="text" data-mini="true" name="' + labid + '" id="' + labid + '" value="' + value + '">';
-                    break;
-            }
+            var label = Viewer3D.addLabel(labid, key, value);
             // Bind change event and append
             return $( label ).bind("change paste", function(event, ui) {
-                        var idx = that.config.objects.indexOf(thisObj);
-                        var type = that.components[thisObj.type].type[labname]
-                        // Extract new value number
-                        var val = $(this).val();
-                        switch(type) {
-                            case 'number':
-                                val = Number(val);
-                                break;
-                            case 'boolean':
-                                val = (val == 'true');
-                                break;
-                        }
-                        console.log("New value for " + labname + ":" + val + " " + typeof val);
-                        // Save value
-                        that.config.objects[idx].config[labname] = val;
-                        // Update object in view
-                        var update = that.components[thisObj.type].update;
-                        that.objects[idx] = update(that.viewer, that.ros, that.tfClient, that.objects[idx], that.config.objects[idx].config)
-                        // Save the local storage for this configuration
-                        window.localStorage.setItem('view3D', JSON.stringify(that.config));
-                    });
+                // Extract type label
+                var type = that.components[thisObj.type].type[labname]
+                // Extract new value number
+                var val = $(this).val();
+                switch(type) {
+                    case 'number':
+                        val = Number(val);
+                        break;
+                    case 'boolean':
+                        val = (val == 'true');
+                        break;
+                }
+                console.log("New value for " + labname + ":" + val + " " + typeof val);
+                // Update value
+                thisObj.config[labname] = val;
+                // Update object
+                that.updateObject(thisObj, thisObj.config);
+            });
         }).trigger("create");
     }
     // Add remove button
@@ -233,58 +285,30 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj, idx) {
     
 }
 
-Viewer3D.Map3D.prototype.make = function() {
-    var that = this;
-    // Initialize sessionv view3D informations
-    this.sview3D = {}
-    // Check if exists a session storage
-    if(sessionStorage.getItem('view3D')) {
-        this.sview3D = JSON.parse(sessionStorage.getItem('view3D'));
+Viewer3D.addLabel = function(labid, key, value) {
+    var label = '';
+    switch(typeof value) {
+        case 'number':
+            label = '<label for="' + labid + '">' + key + '</label>' +
+            '<input type="number" data-mini="true" name="' + labid + '" pattern="[0-9]*" id="' + labid + '" value="' + value + '">';
+            break;
+        case 'boolean':
+            label = '<label for="' + labid + '">' + key + '</label>' +
+            '<select name="' + labid + '" id="' + labid + '" data-role="flipswitch" data-mini="true">' +
+            '<option value="false" ' + (!value ? 'selected=""' : '') + '>Off</option>' +
+            '<option value="true" ' + (value ? 'selected=""' : '') + '>On</option>' + 
+            '</select>';
+            break;
+        case 'string':
+        default:
+            label = '<label for="' + labid + '">' + key + '</label>' +
+            '<input type="text" data-mini="true" name="' + labid + '" id="' + labid + '" value="' + value + '">';
+            break;
     }
-	// Create a TF client that subscribes to the fixed frame.
-	this.tfClient = new ROSLIB.TFClient({
-		ros: this.ros.ros,
-		angularThres: 0.01,
-		transThres: 0.01,
-		rate: this.config.rate,
-		fixedFrame: this.config.frame
-	});
-    // Create the main viewer.
-    this.viewer = new ROS3D.Viewer({
-      divID : this.divID,
-      width : this.size.width,
-      height : this.size.height,
-      antialias : true,
-      background: this.config.background,
-      cameraPose: this.sview3D.cameraPose || {x:3.0, y:3.0, z:3.0}
-    });
-    // Save camera position information in session storage
-    this.viewer.cameraControls.addEventListener('change', function(o){
-        that.sview3D.cameraPose = that.viewer.camera.position;
-        window.sessionStorage.setItem('view3D', JSON.stringify(that.sview3D));
-    });
-    // Populate object list
-    for(var i = 0; i < this.config.objects.length; i++) {
-        var obj = this.config.objects[i];
-        // Extract function and default configuration
-        add_func = this.components[obj.type].add;
-        objview = add_func(this.viewer, this.ros, this.tfClient, obj.config); // Add component and save object status
-        this.objects.push(objview);
-        //Add in list
-        this.addCollapsible(obj, i);
-    }
-};
-
-Viewer3D.Map3D.prototype.show = function(status) {
-    // Show or hide some parts
-    if(status) {
-        $('#' + this.divID).show();
-    } else {
-        $('#' + this.divID).hide();
-    }
+    return label;
 }
 
-/** Components list */
+/******************* Components list *******************/
 
 Viewer3D.grid = {
     name: 'Grid', 

@@ -68,6 +68,8 @@ Viewer3D.Map3D = function(ros, size, options) {
                 that.tfClient.fixedFrame = lconf.frame;
 	        }
 	        if(that.config.objects != lconf.objects) {
+	            // console.log(that.config.objects);
+	            // console.log(lconf.objects);
         	    console.log('update view3D');
 	        }
     }, false);

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  * Copyright (c) 2019 Raffaello Bonghi.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,13 +34,13 @@ ros_controller.connection = function(ws, options) {
                      'red': 'rgba(255,0,0,0.5)',
                      'green': 'rgba(0,255,10,0.5)'};
     // The Ros object is responsible for connecting to rosbridge.
-    this.ros = new ROSLIB.Ros(); 
+    this.ros = new ROSLIB.Ros();
     // Map connections page information
     this.ros.on('connection', function(e) {
         $(header + ' a.ui-collapsible-heading-toggle').text('Connected');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.green);
     });
-    
+
     this.ros.on('error', function(e) {
         console.log("error");
         $(header + ' a.ui-collapsible-heading-toggle').text('Error');
@@ -57,7 +57,7 @@ ros_controller.connection = function(ws, options) {
         server = '';
         protocol = 'http:';
     }
-    this.config = pages.loadConfig('ros', {server: server, protocol: protocol, wsport: '9090', meshport: '8001'} );
+    this.config = pages.loadConfig('ros', {server: server, protocol: protocol, websocket: '9090', packages: '8001'} );
     // Set text ros URL
     $( this.ros_url ).val(this.config.server);
     // Disable url connection
@@ -65,7 +65,7 @@ ros_controller.connection = function(ws, options) {
     // If not empty connect
     if(that.config.server !== '') {
         // Connect to new server
-        that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
+        that.ros.connect('ws://' + that.config.server + ':' + that.config.websocket);
     }
     // Connection server
     $( this.ros_url ).bind("change paste", function(event, ui) {
@@ -80,11 +80,11 @@ ros_controller.connection = function(ws, options) {
         event.preventDefault();
         return false;
     });
-    
+
     $( refresh ).click(function() {
         if(that.config.server !== '') {
             // Connect to new server
-            that.ros.connect('ws://' + that.config.server + ':' + that.config.wsport);
+            that.ros.connect('ws://' + that.config.server + ':' + that.config.websocket);
         }
     });
 }

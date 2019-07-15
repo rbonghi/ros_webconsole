@@ -1,6 +1,6 @@
 ros:
-  port: 9090
-  meshport: 8001
+  websocket: 9090
+  packages: 8001
 view3D:
   tf: {angularThres: 0.01, frame: base_link, rate: 10, transThres: 0.01}
   viewer: {antialias: true, background: '#EEEEEE'}

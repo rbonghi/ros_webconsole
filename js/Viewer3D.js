@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  * Copyright (c) 2019 Raffaello Bonghi.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -40,11 +40,11 @@ Viewer3D.Map3D = function(ros, size, options) {
     // List of all compoments availables
     this.components = {'grid': Viewer3D.grid,
                        'urdf': Viewer3D.urdf,
-                       'map': Viewer3D.map,    
+                       'map': Viewer3D.map,
                        'laser': Viewer3D.laser,
                        'twist-maker': Viewer3D.twist_maker,
                        'odom': Viewer3D.odometry,
-                       'path': Viewer3D.path, 
+                       'path': Viewer3D.path,
                        'point-cloud': Viewer3D.point_cloud,
                        };
     // Build components list
@@ -55,7 +55,7 @@ Viewer3D.Map3D = function(ros, size, options) {
         $(this.view3Delement).append(content);
     }
     $(this.view3Delement).listview( "refresh" );
-    
+
     $( this.view3Dframe ).bind("change paste", function(event, ui) {
         var value = $(this).val();
         if(that.tfClient) {
@@ -68,7 +68,7 @@ Viewer3D.Map3D = function(ros, size, options) {
         event.preventDefault();
         return false;
     });
-    
+
     // Control element
     $(this.view3Delement).children('li').bind('touchstart mousedown', function(e) {
         var name = $(this).children('a').attr('href').split('#')[1];
@@ -80,7 +80,7 @@ Viewer3D.Map3D = function(ros, size, options) {
     });
 
     // Initialize sessionv view3D informations
-    this.config = {'viewer': {background: '#EEEEEE', antialias : true}, 
+    this.config = {'viewer': {background: '#EEEEEE', antialias : true},
                    'tf': {rate: 10.0, frame: 'base_link', angularThres: 0.01, transThres: 0.01},
                    'objects': []};
     // Initialize empty json
@@ -244,7 +244,7 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj) {
     var id = obj.id;
     var collid = this.view3D + '-' + id;
     // Make Collapsible
-    var content = '<div data-role="collapsible" id="' + collid + '">' + 
+    var content = '<div data-role="collapsible" id="' + collid + '">' +
                     '<h3>' + name + "</h3>" +
                   '</div>';
     // Add content collapsible
@@ -296,7 +296,7 @@ Viewer3D.Map3D.prototype.addCollapsible = function(obj) {
     });
     // Update collapsible
     $( '#' + this.view3D ).collapsibleset( "refresh" );
-    
+
 }
 
 Viewer3D.addLabel = function(labid, key, value) {
@@ -310,7 +310,7 @@ Viewer3D.addLabel = function(labid, key, value) {
             label = '<label for="' + labid + '">' + key + '</label>' +
             '<select name="' + labid + '" id="' + labid + '" data-role="flipswitch" data-mini="true">' +
             '<option value="false" ' + (!value ? 'selected=""' : '') + '>Off</option>' +
-            '<option value="true" ' + (value ? 'selected=""' : '') + '>On</option>' + 
+            '<option value="true" ' + (value ? 'selected=""' : '') + '>On</option>' +
             '</select>';
             break;
         case 'string':
@@ -325,7 +325,7 @@ Viewer3D.addLabel = function(labid, key, value) {
 /******************* Components list *******************/
 
 Viewer3D.grid = {
-    name: 'Grid', 
+    name: 'Grid',
     config: {'num_cells': 10, 'cellSize': 1.0},
     type: {'num_cells': 'number', 'cellSize': 'number'},
     add: function(viewer, ros, tfClient, config) {
@@ -374,7 +374,7 @@ Viewer3D.urdf = {
                 var urdfClient = new ROS3D.UrdfClient({
                     ros: ros.ros,
                     tfClient: tfClient,
-                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
+                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.packages + '/',
                     rootObject: viewer.scene,
                     loader: ROS3D.STL_LOADER,
                     param: config.param

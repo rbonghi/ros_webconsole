@@ -2,17 +2,17 @@
 <!--
  This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  Copyright (c) 2019 Raffaello Bonghi.
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Affero General Public License for more details.
- 
+
  You should have received a copy of the GNU Affero General Public License
  along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
@@ -37,7 +37,7 @@
   <script type="text/javascript" src="https://static.robotwebtools.org/threejs/current/ColladaLoader.js"></script>
   <script type="text/javascript" src="https://static.robotwebtools.org/ros3djs/current/ros3d.js"></script>
   <!-- Load page controller -->
-  <script type="text/javascript" src="js/js-yaml.min.js"></script>
+  <!--<script type="text/javascript" src="js/js-yaml.min.js"></script>-->
   <script type="text/javascript" src="js/nav2d.js"></script>
   <script type="text/javascript" src="js/loadcenter.js"></script>
   <script type="text/javascript" src="js/pages.js"></script>
@@ -52,7 +52,7 @@
 			// reference:
 			// https://demos.jquerymobile.com/1.2.1/docs/api/events.html
 			$(document).on("pageinit", function() {});
-			
+
 			var ws = '/rwc';
 			//pages.loadJson("config.json");
 			// Single initialization maps
@@ -61,8 +61,8 @@
 				var size = pages.size();
 				// Initialize ros controller
 				var ros = new ros_controller.connection(ws);
-			    // Load Configuration controller
-			    var config = new pages.configuration(ros);
+        // Load Configuration controller
+        var config = new pages.configuration(ros);
 				// Init3D map controller
 				var map3D = new Viewer3D.Map3D(ros, size);
 				// Init2D map controller
@@ -104,19 +104,19 @@
 		</fieldset>
 		<a href="#debug" class="ui-btn ui-shadow ui-corner-all ui-icon-info ui-btn-icon-left">Debug</a>
 	</div>
-	
+
 	<div data-role="panel" id="panel-drive" data-theme="a" data-display="push" data-position="right" data-swipe-close="false"></div>
-	
+
 	<div data-role="header" data-theme="a" data-position-fixed="true">
 		<a href="#panel-config" class="ui-btn ui-btn-left ui-icon-gear ui-btn-icon-notext ui-corner-all">Config</a>
 		<a href="#panel-drive" class="ui-btn ui-btn-right ui-icon-star ui-btn-icon-notext ui-corner-all">Drive</a>
 	</div>
-	
+
 	<div role="main" data-theme="a" class="ui-content">
 		<div id="view3D" class="map"></div>
 		<div id="view2D" class="map"></div>
 	</div>
-    
+
 	<div data-role="footer" data-theme="a" data-position-fixed="true">
 		<div data-role="controlgroup" data-type="horizontal" data-mini="true">
 			<a href="#map" id="map-type" class="ui-btn ui-corner-all">2D</a>
@@ -138,7 +138,7 @@
             <div class="ui-block-b"><div class="ui-body ui-body-d">Topics</div></div>
         </div>
     </div>
-    
+
     <div data-role="footer" data-theme="a" data-position-fixed="true">
         <a href="#map" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back</a>
     </div>

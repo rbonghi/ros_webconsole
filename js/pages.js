@@ -98,28 +98,24 @@ pages.loadConfig = function(name, dconf) {
     return config
 }
 
-pages.json = function() {
-    json = {}
-    for (var i = 0; i < localStorage.length; i++){
-        var key = localStorage.key(i);
-        json[key] = JSON.parse(localStorage.getItem(key));
-    }
-    return json;
-}
-
-pages.configuration = function(options) {
+pages.configuration = function(ros, options) {
+    var that = this;
     options = options || {};
+    this.ros = ros;
     var page = options.page || '#config';
     var area = options.area || '#config-area';
     var save = options.save || '#config-save';
 
     // Update configuration only the page is selected
     $(document).on( "pagebeforeshow", page, function( event ) {
-        // Load json configuration
-        json = pages.json();
-        // Export json in text file
-        var config_text = JSON.stringify(json, null, 4);
-        $(area).text(config_text);
+          var allParam = new ROSLIB.Param({ros: that.ros.ros, name: that.ros.ws });
+          allParam.get(function(value) {
+            // Read paramters
+            json = (value) ? value : {};
+            // Export json in text file
+            var config_text = JSON.stringify(json, null, 4);
+            $(area).text(config_text);
+          });
     });
     
     // Single initialization maps

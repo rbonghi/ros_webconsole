@@ -33,9 +33,9 @@ Viewer2D.Map2D = function(ros, size, options) {
     this.divID = options.divID || 'view2D';
     this.divMenu = options.divMenu || 'view2D-menu';
     // Initialize empty json
-    this.robot = ros_controller.robot();
+    this.robot = {};
     // Make the 2D viewer
-    this.make();
+    //this.make();
 	
 	$(window).bind('resize', function (event) {
 	    if(that.viewer) {

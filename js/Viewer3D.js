@@ -56,34 +56,13 @@ Viewer3D.Map3D = function(ros, size, options) {
     }
     $(this.view3Delement).listview( "refresh" );
     
-    // Check update
-    window.addEventListener('view3D' + 'build', function(e) {
-	    lconf = JSON.parse(localStorage.getItem('view3D'));
-	        if(that.config.frame != lconf.frame) {
-	            // Update config
-	            that.config.frame = lconf.frame;
-                // Set text ros URL
-                $( that.view3Dframe ).val(that.config.frame);
-                // Update tfClient
-                that.tfClient.fixedFrame = lconf.frame;
-	        }
-	        if(that.config.objects != lconf.objects) {
-	            // console.log(that.config.objects);
-	            // console.log(lconf.objects);
-        	    console.log('update view3D');
-	        }
-    }, false);
-    
     $( this.view3Dframe ).bind("change paste", function(event, ui) {
         var value = $(this).val();
         if(that.tfClient) {
-            console.log("New frame " + value);
             // Update configuration
-            that.config.frame = value
-            // Change frame
-            that.tfClient.fixedFrame = value;
+            that.updateTf(value);
             // Save the local storage for this configuration
-            window.localStorage.setItem('view3D', JSON.stringify(that.config));
+            that.store();
         }
         // Prevent default => No write form in browser url
         event.preventDefault();
@@ -94,26 +73,61 @@ Viewer3D.Map3D = function(ros, size, options) {
     $(this.view3Delement).children('li').bind('touchstart mousedown', function(e) {
         var name = $(this).children('a').attr('href').split('#')[1];
         var nextId = that.config.objects.length;
-        var text = $(this).text();
         // Add object in list
-        obj = that.addObject(name, nextId, text);
+        obj = that.addObject(name, nextId);
         // Add in list
         that.addCollapsible(obj);
     });
 
     // Initialize sessionv view3D informations
+    this.config = {'viewer': {background: '#EEEEEE', antialias : true}, 
+                   'tf': {rate: 10.0, frame: 'base_link', angularThres: 0.01, transThres: 0.01},
+                   'objects': []};
+    // Initialize empty json
+    // TODO: Not stored in browser
+    // this.config = pages.loadConfig('view3D', {background: '#EEEEEE', antialias : true, rate: 10.0, frame: 'base_link', objects: []} );
+    // Set text ros URL
+    $( this.view3Dframe ).val(this.config.tf.frame);
+    // Configuration default value session
     var sview3D = { 'cameraPose': {x:3.0, y:3.0, z:3.0} }
     // Check if exists a session storage
     if(sessionStorage.getItem('view3D')) {
         sview3D = JSON.parse(sessionStorage.getItem('view3D'));
     }
-    // Initialize empty json
-    this.config = pages.loadConfig('view3D', {background: '#EEEEEE', antialias : true, rate: 10.0, frame: 'base_link', objects: []} );
-    // Set text ros URL
-    $( this.view3Dframe ).val(this.config.frame);
-    // Make the 3D viewer
-    this.make(sview3D);
-    
+    this.RPconfig = new ROSLIB.Param({ros: this.ros.ros, name: this.ros.ws + '/view3D'});
+    this.RPconfig.get(function(value) {
+        if(value) {
+            console.log('Update view configuration');
+            // refresh configuration list
+            that.config = value;
+            // Update url field
+            $( that.view3Dframe ).val(that.config.tf.frame);
+            // Update objects
+            that.refreshObjects();
+        }
+    });
+	// Create a TF client that subscribes to the fixed frame.
+	this.tfClient = new ROSLIB.TFClient({
+		ros: this.ros.ros,
+		angularThres: this.config.tf.angularThres,
+		transThres: this.config.tf.transThres,
+		rate: this.config.tf.rate,
+		fixedFrame: this.config.tf.frame
+	});
+    // Create the main viewer.
+    this.viewer = new ROS3D.Viewer({
+      divID : this.divID,
+      width : this.size.width,
+      height : this.size.height,
+      antialias : this.config.viewer.antialias,
+      background: this.config.viewer.background,
+      cameraPose: sview3D.cameraPose
+    });
+    // Save camera position information in session storage
+    this.viewer.cameraControls.addEventListener('change', function(o){
+        sview3D.cameraPose = that.viewer.camera.position;
+        window.sessionStorage.setItem('view3D', JSON.stringify(sview3D));
+    });
     // Bind resize event
 	$(window).bind('resize', function (event) {
 	    // Check if viewer is already loaded
@@ -124,6 +138,43 @@ Viewer3D.Map3D = function(ros, size, options) {
 	});
 }
 
+Viewer3D.Map3D.prototype.getNumber = function(type) {
+    for(var i = 0; i < this.config.objects.length; i++) {
+        var obj = this.config.objects[i];
+        // Check if the type is the same
+        if(obj.type == type) {
+            console.log(obj.id);
+        }
+    }
+}
+
+Viewer3D.Map3D.prototype.refreshObjects = function() {
+    // Populate object list
+    for(var i = 0; i < this.config.objects.length; i++) {
+        var obj = this.config.objects[i];
+        // Add Object in scene
+        this.addObjInScene(obj);
+        //Add in list
+        this.addCollapsible(obj);
+    }
+}
+
+Viewer3D.Map3D.prototype.updateTf = function(value) {
+    console.log("New frame " + value);
+    // Update configuration
+    this.config.tf.frame = value
+    // Change frame
+    this.tfClient.fixedFrame = value;
+}
+
+Viewer3D.Map3D.prototype.store = function() {
+    // Save the local storage for this configuration
+    // TODO: Not stored in browser
+    // window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    // Save configuration
+    this.RPconfig.set(this.config);
+}
+
 Viewer3D.Map3D.prototype.updateObject = function(obj, config) {
     var idx = this.config.objects.indexOf(obj);
     // Update configuration
@@ -132,24 +183,20 @@ Viewer3D.Map3D.prototype.updateObject = function(obj, config) {
     var update = this.components[obj.type].update;
     this.objects[idx] = update(this.viewer, this.ros, this.tfClient, this.objects[idx], config)
     // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    this.store();
 }
 
-Viewer3D.Map3D.prototype.addObject = function(name, nextId, text) {
+Viewer3D.Map3D.prototype.addObject = function(name, nextId) {
     // Extract default config
     var config = this.components[name].config;
     // Define new object
-    obj = {'name': text,
-           'type': name,
-           'id': name + nextId,
-           'config': config,
-           };
+    obj = {'type': name, 'id': name + nextId, 'config': config};
     // Add object in scene
     this.addObjInScene(obj);
     // Update configuration
     this.config.objects.push(obj);
     // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    this.store();
     return obj;
 }
 
@@ -159,7 +206,7 @@ Viewer3D.Map3D.prototype.removeObject = function(obj) {
     // remove selected element in list
     this.config.objects.splice(idx, 1);
     // Save the local storage for this configuration
-    window.localStorage.setItem('view3D', JSON.stringify(this.config));
+    this.store();
 }
 
 Viewer3D.Map3D.prototype.addObjInScene = function(obj) {
@@ -179,41 +226,6 @@ Viewer3D.Map3D.prototype.RemoveObjInScene = function(obj) {
     this.objects.splice(idx, 1);
 }
 
-
-Viewer3D.Map3D.prototype.make = function(sview3D) {
-    var that = this;
-	// Create a TF client that subscribes to the fixed frame.
-	this.tfClient = new ROSLIB.TFClient({
-		ros: this.ros.ros,
-		angularThres: 0.01,
-		transThres: 0.01,
-		rate: this.config.rate,
-		fixedFrame: this.config.frame
-	});
-    // Create the main viewer.
-    this.viewer = new ROS3D.Viewer({
-      divID : this.divID,
-      width : this.size.width,
-      height : this.size.height,
-      antialias : this.config.antialias,
-      background: this.config.background,
-      cameraPose: sview3D.cameraPose
-    });
-    // Save camera position information in session storage
-    this.viewer.cameraControls.addEventListener('change', function(o){
-        sview3D.cameraPose = that.viewer.camera.position;
-        window.sessionStorage.setItem('view3D', JSON.stringify(sview3D));
-    });
-    // Populate object list
-    for(var i = 0; i < this.config.objects.length; i++) {
-        var obj = this.config.objects[i];
-        // Add Object in scene
-        this.addObjInScene(obj);
-        //Add in list
-        this.addCollapsible(obj);
-    }
-}
-
 Viewer3D.Map3D.prototype.show = function(status) {
     // Show or hide some parts
     if(status) {
@@ -228,7 +240,7 @@ Viewer3D.Map3D.prototype.show = function(status) {
 Viewer3D.Map3D.prototype.addCollapsible = function(obj) {
     var that = this;
     // Extract name
-    var name = obj.name;
+    var name = this.components[obj.type].name;
     var id = obj.id;
     var collid = this.view3D + '-' + id;
     // Make Collapsible

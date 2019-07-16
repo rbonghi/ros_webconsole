@@ -51,6 +51,9 @@ pages.controller = function(map2D, map3D, options) {
     // Check if exists a session storage
     if(sessionStorage.getItem('mapShow')) {
         mapShow = JSON.parse(sessionStorage.getItem('mapShow'));
+    } else {
+        // Update session storage
+        window.sessionStorage.setItem('mapShow', JSON.stringify(mapShow));
     }
     $(map_type).text(mapShow.type);
     // Initialization map

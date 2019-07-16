@@ -204,6 +204,7 @@ Viewer3D.Map3D.prototype.removeObject = function(obj) {
     // Remove object from scene
     this.RemoveObjInScene(obj);
     // remove selected element in list
+    var idx = this.config.objects.indexOf(obj);
     this.config.objects.splice(idx, 1);
     // Save the local storage for this configuration
     this.store();
@@ -355,7 +356,7 @@ Viewer3D.urdf = {
                 var urdfClient = new ROS3D.UrdfClient({
                     ros: ros.ros,
                     tfClient: tfClient,
-                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.meshport + '/',
+                    path: ros.config.protocol + '//' + ros.config.server + ':' + ros.config.packages + '/',
                     rootObject: viewer.scene,
                     loader: ROS3D.STL_LOADER,
                     param: config.param
@@ -364,7 +365,6 @@ Viewer3D.urdf = {
            },
     update: function(viewer, ros, tfClient, obj, config) {
                if (obj.urdf) {
-                   console.log("aaa")
                    // Unsubscribe
                    obj.urdf.unsubscribeTf();
                    // Remove object from view

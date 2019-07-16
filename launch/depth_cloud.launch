@@ -1,0 +1,35 @@
+<!--
+ This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
+ Copyright (c) 2019 Raffaello Bonghi.
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>
+-->
+<launch>
+  <!-- Port for visualizing video streams. -->
+  <arg name="video_port" default="9999"/>
+  <!-- Depth image topic for depthcloud_encoder. -->
+  <arg name="depth_topic" default="/camera/depth/image_raw"/>
+  <!-- RGB image topic for depthcloud_encoder. -->
+  <arg name="rgb_topic" default="/camera/rgb/image_raw"/>
+
+  <node pkg="web_video_server" type="web_video_server" name="web_video_server">
+    <param name="type" value="vp8"/>
+    <param name="port" value="$(arg video_port)"/>
+  </node>
+  <node pkg="depthcloud_encoder" type="depthcloud_encoder_node" name="depthcloud_encoder">
+    <param name="depth" value="$(arg depth_topic)"/>
+    <param name="rgb" value="$(arg rgb_topic)"/>
+  </node>
+
+</launch>

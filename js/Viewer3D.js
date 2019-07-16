@@ -46,6 +46,7 @@ Viewer3D.Map3D = function(ros, size, options) {
                        'odom': Viewer3D.odometry,
                        'path': Viewer3D.path,
                        'point-cloud': Viewer3D.point_cloud,
+                       'depth-cloud': Viewer3D.depth_cloud,
                        };
     // Build components list
     for(var key in this.components) {
@@ -554,11 +555,56 @@ Viewer3D.point_cloud = {
     config: {'topic': '/point_cloud'},
     type: {'topic': 'string'},
     add: function (viewer, ros, tfClient, config) {
-            return null;
+            // Initialize Cloud client
+            var cloudClient = new ROS3D.PointCloud2({
+                ros: ros.ros,
+                tfClient: tfClient,
+                rootObject: viewer.scene,
+                topic: config.topic,
+                max_pts: 10000,
+                pointRatio: 3,
+                messageRatio: 2,
+                material: { size: 0.05, color: 0xff00ff }
+            });
+            return cloudClient;
           },
     update: function(viewer, ros, tfClient, obj, config) {
+                if(obj.topicName != config.topic) {
+                    obj.unsubscribe();
+                    obj.topicName = config.topic;
+                    obj.subscribe();
+                }
                 return obj;
             },
     remove: function(viewer, obj) {
+              // Unsubscribe topic
+              obj.unsubscribe();
             },
+}
+
+Viewer3D.depth_cloud = {
+    name: 'Depth Cloud',
+    config: {'stream': '/depthcloud_encoded', 'port': 9999, 'frame': '/camera_optical_frame'},
+    type: {'stream': 'string', 'port': 'number', 'frame': 'string'},
+    add: function (viewer, ros, tfClient, config) {
+            // Setup DepthCloud stream
+            var depthCloud = new ROS3D.DepthCloud({
+              url : ros.config.protocol + '//' + ros.config.server + ':' + config.port + '/stream?topic=' + config.stream + '&bitrate=250000&type=vp8',
+              f : 525.0
+            });
+            depthCloud.startStream();
+            // Create RGbD scene node
+            var rgbdScene = new ROS3D.SceneNode({
+              frameID : config.frame,
+              tfClient : tfClient,
+              object : depthCloud
+            });
+            viewer.scene.add(rgbdScene);
+            return rgbdScene;
+          },
+    update: function(viewer, ros, tfClient, obj, config) {
+              return obj;
+          },
+    remove: function(viewer, obj) {
+          },
 }

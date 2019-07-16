@@ -94,7 +94,7 @@ Viewer3D.Map3D = function(ros, size, options) {
     if(sessionStorage.getItem('view3D')) {
         sview3D = JSON.parse(sessionStorage.getItem('view3D'));
     }
-    this.RPconfig = new ROSLIB.Param({ros: this.ros.ros, name: this.ros.ws + '/view3D'});
+    this.RPconfig = new ROSLIB.Param({ros: this.ros.ros, name: this.ros.config.ws + '/view3D'});
     this.RPconfig.get(function(value) {
         if(value) {
             console.log('Update view configuration');

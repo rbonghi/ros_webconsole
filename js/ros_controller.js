@@ -20,11 +20,18 @@ var ros_controller = ros_controller || {
     REVISION: '0.0.1'
 };
 
-ros_controller.connection = function(ws, options) {
+ros_controller.connection = function(ros_config, options) {
     var that = this;
+    // Initialization server config
+    this.config = {};
+    ros_config = ros_config || {};
+    this.config.server = ros_config.server || window.location.hostname;
+    this.config.protocol = ros_config.protocol || location.protocol;
+    this.config.websocket = ros_config.websocket || '9090';
+    this.config.packages = ros_config.packages || '8001';
+    this.config.ws = ros_config.ws || '/rwc';
     // Load graphic options
     options = options || {};
-    this.ws = ws;
     var collapsible = options.collapsible || '#ros-server';
     var header = options.header || '#ros-server-status';
     var refresh = options.refresh || '#ros-server-refresh';
@@ -46,22 +53,14 @@ ros_controller.connection = function(ws, options) {
         $(header + ' a.ui-collapsible-heading-toggle').text('Error');
         $(header + ' a.ui-collapsible-heading-toggle').css('background-color', color.red);
     });
-    var RPconfig = new ROSLIB.Param({ros: this.ros, name: this.ws + '/config'});
-    RPconfig.get(function(value) {
-        console.log('ros config: ' + value);
-    });
-    // Initialize empty json
-    server = window.location.hostname;
-    protocol = location.protocol;
-    if(server.includes('github.io')) {
-        server = '';
-        protocol = 'http:';
-    }
-    this.config = pages.loadConfig('ros', {server: server, protocol: protocol, websocket: '9090', packages: '8001'} );
     // Set text ros URL
     $( this.ros_url ).val(this.config.server);
     // Disable url connection
     //$(this.ros_url).addClass('ui-state-disabled');
+    var RPconfig = new ROSLIB.Param({ros: this.ros, name: this.config.ws + '/config'});
+    RPconfig.get(function(value) {
+        console.log('ros config: ' + value);
+    });
     // If not empty connect
     if(that.config.server !== '') {
         // Connect to new server

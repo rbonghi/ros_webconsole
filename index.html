@@ -52,15 +52,15 @@
 			// reference:
 			// https://demos.jquerymobile.com/1.2.1/docs/api/events.html
 			$(document).on("pageinit", function() {});
-
-			var ws = '/rwc';
-			//pages.loadJson("config.json");
 			// Single initialization maps
 			$(document).ready(function () {
 				// Load size page
 				var size = pages.size();
 				// Initialize ros controller
-				var ros = new ros_controller.connection(ws);
+				var ros = new ros_controller.connection({
+          server: (window.location.hostname.includes('github.io')) ? '' : window.location.hostname,
+          protocol: (window.location.hostname.includes('github.io')) ? 'http:' : location.protocol
+        });
         // Load Configuration controller
         var config = new pages.configuration(ros);
 				// Init3D map controller

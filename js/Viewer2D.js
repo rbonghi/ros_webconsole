@@ -41,7 +41,7 @@ Viewer2D.Map2D = function(ros, size, options) {
     // Set text ros URL
     $( this.view2Dframe ).val(this.config.tf.frame);
     // Initilization ROS parameters
-    this.RPconfig = new ROSLIB.Param({ros: this.ros.ros, name: this.ros.ws + '/view2D'});
+    this.RPconfig = new ROSLIB.Param({ros: this.ros.ros, name: this.ros.config.ws + '/view2D'});
     this.RPconfig.get(function(value) {
        if(value) {
            console.log('Update view configuration');

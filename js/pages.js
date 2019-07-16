@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  * Copyright (c) 2019 Raffaello Bonghi.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,7 +26,7 @@ pages.controller = function(map2D, map3D, options) {
     map_type = options.map_type || '#map-type';
     this.map2D = map2D;
     this.map3D = map3D;
-    
+
     function update_status() {
         console.log("Show map " + $(map_type).text());
         // Switch to 2D or 3D mode
@@ -108,7 +108,7 @@ pages.configuration = function(ros, options) {
 
     // Update configuration only the page is selected
     $(document).on( "pagebeforeshow", page, function( event ) {
-          var allParam = new ROSLIB.Param({ros: that.ros.ros, name: that.ros.ws });
+          var allParam = new ROSLIB.Param({ros: that.ros.ros, name: that.ros.config.ws });
           allParam.get(function(value) {
             // Read paramters
             json = (value) ? value : {};
@@ -117,7 +117,7 @@ pages.configuration = function(ros, options) {
             $(area).text(config_text);
           });
     });
-    
+
     // Single initialization maps
     $(document).ready(function () {
         // Click button

@@ -22,6 +22,11 @@
     <arg name="websocket_port" default="9090"/>
     <!-- Port where site and other package resources will be served -->
     <arg name="packages_port" default="8001"/>
+    <!-- Output
+        - screen
+        - log
+       -->
+    <arg name="output"          default="log" />
 
     <!-- load configuration file -->
     <rosparam ns="/rwc" command="load" file="$(arg config)"/>
@@ -43,5 +48,6 @@
     </include>
 
     <!-- TF2 republisher -->
-    <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" respawn="false" output="screen"/>
+    <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher"
+          respawn="false" output="$(arg output)"/>
 </launch>

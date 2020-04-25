@@ -20,13 +20,16 @@
   <name>ros_webconsole</name>
   <version>1.0.0</version>
   <description>ros_webconsole A ROS WEB console to control remotely your robot. Based with robotwebtools.</description>
-  <author>Raffaello Bonghi</author>
+  
   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
   <license>AGPL-3.0</license>
-  <url>http://ros.org/wiki/ros_webconsole</url>
   
+  <url type="website">https://rnext.it</url>
+  <url type="repository">http://ros.org/wiki/ros_webconsole</url>
+  <author email="raffaello@rnext.it">Raffaello Bonghi</author>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>roslaunch</depend>
+
   <exec_depend>roswww</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>tf2_web_republisher</exec_depend>

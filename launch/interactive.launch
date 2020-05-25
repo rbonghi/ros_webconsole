@@ -2,39 +2,27 @@
 <!--
  This file is part of the ros_webconsole package (https://github.com/rbonghi/ros_webconsole or http://rnext.it).
  Copyright (c) 2019 Raffaello Bonghi.
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Affero General Public License for more details.
- 
+
  You should have received a copy of the GNU Affero General Public License
  along with this program. If not, see <http://www.gnu.org/licenses/>
 -->
-<package format="2">
-  <name>ros_webconsole</name>
-  <version>1.0.0</version>
-  <description>ros_webconsole A ROS WEB console to control remotely your robot. Based with robotwebtools.</description>
-  
-  <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
-  <license>AGPL-3.0</license>
-  
-  <url type="website">https://rnext.it</url>
-  <url type="repository">http://ros.org/wiki/ros_webconsole</url>
-  <author email="raffaello@rnext.it">Raffaello Bonghi</author>
+<launch>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <arg name="interactive_maker_target_frame" default="base_link"/>
 
-  <exec_depend>roswww</exec_depend>
-  <exec_depend>rosbridge_server</exec_depend>
-  <exec_depend>tf2_web_republisher</exec_depend>
-  <exec_depend>interactive_marker_proxy</exec_depend>
-
-</package>
-
-
+  <node name="web_proxy" pkg="interactive_marker_proxy" type="proxy">
+    <remap from="topic_ns" to="/twist_marker_server"/>
+    <remap from="target_frame" to="$(arg interactive_maker_target_frame)"/>
+  </node>
+    
+</launch>

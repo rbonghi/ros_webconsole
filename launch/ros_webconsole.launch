@@ -34,6 +34,7 @@
     <!-- ROSbridge server -->
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" >
         <arg name="port" value="$(arg websocket_port)"/>
+        <arg name="output"       value="$(arg output)"/>
     </include>
     <!-- ROSWWW server -->
     <!-- When the server start the webpage will be available in:
